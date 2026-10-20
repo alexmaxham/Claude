@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useAppearance, type Appearance } from './appearance';
 import { useCloudSync } from './cloud/useCloudSync';
 import { AccountSheet, Avatar, SYNC_LABEL } from './components/AccountSheet';
 import { CategoryBar, type Filter } from './components/CategoryBar';
 import { CategoryManager } from './components/CategoryManager';
 import { Header } from './components/Header';
+import { ProfileSheet } from './components/ProfileSheet';
 import { QuickAdd } from './components/QuickAdd';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
 import { TaskEditor } from './components/TaskEditor';
@@ -52,10 +54,11 @@ interface Prefs {
   sort: SortMode;
   remindersOn: boolean;
   reminderTime: string;
+  appearance: Appearance;
 }
 
 const PREFS_KEY = 'questlog:prefs';
-const DEFAULT_PREFS: Prefs = { soundOn: true, filter: 'all', sort: 'smart', remindersOn: false, reminderTime: '09:00' };
+const DEFAULT_PREFS: Prefs = { soundOn: true, filter: 'all', sort: 'smart', remindersOn: false, reminderTime: '09:00', appearance: 'system' };
 
 function readPrefs(): Prefs {
   try {
@@ -102,7 +105,7 @@ export default function App() {
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [pulse, setPulse] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<'categories' | 'account' | 'shortcuts' | TrophiesTab | null>(null);
+  const [sheet, setSheet] = useState<'categories' | 'account' | 'profile' | 'shortcuts' | TrophiesTab | null>(null);
   const [showDone, setShowDone] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -190,6 +193,7 @@ export default function App() {
   const cloud = useCloudSync(state, dispatch, (msg) => pushToast({ icon: '☁️', title: 'Signed in', body: msg }, 4500));
   const { tasks, categories, stats, theme } = state;
   useReminders(tasks, prefs.remindersOn, prefs.reminderTime);
+  useAppearance(prefs.appearance);
 
   // The stylesheet picks its accent colors from this attribute.
   useLayoutEffect(() => {
@@ -382,17 +386,25 @@ export default function App() {
             {cloud.status === 'signedIn' && cloud.user ? (
               <button
                 className={`account-btn sync-${cloud.sync}`}
-                onClick={() => setSheet('account')}
-                aria-label={`Account: ${cloud.user.email ?? ''}. ${SYNC_LABEL[cloud.sync]}`}
+                onClick={() => setSheet('profile')}
+                aria-label={`Profile: ${cloud.user.email ?? ''}. ${SYNC_LABEL[cloud.sync]}`}
                 title={SYNC_LABEL[cloud.sync]}
               >
                 <Avatar user={cloud.user} size={38} />
                 <span className="sync-dot" />
               </button>
             ) : cloud.status === 'signedOut' ? (
-              <button className="signin-btn glass-soft" onClick={() => setSheet('account')}>
-                Sign in
-              </button>
+              <>
+                <button className="signin-btn glass-soft" onClick={() => setSheet('account')}>
+                  Sign in
+                </button>
+                <button className="icon-btn glass-soft guest-btn" onClick={() => setSheet('profile')} aria-label="Profile">
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                    <circle cx="12" cy="8.5" r="3.6" fill="none" stroke="currentColor" strokeWidth="1.7" />
+                    <path d="M4.8 19.5c1.3-3.3 4-5 7.2-5s5.9 1.7 7.2 5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </>
             ) : null}
             <button className="icon-btn glass-soft" onClick={() => setSheet('settings')} aria-label="Settings">
               ⚙︎
@@ -564,10 +576,26 @@ export default function App() {
         />
       )}
       {sheet === 'shortcuts' && <ShortcutsHelp onClose={() => setSheet(null)} />}
+      {sheet === 'profile' && (
+        <ProfileSheet
+          state={state}
+          user={cloud.user}
+          sync={cloud.sync}
+          onSignIn={() => setSheet('account')}
+          onSignOut={cloud.signOut}
+          onOpenTrophies={() => setSheet('trophies')}
+          onClose={() => setSheet(null)}
+        />
+      )}
       {(sheet === 'trophies' || sheet === 'settings') && (
         <Trophies
+          key={sheet}
           initialTab={sheet}
+          state={state}
           stats={stats}
+          appearance={prefs.appearance}
+          onAppearance={(appearance) => updatePrefs({ appearance })}
+          syncCalendar={cloud.status === 'signedIn' && cloud.api ? () => cloud.api!.syncGoogleCalendar(tasks) : null}
           categories={categories}
           theme={theme}
           soundOn={soundOn}

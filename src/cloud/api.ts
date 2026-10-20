@@ -6,7 +6,9 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   GoogleAuthProvider,
+  linkWithPopup,
   onAuthStateChanged,
+  reauthenticateWithPopup,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -23,7 +25,11 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
+import type { Task } from '../core/types';
+import { syncCalendar } from './calendar';
 import type { CloudConfig } from './config';
+
+const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 
 export interface CloudUser {
   uid: string;
@@ -59,6 +65,27 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
   }
 
   const userDoc = (uid: string) => doc(db, 'users', uid);
+  let calendarToken: { value: string; expires: number } | null = null;
+
+  /**
+   * An OAuth access token allowed to edit the user's calendar events. Asks Google
+   * once (a popup); the token is kept in memory for most of its one-hour life.
+   * Accounts that signed up with email get Google linked to them for this.
+   */
+  async function getCalendarToken(): Promise<string> {
+    if (calendarToken && calendarToken.expires > Date.now()) return calendarToken.value;
+    const user = auth.currentUser;
+    if (!user) throw new Error('Sign in first to connect Google Calendar.');
+    const provider = new GoogleAuthProvider();
+    provider.addScope(CALENDAR_SCOPE);
+    const hasGoogle = user.providerData.some((p) => p.providerId === 'google.com');
+    if (hasGoogle && user.email) provider.setCustomParameters({ login_hint: user.email });
+    const result = hasGoogle ? await reauthenticateWithPopup(user, provider) : await linkWithPopup(user, provider);
+    const token = GoogleAuthProvider.credentialFromResult(result)?.accessToken;
+    if (!token) throw new Error('Google didn’t grant calendar access.');
+    calendarToken = { value: token, expires: Date.now() + 50 * 60_000 };
+    return token;
+  }
 
   return {
     onUser(cb: (user: CloudUser | null) => void) {
@@ -92,7 +119,20 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
     },
 
     signOut() {
+      calendarToken = null;
       return signOut(auth);
+    },
+
+    /** Puts every open task with a due date on the user's Google Calendar (and cleans up old ones). */
+    async syncGoogleCalendar(tasks: Task[]) {
+      const token = await getCalendarToken();
+      try {
+        return await syncCalendar(token, tasks);
+      } catch (e) {
+        // A revoked or expired token: forget it so the next try asks again.
+        if ((e as { kind?: string }).kind === 'auth') calendarToken = null;
+        throw e;
+      }
     },
 
     watchState(

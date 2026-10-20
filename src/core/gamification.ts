@@ -46,6 +46,13 @@ export function xpToNext(level: number): number {
   return 50 + (level - 1) * 25;
 }
 
+/** Total XP needed to reach `level` from zero. */
+export function xpForLevel(level: number): number {
+  let total = 0;
+  for (let l = 1; l < Math.min(level, MAX_LEVEL); l++) total += xpToNext(l);
+  return total;
+}
+
 export interface LevelInfo {
   level: number;
   intoLevel: number;
@@ -181,6 +188,8 @@ export interface Achievement {
   name: string;
   description: string;
   icon: string;
+  /** For trophies earned by reaching a level, that level (used to list milestones). */
+  level?: number;
   /** Checked after every state change; returns true once earned. */
   test: (state: AppState, ctx: { now: number; justCompleted?: Task }) => boolean;
 }
@@ -210,19 +219,19 @@ export const ACHIEVEMENTS: Achievement[] = [
     test: (_s, c) => !!c.justCompleted && new Date(c.now).getHours() >= 22 },
   { id: 'clear', name: 'Clean Slate', description: 'Clear every open task', icon: '✨',
     test: (s, c) => !!c.justCompleted && s.tasks.length >= 3 && s.tasks.every((t) => t.completedAt) },
-  { id: 'level5', name: 'Rising Star', description: 'Reach level 5', icon: '⭐️',
+  { id: 'level5', name: 'Rising Star', description: 'Reach level 5', icon: '⭐️', level: 5,
     test: (s) => levelFromXp(s.stats.xp).level >= 5 },
-  { id: 'level10', name: 'Superstar', description: 'Reach level 10', icon: '🌟',
+  { id: 'level10', name: 'Superstar', description: 'Reach level 10', icon: '🌟', level: 10,
     test: (s) => levelFromXp(s.stats.xp).level >= 10 },
-  { id: 'level20', name: 'Seasoned', description: 'Reach level 20', icon: '🎖️',
+  { id: 'level20', name: 'Seasoned', description: 'Reach level 20', icon: '🎖️', level: 20,
     test: (s) => levelFromXp(s.stats.xp).level >= 20 },
-  { id: 'level30', name: 'Elite', description: 'Reach level 30', icon: '💎',
+  { id: 'level30', name: 'Elite', description: 'Reach level 30', icon: '💎', level: 30,
     test: (s) => levelFromXp(s.stats.xp).level >= 30 },
-  { id: 'level50', name: 'Halfway Hero', description: 'Reach level 50', icon: '🗻',
+  { id: 'level50', name: 'Halfway Hero', description: 'Reach level 50', icon: '🗻', level: 50,
     test: (s) => levelFromXp(s.stats.xp).level >= 50 },
-  { id: 'level75', name: 'Living Legend', description: 'Reach level 75', icon: '🌠',
+  { id: 'level75', name: 'Living Legend', description: 'Reach level 75', icon: '🌠', level: 75,
     test: (s) => levelFromXp(s.stats.xp).level >= 75 },
-  { id: 'level100', name: 'Questlord', description: 'Reach level 100', icon: '👑',
+  { id: 'level100', name: 'Questlord', description: 'Reach level 100', icon: '👑', level: 100,
     test: (s) => levelFromXp(s.stats.xp).level >= MAX_LEVEL },
   { id: 'c250', name: 'Veteran', description: 'Complete 250 tasks', icon: '🛡️',
     test: (s) => s.stats.totalCompleted >= 250 },
