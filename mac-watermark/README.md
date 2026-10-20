@@ -32,7 +32,7 @@ Edit `~/Library/Application Support/ResizeWatermark/config.json`:
 | `longEdge` | `1600` | Longest side in pixels; the photo keeps its shape and nothing is cropped. `0` keeps the original size. |
 | `upscale` | `false` | Also enlarge images smaller than `longEdge`. |
 | `position` | `"bottom-right"` | `bottom-right`, `bottom-left`, `top-right`, `top-left` or `center`. |
-| `watermarkSize` | `0.25` | Watermark width as a fraction of the image's shorter edge. |
+| `watermarkSize` | `0.03` | Watermark width as a fraction of the image's shorter edge. |
 | `margin` | `0.03` | Gap from the edges, as a fraction of the shorter edge. |
 | `opacity` | `1` | `0` invisible to `1` solid. |
 | `suffix` | `"-watermarked"` | Added to the output file name. |

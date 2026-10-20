@@ -2,7 +2,7 @@
   "longEdge": 1600,
   "upscale": false,
   "position": "bottom-right",
-  "watermarkSize": 0.25,
+  "watermarkSize": 0.03,
   "margin": 0.03,
   "opacity": 1,
   "suffix": "-watermarked",
