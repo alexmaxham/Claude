@@ -37,7 +37,7 @@ export type TaskPatch = Partial<Pick<Task, 'title' | 'description' | 'categoryId
 
 /** The first five are free; the rest unlock as rewards when you reach their level. */
 export const THEMES: { id: ThemeId; name: string; color: string; unlockLevel?: number }[] = [
-  { id: 'blue', name: 'Blue', color: '#4f8cff' },
+  { id: 'blue', name: 'Blue', color: '#2f63e0' },
   { id: 'orange', name: 'Orange', color: '#ff8a3d' },
   { id: 'red', name: 'Red', color: '#ff4d5e' },
   { id: 'green', name: 'Green', color: '#2fbf71' },

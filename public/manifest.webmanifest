@@ -4,7 +4,7 @@
   "description": "A gamified to-do list. Earn XP, keep streaks, level up.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0b1026",
-  "theme_color": "#0b1026",
+  "background_color": "#04070f",
+  "theme_color": "#04070f",
   "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
 }

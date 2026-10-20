@@ -75,18 +75,19 @@ export function TaskItem({ task, category, stats, selected, onDragStart, dragSty
         <span className="task-meta">
           {category && (
             <span className="chip-mini">
-              {category.emoji} {category.name}
+              <span className="cat-dot" aria-hidden="true" />
+              {category.name}
             </span>
           )}
-          {due && !done && <span className={`due due-${due.tone}`}>📅 {due.text}</span>}
-          {task.repeat && <span className="chip-mini">🔁 {repeatLabel(task.repeat)}</span>}
+          {due && !done && <span className={`due due-${due.tone}`}>{due.text}</span>}
+          {task.repeat && <span className="chip-mini">↻ {repeatLabel(task.repeat)}</span>}
           {steps.length > 0 && (
             <span className={`chip-mini steps ${stepsDone === steps.length ? 'all' : ''}`}>
-              ☑︎ {stepsDone}/{steps.length}
+              {stepsDone}/{steps.length} steps
             </span>
           )}
           {task.priority !== 'low' && !done && (
-            <span className="prio-tag">{task.priority === 'high' ? '‼️ High' : '❗ Medium'}</span>
+            <span className="prio-tag">{task.priority === 'high' ? 'High' : 'Medium'}</span>
           )}
         </span>
       </button>
