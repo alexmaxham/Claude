@@ -1,10 +1,11 @@
 {
-  "maxSize": 2048,
-  "upscale": false,
+  "width": 1600,
+  "height": 900,
+  "fit": "crop",
   "position": "bottom-right",
   "watermarkSize": 0.25,
   "margin": 0.03,
-  "opacity": 0.8,
+  "opacity": 1,
   "suffix": "-watermarked",
   "outputFolder": "",
   "jpegQuality": 0.9
