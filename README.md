@@ -127,9 +127,17 @@ The bundle ID is `com.alexmaxham.tasko` (in `capacitor.config.ts` and Xcode). To
 
 Email/password sign-in and sync work out of the box. Google blocks its sign-in page inside apps' web views, so Google sign-in (and Google Calendar sync) uses the native Google SDK and needs a one-time setup:
 
-1. Firebase console → Project settings → Your apps → **Add app → iOS**, bundle ID `com.alexmaxham.tasko`. Download **GoogleService-Info.plist**.
-2. In Xcode, drag it into `App/App` (tick "Copy items if needed" and the App target).
-3. Open `GoogleService-Info.plist`, copy the `REVERSED_CLIENT_ID` value. App target → **Info** → URL Types → **+** → paste it into *URL Schemes*.
-4. Set `IOS_GOOGLE_SIGN_IN = true` in `src/cloud/config.ts`, then `npm run ios`.
+1. Firebase console → **Authentication → Sign-in method**: make sure **Google** is enabled (it already is if Google sign-in works on the web).
+2. Firebase console → **Project settings → General → Your apps → Add app → iOS**. Bundle ID `com.alexmaxham.tasko`, nickname *Tasko iPhone*; skip the remaining steps of the wizard. Download **GoogleService-Info.plist**.
+3. Run:
+
+   ```bash
+   npm run ios:google -- ~/Downloads/GoogleService-Info.plist
+   ```
+
+   This checks the file is for this app and Firebase project, copies it into `ios/App/App` and the Xcode project, adds Google's URL scheme (`REVERSED_CLIENT_ID`) to `Info.plist`, and sets `IOS_GOOGLE_SIGN_IN = true` in `src/cloud/config.ts`.
+4. `npm run ios` and run it on your iPhone. Commit the changed files so the setup sticks (the plist only identifies the app, like the web config; it isn't a secret).
+
+Calendar sync in the app asks for calendar access on the native Google screen the first time, using the same consent-screen scope as the web (see [Accounts and sync](#accounts-and-sync-firebase)).
 
 Until then the app hides the Google button and offers email sign-in only.
