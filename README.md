@@ -1,6 +1,6 @@
 # Tasko
 
-A gamified to-do list with a liquid glass look. Runs on the web and as a native iPhone app (see [iPhone app](#iphone-app)).
+A gamified to-do list with a liquid glass look, for the web. There's also an iPhone app, currently on hold (see [iPhone app](#iphone-app)).
 
 **Live app:** https://alexmaxham.github.io/Claude/
 
@@ -107,6 +107,8 @@ src/styles.css   Liquid glass design system
 `src/core` has no DOM or React imports. All state changes go through the pure `reduce(state, action)` function, which returns the new state plus game events (XP, level up, achievement) for the UI to celebrate.
 
 ## iPhone app
+
+> **On hold.** The iPhone app isn't being worked on for now. Its code stays in `ios/` and `src/native.ts`, and the iOS build check only runs when started by hand (Actions → iOS build → Run workflow).
 
 `ios/` is a native iPhone app built with [Capacitor](https://capacitorjs.com). It runs this same web build, so it has the identical liquid glass design, and swaps in native pieces where the web falls short:
 

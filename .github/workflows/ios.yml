@@ -1,10 +1,8 @@
 name: iOS build
 
-# Compiles the iPhone app for the simulator (unsigned) so a change can't break the Xcode build unnoticed.
+# Compiles the iPhone app for the simulator (unsigned) so a change can't break the Xcode build.
+# The iPhone app is on hold, so this only runs when started by hand (Actions → iOS build → Run workflow).
 on:
-  push:
-    paths: ['ios/**', 'src/**', 'capacitor.config.ts', 'package.json', 'package-lock.json', '.github/workflows/ios.yml']
-  pull_request:
   workflow_dispatch:
 
 jobs:
