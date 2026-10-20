@@ -10,7 +10,7 @@ import { ADSENSE, adsEnabled } from '../lib/ads';
 interface Props {
   title: string;
   description: string;
-  nav?: 'home' | 'phones' | 'tablets' | 'compare' | null;
+  nav?: 'home' | 'phones' | 'tablets' | 'finder' | 'compare' | null;
   jsonLd?: object[];
   noindex?: boolean;
   /** Absolute or root-relative URL of an image for link previews. */
@@ -27,6 +27,7 @@ const navItems = [
   { id: 'home', label: 'Browse', href: '/', icon: 'grid_view' },
   { id: 'phones', label: 'Phones', href: '/phones/', icon: 'mobile' },
   { id: 'tablets', label: 'Tablets', href: '/tablets/', icon: 'tablet' },
+  { id: 'finder', label: 'Finder', href: '/finder/', icon: 'tune' },
   { id: 'compare', label: 'Compare', href: '/compare/', icon: 'compare_arrows' },
 ] as const;
 const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_NAME, url: new URL('/', Astro.site).href };
@@ -114,6 +115,8 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
             <a href="/phones/">Phones</a>
             <a href="/tablets/">Tablets</a>
             <a href="/brands/">Brands</a>
+            <a href="/best/">Best of</a>
+            <a href="/finder/">Phone finder</a>
             <a href="/compare/">Compare</a>
             <a href="/about/">About the data</a>
             <a href="/privacy/">Privacy</a>

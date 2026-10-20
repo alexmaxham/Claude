@@ -1,0 +1,181 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import DeviceCard from '../components/DeviceCard.astro';
+import Icon from '../components/Icon.astro';
+import { allDevices } from '../lib/devices';
+import { breadcrumbLd } from '../lib/seo';
+
+const devices = await allDevices();
+const brands = [...new Set(devices.map((d) => d.brand))].sort((a, b) => a.localeCompare(b));
+const crumbs = [{ label: 'Home', href: '/' }, { label: 'Finder' }];
+
+// Single-choice chip rows. The first option of each is the default.
+const chipSets = [
+  { name: 'cat', label: 'Category', options: [['', 'All'], ['phone', 'Phones'], ['tablet', 'Tablets']] },
+  { name: 'form', label: 'Form factor', options: [['', 'Any'], ['bar', 'Bar'], ['book-fold', 'Book foldable'], ['flip', 'Flip']] },
+];
+// Dropdowns: [URL value, label]. An empty value means the filter is off.
+const selects = [
+  { name: 'brand', label: 'Brand', options: [['', 'Any brand'], ...brands.map((b) => [b, b])] },
+  { name: 'price', label: 'Max US launch price', options: [['', 'Any price'], ...[800, 1000, 1200, 1500, 2000].map((n) => [String(n), `Up to $${n.toLocaleString('en-US')}`])] },
+  { name: 'battery', label: 'Min battery', options: [['', 'Any battery'], ...[4500, 5000, 6000, 8000, 10000].map((n) => [String(n), `${n.toLocaleString('en-US')} mAh or more`])] },
+  { name: 'ram', label: 'Min RAM', options: [['', 'Any RAM'], ...[8, 12, 16].map((n) => [String(n), `${n} GB or more`])] },
+  { name: 'charge', label: 'Min wired charging', options: [['', 'Any speed'], ...[25, 45, 65, 90].map((n) => [String(n), `${n} W or more`])] },
+];
+const sizes = [6, 6.5, 6.8, 7, 8, 11, 12, 13, 14];
+const toggles = [
+  { name: 'wireless', label: 'Wireless charging', icon: 'battery_charging_full' },
+  { name: 'ip68', label: 'IP68', icon: 'water_drop' },
+  { name: 'jack', label: 'Headphone jack', icon: 'headphones' },
+  { name: 'sd', label: 'microSD', icon: 'sd_card' },
+];
+const sorts = [
+  { id: 'newest', label: 'Newest' },
+  { id: 'price', label: 'Price' },
+  { id: 'battery', label: 'Battery' },
+  { id: 'weight', label: 'Weight' },
+];
+---
+<Base
+  title="Phone Finder: Filter Phones and Tablets by Spec"
+  description={`Filter ${devices.length} phones and tablets by price, battery, RAM, screen size, charging speed, IP68, headphone jack and microSD. Share any search by its link.`}
+  nav="finder"
+  jsonLd={[breadcrumbLd(crumbs, Astro.site!)]}
+>
+  <Breadcrumbs items={crumbs} />
+  <header class="phead">
+    <h1 class="headline">Phone finder</h1>
+    <p class="muted">Narrow down phones and tablets by the specs you care about. The link updates as you go, so you can share any search.</p>
+  </header>
+
+  <div class="finder" data-finder>
+    <button type="button" class="btn tonal ftoggle" data-panel-toggle aria-expanded="false" aria-controls="finder-panel">
+      <Icon name="tune" size={20} />Filters<span class="fcount num" data-active-count hidden></span>
+    </button>
+    <form class="panel" id="finder-panel" data-panel aria-label="Filters">
+      {chipSets.map((c) => (
+        <fieldset>
+          <legend class="label">{c.label}</legend>
+          <div class="chips">
+            {c.options.map(([v, l]) => (
+              <button type="button" class="chip" data-set={c.name} data-value={v} aria-pressed={v === '' ? 'true' : 'false'}>
+                <Icon name="check" class="check" />{l}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      ))}
+      {selects.map((s) => (
+        <label class="field">
+          <span class="label">{s.label}</span>
+          <select name={s.name}>
+            {s.options.map(([v, l]) => <option value={v}>{l}</option>)}
+          </select>
+        </label>
+      ))}
+      <fieldset>
+        <legend class="label">Screen size</legend>
+        <div class="pair">
+          <label class="field">
+            <span class="muted sub">From</span>
+            <select name="smin">
+              <option value="">Any</option>
+              {sizes.map((n) => <option value={n}>{n}"</option>)}
+            </select>
+          </label>
+          <label class="field">
+            <span class="muted sub">To</span>
+            <select name="smax">
+              <option value="">Any</option>
+              {sizes.map((n) => <option value={n}>{n}"</option>)}
+            </select>
+          </label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="label">Must have</legend>
+        <div class="chips">
+          {toggles.map((t) => (
+            <button type="button" class="chip" data-toggle={t.name} aria-pressed="false">
+              <Icon name="check" class="check" /><Icon name={t.icon} class="when-off" />{t.label}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <button type="button" class="btn outlined" data-clear>Clear filters</button>
+    </form>
+
+    <section class="results" aria-label="Results">
+      <div class="rbar">
+        <p class="count" aria-live="polite" data-count>{devices.length} devices</p>
+        <div class="btngroup" role="group" aria-label="Sort by">
+          {sorts.map((s, i) => (
+            <button type="button" data-sort={s.id} aria-pressed={i === 0 ? 'true' : 'false'}>{s.label}</button>
+          ))}
+        </div>
+      </div>
+      <p class="hidden-note muted" data-hidden-note hidden>
+        <Icon name="info" size={18} /><span data-hidden-text></span>
+      </p>
+      <div class="grid" data-grid>
+        {devices.map((d) => <DeviceCard device={d} />)}
+      </div>
+      <div class="empty" data-empty hidden>
+        <p class="title">No devices match</p>
+        <p class="muted">Try loosening a filter.</p>
+        <button type="button" class="btn outlined" data-clear>Clear filters</button>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<script>
+  import '../scripts/finder';
+</script>
+
+<style>
+  .phead { display: grid; gap: 8px; }
+  .phead p { margin: 0; max-width: 62ch; }
+
+  .finder { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; margin-top: 24px; }
+  .ftoggle { display: none; }
+  .panel { display: grid; gap: 18px; padding: 20px; border-radius: var(--shape-l); background: var(--surface-low); }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+  legend { padding: 0; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip[aria-pressed='true'] :global(.when-off) { display: none; }
+  .field { display: grid; gap: 6px; min-width: 0; }
+  .sub { font-size: 13px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  select { height: 44px; width: 100%; padding: 0 36px 0 14px; border: 1px solid var(--outline-var); border-radius: var(--shape-s); font: inherit; font-size: 15px; color: var(--on-surface); appearance: none; cursor: pointer;
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960' fill='%236f797b'%3E%3Cpath d='M480-360 280-560h400L480-360Z'/%3E%3C/svg%3E") no-repeat right 8px center / 24px; }
+  select:focus-visible { outline: 3px solid var(--primary); outline-offset: 1px; }
+  select.on { border-color: transparent; background-color: var(--secondary-container); color: var(--on-secondary-container); font-weight: 600; }
+  .panel .btn { justify-self: start; height: 40px; }
+
+  .rbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .count { margin: 0; font-size: 16px; font-weight: 700; }
+  .btngroup { display: inline-flex; gap: 2px; flex: none; }
+  .btngroup button { height: 40px; padding: 0 16px; border: 0; background: var(--surface-high); font-size: 14px; font-weight: 600; cursor: pointer; color: var(--on-surface-var); border-radius: var(--shape-xs); transition: border-radius .4s var(--spring), background .2s; }
+  .btngroup button:first-child { border-radius: var(--shape-full) var(--shape-xs) var(--shape-xs) var(--shape-full); }
+  .btngroup button:last-child { border-radius: var(--shape-xs) var(--shape-full) var(--shape-full) var(--shape-xs); }
+  .btngroup button[aria-pressed='true'] { background: var(--primary); color: var(--on-primary); border-radius: var(--shape-full); }
+  .hidden-note { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0 0; font-size: 14px; }
+  .hidden-note :global(.icon) { margin-top: 2px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 16px; }
+  .empty { margin-top: 16px; padding: 48px 24px; text-align: center; border-radius: var(--shape-xl); background: var(--surface-low); display: grid; justify-items: center; gap: 4px; }
+  .empty p { margin: 0; }
+  .empty .btn { margin-top: 12px; }
+
+  @media (max-width: 840px) {
+    .finder { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 16px; }
+    .ftoggle { display: inline-flex; justify-self: start; height: 44px; }
+    .fcount { min-width: 22px; height: 22px; padding: 0 6px; border-radius: var(--shape-full); background: var(--primary); color: var(--on-primary); font-size: 12px; display: grid; place-items: center; }
+    .panel:not(.open) { display: none; }
+    .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  }
+  @media (max-width: 420px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>

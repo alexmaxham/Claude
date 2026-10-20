@@ -1,0 +1,37 @@
+---
+// A link to one "Best of" page, showing who leads it.
+import Icon from './Icon.astro';
+import { fullName } from '../lib/names';
+import { rankingUrl, type Built } from '../lib/rankings';
+
+interface Props {
+  built: Built;
+  /** Use the full page title instead of the short label (when the category isn't clear from context). */
+  long?: boolean;
+}
+const { built, long = false } = Astro.props;
+const { ranking: r, entries } = built;
+const top = entries[0];
+const noun = r.category === 'phone' ? 'phone' : 'tablet';
+---
+<a class="rtile" href={rankingUrl(r)}>
+  <span class="ricon"><Icon name={r.icon} /></span>
+  <span class="rtext">
+    <span class="rname">{long ? r.title : r.short}</span>
+    <span class="rlead muted">
+      {r.kind === 'ranked' ? <>{fullName(top.device)} · <span class="num">{top.value}</span></> : `${entries.length} ${noun}s`}
+    </span>
+  </span>
+  <Icon name="arrow_forward" size={20} class="rgo" />
+</a>
+
+<style>
+  .rtile { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--shape-m); background: var(--surface-c); text-decoration: none; transition: border-radius .4s var(--spring), background .2s; }
+  .rtile:hover { border-radius: var(--shape-l); background: var(--surface-high); }
+  .ricon { flex: none; width: 44px; height: 44px; border-radius: var(--shape-full); display: grid; place-items: center; background: var(--secondary-container); color: var(--on-secondary-container); transition: border-radius .4s var(--spring); }
+  .rtile:hover .ricon { border-radius: var(--shape-s); }
+  .rtext { display: grid; min-width: 0; flex: 1; }
+  .rname { font-weight: 700; font-size: 16px; line-height: 1.25; }
+  .rlead { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rtile :global(.rgo) { color: var(--on-surface-var); }
+</style>

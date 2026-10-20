@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { activeRankings, rankingUrl } from '../lib/rankings';
 import { allDevices, brands, brandSlug, comparePairs, compareSlug, deviceUrl } from '../lib/devices';
 
 export const GET: APIRoute = async ({ site }) => {
@@ -10,9 +11,15 @@ export const GET: APIRoute = async ({ site }) => {
     { path: '/tablets/', lastmod: latest },
     { path: '/compare/', lastmod: latest },
     { path: '/brands/', lastmod: latest },
+    { path: '/best/', lastmod: latest },
+    { path: '/finder/', lastmod: latest },
     { path: '/about/' },
     { path: '/privacy/' },
     ...devices.map((d) => ({ path: deviceUrl(d), lastmod: d.checked })),
+    ...activeRankings(devices).map((b) => ({
+      path: rankingUrl(b.ranking),
+      lastmod: b.entries.reduce((m, e) => (e.device.checked > m ? e.device.checked : m), ''),
+    })),
     ...brands(devices).map(([b]) => ({ path: `/brands/${brandSlug(b)}/` })),
     ...comparePairs(devices).map(([a, b]) => ({
       path: `/compare/${compareSlug(a, b)}/`,
