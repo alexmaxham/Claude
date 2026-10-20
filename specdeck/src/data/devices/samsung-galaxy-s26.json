@@ -1,0 +1,20 @@
+{
+  "name": "Galaxy S26",
+  "brand": "Samsung",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-02",
+  "price": { "amount": 899.99, "currency": "USD" },
+  "art": ["#cfe0e8", "#5d7d8c"],
+  "body": { "dimensions": "149.6 × 71.7 × 7.2 mm", "weight_g": 167, "thickness_mm": 7.2 },
+  "display": { "size_in": 6.3, "type": "Dynamic AMOLED 2X", "resolution": "1080 × 2340", "refresh_hz": 120, "refresh": "Up to 120 Hz", "peak_nits": 2600 },
+  "platform": { "chipset": "Exynos 2600 (most regions), Snapdragon 8 Elite Gen 5 for Galaxy (US, Canada, China)" },
+  "memory": { "ram_gb": [12] },
+  "battery": { "mah": 4300, "wired_w": 25, "wireless_w": 15 },
+  "sources": [
+    "https://news.samsung.com/global/samsung-unveils-galaxy-s26-series-the-most-intuitive-galaxy-ai-phone-yet",
+    "https://www.samsung.com/us/support/answer/ANS10010342/",
+    "https://www.gsmarena.com/samsung_galaxy_s26_5g-14456.php"
+  ],
+  "checked": "2026-10-20"
+}

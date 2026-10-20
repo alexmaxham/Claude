@@ -1,0 +1,21 @@
+{
+  "name": "X300 Ultra",
+  "brand": "vivo",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-03",
+  "released": "2026-04-24",
+  "markets": "China, Europe, Asia",
+  "art": ["#5a6b5e", "#1f2a22"],
+  "display": { "size_in": 6.82, "type": "LTPO AMOLED", "resolution": "1440 × 3168", "refresh_hz": 144, "refresh": "Up to 144 Hz" },
+  "platform": { "chipset": "Snapdragon 8 Elite Gen 5" },
+  "camera": { "main": "200 MP, gimbal stabilization", "ultrawide": "50 MP, OIS", "telephoto": "200 MP, 3.7× periscope" },
+  "battery": { "wired_w": 100 },
+  "sources": [
+    "https://www.gsmarena.com/vivo_x300_ultra_5g-14388.php",
+    "https://www.androidheadlines.com/vivo-x300-ultra",
+    "https://www.techadvisor.com/article/3115917/vivo-x300-ultra-european-launch-and-pricing-revealed.html"
+  ],
+  "checked": "2026-10-20",
+  "notes": "Battery capacity varies by region (6,400 to 7,050 mAh reported) and is left blank until checked."
+}

@@ -1,0 +1,13 @@
+---
+// Inlines a Material Symbols Rounded icon as SVG, so no icon font has to download.
+import { iconPath } from '../lib/icons';
+
+interface Props {
+  name: string;
+  fill?: boolean;
+  size?: number;
+  class?: string;
+}
+const { name, fill = false, size = 24, class: className } = Astro.props;
+---
+<svg class:list={['icon', className]} width={size} height={size} viewBox="0 -960 960 960" aria-hidden="true" fill="currentColor"><path d={iconPath(name, fill)} /></svg>

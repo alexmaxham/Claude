@@ -1,0 +1,24 @@
+{
+  "name": "iPhone Duo",
+  "brand": "Apple",
+  "category": "phone",
+  "formFactor": "book-fold",
+  "announced": "2026-09-09",
+  "released": "2026-10-23",
+  "price": { "amount": 1999, "currency": "USD", "config": "256 GB" },
+  "art": ["#e4e1da", "#8a8478"],
+  "body": { "folded": "11.3 mm thick folded, 5.2 mm unfolded", "weight_g": 254, "thickness_mm": 5.2, "build": "Grade 5 titanium frame", "ip": "IP68" },
+  "display": { "size_in": 7.6, "type": "Foldable OLED", "cover": "5.4\"" },
+  "platform": { "chipset": "Apple A20 Pro" },
+  "memory": { "storage_gb": [256, 512, 1024, 2048] },
+  "camera": { "main": "48 MP", "telephoto": "None" },
+  "battery": { "mah": 4883, "wired_w": 60, "life": "Up to 44 h video on the outer screen (Apple)", "reverse": null },
+  "features": { "biometrics": "No Face ID" },
+  "sources": [
+    "https://www.bgr.com/2254151/apple-iphone-duo-foldable-price-release-date-specs/",
+    "https://www.techrepublic.com/article/news-iphone-duo-cheat-sheet/",
+    "https://www.gsmarena.com/apple_iphone_duo_fold-13804.php"
+  ],
+  "checked": "2026-10-20",
+  "notes": "Supports MagSafe wireless charging; Apple has not given a wattage. Battery capacity is from GSMArena, not Apple."
+}

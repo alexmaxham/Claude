@@ -1,0 +1,25 @@
+{
+  "name": "Galaxy Tab S12 Ultra",
+  "brand": "Samsung",
+  "category": "tablet",
+  "formFactor": "tablet",
+  "announced": "2026-09-30",
+  "released": "2026-10-07",
+  "price": { "amount": 1399.99, "currency": "USD", "config": "12 GB / 256 GB" },
+  "art": ["#c6cad1", "#4c5260"],
+  "body": { "dimensions": "326.3 × 208.5 × 5.1 mm", "weight_g": 692, "thickness_mm": 5.1, "ip": "IP68", "sim": "eSIM (5G models)" },
+  "display": { "size_in": 14.6, "type": "Dynamic AMOLED 2X", "resolution": "2960 × 1848", "ppi": 239, "refresh_hz": 120, "refresh": "Up to 120 Hz", "peak_nits": 1600 },
+  "platform": { "os": "Android 17, One UI 9", "chipset": "MediaTek Dimensity 9500 (3 nm)", "updates": "7 OS upgrades" },
+  "memory": { "ram_gb": [12, 16], "storage_gb": [256, 512, 1024], "card": "microSDXC" },
+  "camera": { "main": "13 MP, f/2.0", "ultrawide": "8 MP, f/2.2", "telephoto": "None" },
+  "selfie": { "main": "12 MP, f/2.4, 120° ultrawide" },
+  "battery": { "mah": 11600, "wired_w": 45 },
+  "connectivity": { "network": "5G (optional)", "wifi": "Wi-Fi 7", "bluetooth": "Bluetooth 6.0" },
+  "features": { "stylus": "S Pen included" },
+  "sources": [
+    "https://www.gsmarena.com/samsung_galaxy_tab_s12_ultra_5g-14811.php",
+    "https://www.notebookcheck.net/Samsung-Galaxy-Tab-S12-Ultra-Reviews-and-Specs.1414870.0.html",
+    "https://www.sammobile.com/news/samsung-galaxy-tab-s12-ultra-everything-to-know/"
+  ],
+  "checked": "2026-10-20"
+}

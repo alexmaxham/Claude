@@ -1,0 +1,20 @@
+{
+  "name": "Galaxy Z Fold8 Ultra",
+  "brand": "Samsung",
+  "category": "phone",
+  "formFactor": "book-fold",
+  "announced": "2026-07-22",
+  "released": "2026-08-07",
+  "art": ["#bfc6cf", "#3f4752"],
+  "body": { "folded": "8.9 mm thick folded, 4.1 mm unfolded", "weight_g": 215, "thickness_mm": 4.1 },
+  "display": { "size_in": 8.0, "type": "Foldable LTPO Dynamic AMOLED 2X", "resolution": "2256 × 2504", "refresh_hz": 120, "refresh": "Up to 120 Hz", "peak_nits": 3000, "cover": "6.5\"" },
+  "camera": { "main": "200 MP", "ultrawide": "50 MP", "telephoto": "10 MP, 3×" },
+  "battery": { "mah": 5000, "wired_w": 45, "wireless_w": 20, "life": "Up to 27 h video (Samsung)" },
+  "sources": [
+    "https://news.samsung.com/global/samsung-galaxy-z-fold8-ultra-fold8-and-flip8foldables-perfected-for-every-way-of-living",
+    "https://www.samsung.com/us/smartphones/galaxy-z-fold8-ultra/",
+    "https://www.gsmarena.com/samsung_galaxy_z_fold8_ultra_5g-14802.php"
+  ],
+  "checked": "2026-10-20",
+  "notes": "US launch price is reported as both $1,899.99 and $2,099.99, so it is left blank until checked."
+}

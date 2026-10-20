@@ -1,0 +1,130 @@
+---
+import Icon from './Icon.astro';
+import { compareTableHtml, COMPARE_ICONS } from '../lib/compare-table';
+import { iconMap } from '../lib/icons';
+import type { Device } from '../lib/schema';
+
+interface Props {
+  /** Devices to render on the server; empty on /compare/, where the browser fills the table in. */
+  devices: Device[];
+  /** Device list for the "Add a device" picker. */
+  all: Device[];
+}
+const { devices, all } = Astro.props;
+const icons = iconMap(COMPARE_ICONS);
+const groups = [
+  { label: 'Phones', list: all.filter((d) => d.category === 'phone') },
+  { label: 'Tablets', list: all.filter((d) => d.category === 'tablet') },
+];
+---
+<div class="cmpbar" data-compare-filled hidden={devices.length === 0}>
+  <label class="switch" for="hide-same">
+    <input type="checkbox" id="hide-same" data-hide-same />
+    Hide identical specs
+  </label>
+</div>
+
+<div class="cmpwrap" data-compare-filled hidden={devices.length === 0} data-compare-root data-initial={devices.map((d) => d.slug).join(',')}>
+  <div class="cmpscroll" data-compare-table>
+    {devices.length > 0 && <Fragment set:html={compareTableHtml(devices, icons, devices.length < 4)} />}
+  </div>
+</div>
+<p class="legend" data-compare-filled hidden={devices.length === 0}>
+  <span><i></i>Best in row: brightest screen, sharpest density, most RAM and storage, biggest battery, fastest charging, lightest and thinnest body.</span>
+  <span class="swipe"><Icon name="swap_horiz" size={18} />Swipe sideways to see every device.</span>
+</p>
+
+<dialog class="picker" data-picker aria-labelledby="picker-title">
+  <form method="dialog" class="picker-inner">
+    <div class="picker-head">
+      <h2 id="picker-title" class="title">Add a device</h2>
+      <button class="iconbtn" value="cancel" aria-label="Close"><Icon name="close" /></button>
+    </div>
+    <label class="sr-only" for="picker-q">Filter devices</label>
+    <input id="picker-q" class="picker-search" type="search" placeholder="Filter by name" autocomplete="off" data-picker-q />
+    <div class="picker-list">
+      {groups.map((g) => (
+        <section>
+          <h3 class="label">{g.label}</h3>
+          <ul>
+            {g.list.map((d) => (
+              <li data-name={`${d.brand} ${d.name}`.toLowerCase()}>
+                <button type="button" data-pick={d.slug}><span class="muted">{d.brand}</span> {d.name}</button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </form>
+</dialog>
+
+<script type="application/json" id="compare-icons" set:html={JSON.stringify(icons)} />
+<script>
+  import '../scripts/compare-page';
+</script>
+
+<style is:global>
+  .cmpbar { display: flex; justify-content: flex-end; margin: -8px 0 12px; }
+  .switch { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--on-surface-var); }
+  .switch input { appearance: none; width: 52px; height: 32px; border-radius: var(--shape-full); background: var(--surface-highest); border: 2px solid var(--outline); position: relative; cursor: pointer; margin: 0; transition: background .2s; }
+  .switch input::after { content: ''; position: absolute; top: 50%; left: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--outline); transform: translateY(-50%); transition: all .35s var(--spring); }
+  .switch input:checked { background: var(--primary); border-color: var(--primary); }
+  .switch input:checked::after { left: 22px; width: 24px; height: 24px; background: var(--on-primary); }
+
+  .cmpwrap { border-radius: var(--shape-xl); background: var(--surface-low); overflow: hidden; }
+  .cmpscroll { overflow-x: auto; }
+  .cmpscroll:empty { display: none; }
+  .ctable { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: calc(200px + var(--cols) * 180px); }
+  .ctable th, .ctable td { text-align: left; vertical-align: top; }
+  .ctable thead td, .ctable thead th { background: var(--surface-c); padding: 16px; }
+  .ctable .corner { width: 200px; vertical-align: bottom; }
+  .ctable .devhead { border-left: 1px solid var(--outline-var); font-weight: 400; }
+  .devhead .mini { position: relative; border-radius: var(--shape-m); background: var(--surface-low); margin-bottom: 8px; }
+  .devhead .devname { display: block; font-size: 17px; font-weight: 700; font-variation-settings: 'wdth' 110; line-height: 1.2; text-decoration: none; }
+  .devhead .devname:hover { text-decoration: underline; }
+  .devhead .x { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border-radius: var(--shape-full); border: 0; background: var(--surface); display: grid; place-items: center; cursor: pointer; color: var(--on-surface-var); }
+  .addslot { width: 100%; min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 2px dashed var(--outline-var); border-radius: var(--shape-l); background: none; color: var(--on-surface-var); cursor: pointer; font-weight: 600; font-size: 14px; transition: border-radius .4s var(--spring), background .2s; }
+  .addslot:hover { border-radius: var(--shape-xl); background: var(--surface-high); }
+  .addslot .icon { width: 28px; height: 28px; }
+  .ctable .sec th { padding: 22px 16px 8px; font-size: 16px; font-weight: 700; font-variation-settings: 'wdth' 110; }
+  .ctable .sec .icon { color: var(--primary); margin-right: 10px; vertical-align: -4px; }
+  .ctable tbody th[scope='row'] { padding: 12px 16px; font-size: 14px; font-weight: 400; color: var(--on-surface-var); border-top: 1px solid var(--outline-var); }
+  .ctable tbody td { padding: 12px 16px; font-size: 14px; border-top: 1px solid var(--outline-var); border-left: 1px solid var(--outline-var); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .ctable td.missing { color: var(--on-surface-var); font-style: italic; }
+  .ctable td.win { background: var(--win-container); }
+  .ctable .best { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: var(--shape-full); background: var(--win); color: var(--on-win); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; vertical-align: 1px; font-style: normal; }
+  .hide-same .same { display: none; }
+  .legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; margin: 12px 0 0; font-size: 13px; color: var(--on-surface-var); }
+  .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; background: var(--win-container); border: 1px solid var(--win); vertical-align: -2px; margin-right: 6px; }
+  .legend .swipe { display: none; align-items: center; gap: 6px; }
+
+  .picker { width: min(520px, calc(100vw - 32px)); max-height: min(640px, calc(100dvh - 48px)); padding: 0; border: 0; border-radius: var(--shape-xl); background: var(--surface-c); color: var(--on-surface); box-shadow: 0 24px 48px -12px rgba(0,0,0,.4); }
+  .picker::backdrop { background: rgba(0,0,0,.4); }
+  .picker[open] { animation: picker-in .45s var(--spring); }
+  @keyframes picker-in { from { transform: scale(.92); opacity: 0; } }
+  .picker-inner { display: flex; flex-direction: column; max-height: inherit; }
+  .picker-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 8px 24px; }
+  .picker-search { margin: 0 16px 8px; height: 48px; padding: 0 20px; border: 0; border-radius: var(--shape-full); background: var(--surface-highest); color: var(--on-surface); font: inherit; }
+  .picker-list { overflow-y: auto; padding: 0 8px 16px; }
+  .picker-list h3 { margin: 12px 16px 4px; }
+  .picker-list ul { list-style: none; margin: 0; padding: 0; }
+  .picker-list button { width: 100%; text-align: left; padding: 12px 16px; border: 0; border-radius: var(--shape-m); background: none; cursor: pointer; font-size: 15px; }
+  .picker-list button:hover, .picker-list button:focus-visible { background: var(--surface-highest); }
+  .picker-list button:disabled { opacity: .45; cursor: default; }
+
+  @media (max-width: 840px) {
+    .cmpwrap { margin-inline: calc(-1 * var(--gutter-l)) calc(-1 * var(--gutter-r)); border-radius: 0; }
+    /* Phones: two devices per screen, each spec label sits above its values. */
+    .ctable { table-layout: auto; min-width: calc(var(--cols) * 150px); }
+    .ctable thead tr, .ctable tbody tr { display: grid; grid-template-columns: repeat(var(--cols), minmax(150px, 1fr)); }
+    .ctable .corner { display: none; }
+    .ctable thead th { padding: 10px; }
+    .ctable .devhead { border-left: 0; border-right: 1px solid var(--outline-var); }
+    .ctable .sec th { grid-column: 1 / -1; padding: 18px 12px 6px; }
+    .ctable tbody th[scope='row'] { grid-column: 1 / -1; padding: 10px 12px 0; font-size: 12px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; }
+    .ctable tbody td { border-top: 0; border-left: 0; padding: 4px 12px 12px; }
+    .ctable tbody td + td { border-left: 1px solid var(--outline-var); }
+    .legend .swipe { display: inline-flex; }
+  }
+</style>

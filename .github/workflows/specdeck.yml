@@ -1,0 +1,25 @@
+name: Specdeck build
+
+# Validates every device file against the schema and builds the site, so a bad edit is caught before it ships.
+on:
+  push:
+    paths: ['specdeck/**', '.github/workflows/specdeck.yml']
+  pull_request:
+    paths: ['specdeck/**', '.github/workflows/specdeck.yml']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: specdeck
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: specdeck/package-lock.json
+      - run: npm ci
+      - run: npm run build

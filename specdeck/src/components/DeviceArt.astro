@@ -1,0 +1,15 @@
+---
+import type { Device } from '../lib/schema';
+import { artHtml } from '../lib/art';
+import { fullName } from '../lib/names';
+
+interface Props {
+  device: Device;
+  /** Height in px of the box the art sits in. */
+  height: number;
+  shape?: boolean;
+  class?: string;
+}
+const { device, height, shape = true, class: className = '' } = Astro.props;
+---
+<Fragment set:html={artHtml(device, height, `Illustration of the ${fullName(device)}`, shape, className)} />

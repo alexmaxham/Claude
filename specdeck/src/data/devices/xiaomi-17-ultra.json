@@ -1,0 +1,22 @@
+{
+  "name": "17 Ultra",
+  "brand": "Xiaomi",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-02-28",
+  "released": "2026-03-10",
+  "price": { "amount": 1499, "currency": "EUR", "config": "16 GB / 512 GB" },
+  "art": ["#3b3d40", "#121314"],
+  "body": { "dimensions": "162.9 × 77.6 × 8.3 mm", "thickness_mm": 8.3 },
+  "display": { "size_in": 6.9, "type": "LTPO OLED", "refresh_hz": 120, "refresh": "Up to 120 Hz" },
+  "platform": { "chipset": "Snapdragon 8 Elite Gen 5" },
+  "memory": { "ram_gb": [16], "storage_gb": [512] },
+  "camera": { "main": "50 MP, 1-inch", "ultrawide": "50 MP", "telephoto": "200 MP, 75–100 mm continuous optical zoom" },
+  "battery": { "mah": 6000, "wired_w": 90, "wireless_w": 50 },
+  "sources": [
+    "https://www.cnbc.com/2026/02/28/xiaomi-17-and-17-ultra-launch-price-specs.html",
+    "https://www.gsmarena.com/xiaomi_17_ultra_5g-14380.php"
+  ],
+  "checked": "2026-10-20",
+  "notes": "Global model. The Chinese version (Dec 2025) has a 6,800 mAh battery."
+}

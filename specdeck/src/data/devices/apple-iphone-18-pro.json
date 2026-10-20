@@ -1,0 +1,23 @@
+{
+  "name": "iPhone 18 Pro",
+  "brand": "Apple",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-09-09",
+  "released": "2026-09-18",
+  "price": { "amount": 1199, "currency": "USD", "config": "256 GB" },
+  "art": ["#a8566a", "#4f1f2c"],
+  "body": { "dimensions": "150.0 × 71.9 × 8.75 mm", "weight_g": 211, "thickness_mm": 8.75, "colors": ["Black", "Silver", "Glacier", "Burgundy"] },
+  "display": { "size_in": 6.3, "type": "Super Retina XDR OLED, ProMotion", "resolution": "1206 × 2622", "ppi": 460, "refresh_hz": 120, "refresh": "Up to 120 Hz", "peak_nits": 3000 },
+  "platform": { "os": "iOS 27", "chipset": "Apple A20 Pro" },
+  "camera": { "main": "48 MP Fusion, variable aperture", "telephoto": "12 MP, 8× (200 mm), f/2.8" },
+  "selfie": { "main": "18 MP Center Stage" },
+  "battery": { "life": "Up to 36 h video (Apple)", "wireless_w": 25 },
+  "sources": [
+    "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
+    "https://support.apple.com/en-us/148590",
+    "https://www.techrepublic.com/article/news-iphone-18-pro-cheat-sheet-2026/"
+  ],
+  "checked": "2026-10-20",
+  "notes": "Apple does not publish battery capacity or RAM. Third-party sources disagree on the telephoto (8× on Apple's spec page, 4× elsewhere)."
+}

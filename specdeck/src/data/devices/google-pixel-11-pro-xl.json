@@ -1,0 +1,22 @@
+{
+  "name": "Pixel 11 Pro XL",
+  "brand": "Google",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-08-12",
+  "released": "2026-08-20",
+  "price": { "amount": 1299, "currency": "USD", "config": "256 GB" },
+  "art": ["#b8c2a4", "#566146"],
+  "body": { "dimensions": "162.7 × 76.5 × 8.5 mm", "weight_g": 226, "thickness_mm": 8.5, "colors": ["Canyon", "Olive", "Fog", "Obsidian"] },
+  "display": { "size_in": 6.8, "type": "LTPO OLED (Super Actua)", "refresh_hz": 120, "refresh": "1–120 Hz" },
+  "platform": { "chipset": "Google Tensor G6" },
+  "camera": { "main": "50 MP, 1/1.3\"", "ultrawide": "48 MP, autofocus", "telephoto": "48 MP, 5×" },
+  "battery": { "mah": 5115, "wired_w": 45, "wireless_w": 25 },
+  "connectivity": { "wifi": "Wi-Fi 7", "bluetooth": "Bluetooth 6" },
+  "sources": [
+    "https://www.t-mobile.com/dialed-in/devices/google-pixel-11-series-specs-sizes-features",
+    "https://www.gsmarena.com/google_pixel_11_pro_xl_5g-14800.php",
+    "https://www.engadget.com/2234879/google-pixel-11-pro-announced-specs-price/"
+  ],
+  "checked": "2026-10-20"
+}

@@ -1,0 +1,192 @@
+---
+import '@fontsource-variable/roboto-flex/wdth.css';
+import '../styles/global.css';
+import Icon from '../components/Icon.astro';
+import { allDevices, deviceUrl, fullName } from '../lib/devices';
+import { cookiePath } from '../lib/art';
+import { SITE_NAME } from '../lib/site';
+
+interface Props {
+  title: string;
+  description: string;
+  nav?: 'home' | 'phones' | 'tablets' | 'compare' | null;
+  jsonLd?: object[];
+  noindex?: boolean;
+}
+const { title, description, nav = null, jsonLd = [], noindex = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;
+const devices = await allDevices();
+// Small index the compare tray and search use on every page.
+const index = devices.map((d) => ({ slug: d.slug, name: fullName(d), url: deviceUrl(d), category: d.category }));
+const navItems = [
+  { id: 'home', label: 'Browse', href: '/', icon: 'grid_view' },
+  { id: 'phones', label: 'Phones', href: '/phones/', icon: 'mobile' },
+  { id: 'tablets', label: 'Tablets', href: '/tablets/', icon: 'tablet' },
+  { id: 'compare', label: 'Compare', href: '/compare/', icon: 'compare_arrows' },
+] as const;
+const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_NAME, url: new URL('/', Astro.site).href };
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="theme-color" content="#f5fafc" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1416" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <script is:inline>
+      // Apply the saved theme before first paint so the page never flashes the wrong one.
+      try {
+        const t = localStorage.getItem('theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch {}
+    </script>
+    {[site, ...jsonLd].map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+    <div class="app">
+      <aside class="rail" aria-label="Main">
+        <a class="logo" href="/" aria-label={`${SITE_NAME} home`}>
+          <svg viewBox="0 0 100 100" width="44" height="44" aria-hidden="true"><path d={cookiePath(9, 0.16, 0.1)} fill="currentColor" /></svg>
+        </a>
+        <a class="fab" href="/compare/" data-compare-link aria-label="Compare selected devices">
+          <Icon name="compare_arrows" />
+          <span class="badge num" data-compare-count hidden>0</span>
+        </a>
+        <nav class="railnav">
+          {navItems.map((n) => (
+            <a class="navi" href={n.href} aria-current={nav === n.id ? 'page' : undefined}>
+              <span class="pill"><Icon name={n.icon} fill={nav === n.id} /></span>
+              {n.label}
+            </a>
+          ))}
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="topbar">
+          <a class="brandname" href="/">{SITE_NAME}</a>
+          <form class="search" action="/" method="get" role="search">
+            <Icon name="search" />
+            <label class="sr-only" for="q">Search devices</label>
+            <input id="q" name="q" type="search" placeholder={`Search ${devices.length} phones and tablets`} autocomplete="off" list="device-names" />
+            <datalist id="device-names">{index.map((d) => <option value={d.name} />)}</datalist>
+          </form>
+          <button class="iconbtn theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" title="Switch theme">
+            <Icon name="dark_mode" class="when-light" />
+            <Icon name="light_mode" class="when-dark" />
+          </button>
+        </header>
+        <main id="content">
+          <slot />
+        </main>
+        <footer class="footer">
+          <p><strong>{SITE_NAME}</strong> lists full specifications for phones and tablets. Specs come from manufacturer pages and launch coverage; each device page links its sources.</p>
+          <nav aria-label="Footer">
+            <a href="/phones/">Phones</a>
+            <a href="/tablets/">Tablets</a>
+            <a href="/brands/">Brands</a>
+            <a href="/compare/">Compare</a>
+            <a href="/about/">About the data</a>
+          </nav>
+        </footer>
+      </div>
+    </div>
+
+    <nav class="bottomnav" aria-label="Main">
+      {navItems.map((n) => (
+        <a class="navi" href={n.href} aria-current={nav === n.id ? 'page' : undefined}>
+          <span class="pill"><Icon name={n.icon} fill={nav === n.id} />{n.id === 'compare' && <span class="badge num" data-compare-count hidden>0</span>}</span>
+          {n.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="tray" data-tray hidden role="region" aria-label="Devices to compare">
+      <ul class="tchips" data-tray-list></ul>
+      <a class="go" href="/compare/" data-compare-link><Icon name="compare_arrows" size={20} />Compare</a>
+    </div>
+    <template id="tray-remove-icon"><Icon name="close" size={16} /></template>
+
+    <script type="application/json" id="device-index" set:html={JSON.stringify(index)} />
+    <script>
+      import '../scripts/theme';
+      import '../scripts/compare-tray';
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .app { display: grid; grid-template-columns: 96px minmax(0, 1fr); min-height: 100vh; }
+  .rail { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; align-items: center; gap: 12px; padding-block: 20px; padding-left: env(safe-area-inset-left, 0px); }
+  .logo { width: 48px; height: 48px; display: grid; place-items: center; color: var(--primary); margin-bottom: 8px; }
+  .fab { position: relative; display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--shape-m); background: var(--tertiary-container); color: var(--on-tertiary-container); transition: border-radius .35s var(--spring), transform .35s var(--spring); }
+  .fab:hover { border-radius: var(--shape-l); }
+  .fab:active { transform: scale(.92); border-radius: 28px; }
+  .badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--shape-full); background: var(--tertiary); color: var(--surface); font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  .railnav { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+  .navi { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--on-surface-var); text-decoration: none; }
+  .navi .pill { position: relative; width: 56px; height: 32px; border-radius: var(--shape-full); display: grid; place-items: center; transition: background .3s var(--std); }
+  .navi:hover .pill { background: var(--surface-high); }
+  .navi[aria-current='page'] { color: var(--on-surface); }
+  .navi[aria-current='page'] .pill { background: var(--secondary-container); color: var(--on-secondary-container); }
+  .navi .badge { top: -6px; right: 4px; }
+
+  .main { min-width: 0; padding-left: 8px; padding-right: var(--gutter-r); padding-bottom: 120px; }
+  .topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; padding-block: 12px; background: var(--surface); }
+  .brandname { display: none; font-weight: 800; font-size: 22px; font-variation-settings: 'wdth' 120; letter-spacing: -.01em; text-decoration: none; color: var(--primary); }
+  .search { flex: 1; max-width: 720px; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 20px; border-radius: var(--shape-full); background: var(--surface-high); color: var(--on-surface-var); }
+  .search:focus-within { outline: 3px solid var(--primary); outline-offset: 2px; }
+  .search input { flex: 1; min-width: 0; border: 0; background: none; font: inherit; color: var(--on-surface); outline: none; }
+  .search input::placeholder { color: var(--on-surface-var); }
+  .theme-toggle { margin-left: auto; width: 48px; height: 48px; background: var(--surface-high); }
+  .theme-toggle:active { border-radius: var(--shape-s); }
+  .when-dark { display: none; }
+  :root[data-theme='dark'] .when-light { display: none; }
+  :root[data-theme='dark'] .when-dark { display: inline-block; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .when-light { display: none; }
+    :root:not([data-theme='light']) .when-dark { display: inline-block; }
+  }
+
+  .footer { margin-top: 64px; padding-block: 24px; border-top: 1px solid var(--outline-var); color: var(--on-surface-var); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+  .footer p { margin: 0; max-width: 60ch; }
+  .footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .footer a { color: var(--on-surface); }
+
+  .bottomnav { display: none; }
+
+  .tray { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 20; display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: var(--shape-full); background: var(--inverse-surface); color: var(--inverse-on); box-shadow: 0 12px 32px -8px rgba(0,0,0,.4); max-width: calc(100vw - 32px); animation: tray-in .5s var(--spring); }
+  @keyframes tray-in { from { transform: translateX(-50%) translateY(120%); } }
+  .tchips { display: flex; gap: 6px; overflow-x: auto; min-width: 0; margin: 0; padding: 0; list-style: none; scrollbar-width: none; }
+  .tchip { flex: none; display: inline-flex; align-items: center; gap: 2px; height: 32px; padding: 0 4px 0 12px; border-radius: var(--shape-full); background: color-mix(in srgb, var(--inverse-on) 16%, transparent); font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .tchip button { width: 26px; height: 26px; border: 0; background: none; color: inherit; cursor: pointer; display: grid; place-items: center; border-radius: 50%; }
+  .go { flex: none; height: 44px; padding: 0 20px; border-radius: var(--shape-full); background: var(--inverse-primary); color: var(--inverse-surface); font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: border-radius .35s var(--spring); }
+  .go:active { border-radius: var(--shape-s); }
+
+  @media (max-width: 840px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .rail { display: none; }
+    .main { padding-left: var(--gutter-l); padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px)); }
+    .topbar { flex-wrap: wrap; gap: 8px; padding-top: calc(8px + env(safe-area-inset-top, 0px)); }
+    .brandname { display: block; }
+    .search { order: 3; flex-basis: 100%; height: 48px; }
+    .theme-toggle { width: 40px; height: 40px; }
+    .bottomnav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; justify-content: space-around; padding: 12px max(8px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); background: var(--surface-c); }
+    .tray { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+    html { scroll-padding-top: 140px; }
+  }
+</style>

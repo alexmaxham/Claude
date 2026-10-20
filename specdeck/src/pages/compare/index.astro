@@ -1,0 +1,52 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CompareView from '../../components/CompareView.astro';
+import Icon from '../../components/Icon.astro';
+import { allDevices, comparePairs, compareSlug, fullName } from '../../lib/devices';
+
+const all = await allDevices();
+const pairs = comparePairs(all).sort((x, y) => Math.max(...y.map((d) => Date.parse(d.announced))) - Math.max(...x.map((d) => Date.parse(d.announced))));
+const crumbs = [{ label: 'Home', href: '/' }, { label: 'Compare' }];
+---
+<Base
+  title="Compare Phones and Tablets Side by Side"
+  description={`Compare up to four phones or tablets spec by spec, with the best value in each row highlighted. ${all.length} devices available.`}
+  nav="compare"
+>
+  <Breadcrumbs items={crumbs} />
+  <header class="chead">
+    <span class="label">Compare</span>
+    <h1 class="headline" data-compare-title>Compare phones and tablets</h1>
+  </header>
+
+  <CompareView devices={[]} all={all} />
+
+  <section class="empty" data-compare-empty>
+    <p class="title">Pick devices to compare</p>
+    <p class="muted">Add up to four phones or tablets. You can also tap + on any device card while browsing.</p>
+    <button type="button" class="btn filled" data-open-picker><Icon name="add" />Add a device</button>
+  </section>
+
+  <section class="pairs" aria-labelledby="h-pairs">
+    <h2 id="h-pairs" class="title">Comparisons people look for</h2>
+    <ul>
+      {pairs.map(([a, b]) => (
+        <li><a href={`/compare/${compareSlug(a, b)}/`}>{fullName(a)} <span class="vs">vs</span> {fullName(b)}</a></li>
+      ))}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .chead { display: grid; gap: 8px; margin-bottom: 20px; }
+  .empty { padding: 40px 24px; text-align: center; border-radius: var(--shape-xl); background: var(--surface-low); display: grid; justify-items: center; gap: 4px; }
+  .empty p { margin: 0; }
+  .empty .btn { margin-top: 16px; }
+  .pairs { margin-top: 48px; }
+  .pairs ul { list-style: none; margin: 12px 0 0; padding: 0; columns: 3 280px; column-gap: 24px; }
+  .pairs li { break-inside: avoid; padding: 6px 0; font-size: 15px; }
+  .pairs a { text-decoration: none; }
+  .pairs a:hover { text-decoration: underline; }
+  .vs { color: var(--on-surface-var); }
+</style>
