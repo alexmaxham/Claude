@@ -43,6 +43,6 @@ export function artHtml(d: ArtDevice, height: number, name: string, shape = true
   const alt = (d.thumb ? name : `Illustration of the ${name}`).replace(/"/g, '&quot;');
   const body = d.thumb
     ? `<img class="photo" src="${d.thumb}" alt="${alt}" style="height:${Math.round(height * 0.84)}px" loading="lazy" decoding="async">`
-    : `<div class="device ${d.formFactor}" style="width:${w}px;height:${h}px;background:linear-gradient(150deg,${d.art[0]},${d.art[1]})" role="img" aria-label="${alt}"></div>`;
+    : `<div class="device ${d.formFactor}" style="width:${w}px;height:${h}px;--c1:${d.art[0]};--c2:${d.art[1]}" role="img" aria-label="${alt}"></div>`;
   return `<div class="art ${className}" style="height:${height}px">${cookie}${body}</div>`;
 }

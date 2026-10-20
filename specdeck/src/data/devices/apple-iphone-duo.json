@@ -7,7 +7,6 @@
   "released": "2026-10-23",
   "price": { "amount": 1999, "currency": "USD", "config": "256 GB" },
   "art": ["#e4e1da", "#8a8478"],
-  "image": { "file": "apple-iphone-duo.webp", "alt": "Apple iPhone Duo unfolded", "credit": "Apple", "source": "https://www.apple.com/iphone-duo/" },
   "body": { "folded": "11.3 mm thick folded, 5.2 mm unfolded", "weight_g": 254, "thickness_mm": 5.2, "build": "Grade 5 titanium frame", "ip": "IP68" },
   "display": { "size_in": 7.6, "type": "Foldable OLED", "cover": "5.4\"" },
   "platform": { "chipset": "Apple A20 Pro" },

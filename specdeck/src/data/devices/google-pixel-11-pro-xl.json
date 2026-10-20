@@ -7,7 +7,6 @@
   "released": "2026-08-20",
   "price": { "amount": 1299, "currency": "USD", "config": "256 GB" },
   "art": ["#b8c2a4", "#566146"],
-  "image": { "file": "google-pixel-11-pro-xl.webp", "alt": "Back of the Google Pixel 11 Pro XL and Pro", "credit": "Google", "source": "https://store.google.com/product/pixel_11_pro?hl=en-US" },
   "body": { "dimensions": "162.7 × 76.5 × 8.5 mm", "weight_g": 226, "thickness_mm": 8.5, "colors": ["Canyon", "Olive", "Fog", "Obsidian"] },
   "display": { "size_in": 6.8, "type": "LTPO OLED (Super Actua)", "refresh_hz": 120, "refresh": "1–120 Hz" },
   "platform": { "chipset": "Google Tensor G6" },

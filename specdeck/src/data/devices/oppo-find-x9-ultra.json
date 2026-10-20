@@ -6,7 +6,6 @@
   "announced": "2026-04-21",
   "released": "2026-05",
   "art": ["#e9e4da", "#8f8572"],
-  "image": { "file": "oppo-find-x9-ultra.webp", "alt": "OPPO Find X9 Ultra", "credit": "OPPO", "source": "https://www.oppo.com/en/smartphones/series-find-x/find-x9-ultra/" },
   "body": { "weight_g": 235 },
   "display": { "size_in": 6.82, "type": "LTPO AMOLED", "resolution": "1440 × 3216" },
   "platform": { "chipset": "Snapdragon 8 Elite Gen 5" },
