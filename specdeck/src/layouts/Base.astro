@@ -12,8 +12,11 @@ interface Props {
   nav?: 'home' | 'phones' | 'tablets' | 'compare' | null;
   jsonLd?: object[];
   noindex?: boolean;
+  /** Absolute or root-relative URL of an image for link previews. */
+  image?: string | null;
 }
-const { title, description, nav = null, jsonLd = [], noindex = false } = Astro.props;
+const { title, description, nav = null, jsonLd = [], noindex = false, image = null } = Astro.props;
+const imageUrl = image ? new URL(image, Astro.site).href : null;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;
 const devices = await allDevices();
@@ -43,7 +46,8 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta name="twitter:card" content="summary" />
+    {imageUrl && <meta property="og:image" content={imageUrl} />}
+    <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap.xml" />
     <script is:inline>

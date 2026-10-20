@@ -1,7 +1,10 @@
 ---
+// The device's product photo when it has one, otherwise the generated illustration.
+import { Image } from 'astro:assets';
 import type { Device } from '../lib/schema';
-import { artHtml } from '../lib/art';
+import { artHtml, cookiePath, seed } from '../lib/art';
 import { fullName } from '../lib/names';
+import { photoFor, photoAlt } from '../lib/images';
 
 interface Props {
   device: Device;
@@ -9,7 +12,33 @@ interface Props {
   height: number;
   shape?: boolean;
   class?: string;
+  /** "eager" for the image at the top of a page. */
+  loading?: 'lazy' | 'eager';
 }
-const { device, height, shape = true, class: className = '' } = Astro.props;
+const { device, height, shape = true, class: className = '', loading = 'lazy' } = Astro.props;
+const photo = photoFor(device);
+const points = device.formFactor === 'tablet' ? 4 : device.formFactor === 'book-fold' ? 6 : 9;
+const shapeSize = Math.round(height * 0.92);
+const imgHeight = Math.round(height * 0.86);
 ---
-<Fragment set:html={artHtml(device, height, `Illustration of the ${fullName(device)}`, shape, className)} />
+{photo ? (
+  <div class={`art ${className}`} style={`height:${height}px`}>
+    {shape && (
+      <svg class="cookie" width={shapeSize} height={shapeSize} viewBox="0 0 100 100" aria-hidden="true">
+        <path d={cookiePath(points, 0.12, (seed(device.slug) % 10) / 10)} fill="currentColor" />
+      </svg>
+    )}
+    <Image
+      class="photo"
+      src={photo}
+      alt={photoAlt(device)}
+      height={imgHeight}
+      densities={[1, 2]}
+      format="webp"
+      loading={loading}
+      fetchpriority={loading === 'eager' ? 'high' : 'auto'}
+    />
+  </div>
+) : (
+  <Fragment set:html={artHtml(device, height, fullName(device), shape, className)} />
+)}

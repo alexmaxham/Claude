@@ -17,6 +17,7 @@ Run these from the `specdeck/` folder.
 | `npm run build` | Check every device file against the schema, then build the site into `dist/` |
 | `npm run preview` | Serve the built site locally |
 | `npm run new-device -- "Brand" "Model" phone` | Create a blank device file to fill in |
+| `npm run add-image -- <slug> <file-or-url> --credit "Brand" --source <url>` | Add a product photo to a device |
 
 The site is hosted on Firebase Hosting in the `specdeck-db` project, at https://specdeck-db.web.app. Canonical links, the sitemap and structured data use that address; set `SITE_URL` when building to use another one (for example a custom domain).
 
@@ -49,6 +50,21 @@ npx firebase-tools deploy --only hosting
 
 The new device then shows up automatically on the home page, its category and brand pages, the compare picker, rival suggestions, the pre-rendered comparisons and the sitemap.
 
+### Adding a product photo
+
+Devices without a photo show a generated illustration. To add one:
+
+```sh
+npm run add-image -- samsung-galaxy-s26-ultra ~/Downloads/s26-ultra.png \
+  --credit "Samsung" --source "https://news.samsung.com/global/..."
+```
+
+The script accepts a local file or an image URL. It caps the longest side at 1,600 px, saves the result as `src/assets/devices/<slug>.webp`, and adds an `image` entry (file, credit, source) to the device's JSON file. Pass `--alt` to override the default alt text, which is the device name.
+
+At build time the photo is resized for each place it appears (cards, device page, compare table, 1× and 2× screens). It also becomes the link-preview image (`og:image`) and the `image` in the device's structured data. The device page shows the credit under the photo, linked to the source.
+
+Use official press images: manufacturers publish them in their newsroom or press kit for editorial use. A transparent or plain light background looks best on the shaped backdrop. Don't use photos from retailers or review sites unless you have permission.
+
 ### Field notes
 
 | Field | Format |
@@ -61,6 +77,7 @@ The new device then shows up automatically on the home page, its category and br
 | `battery.wireless_w` | `0` means no wireless charging, `null` means unknown |
 | `battery.life` | Use when the maker publishes playback time rather than mAh |
 | `display.cover`, `body.folded` | Foldables only |
+| `image` | Written by `npm run add-image`; `file` must exist in `src/assets/devices/` |
 | `verified` | Set to `true` once every value is checked against the manufacturer's own spec sheet. This removes the "compiled from launch coverage" notice |
 
 ### Adding a new spec
