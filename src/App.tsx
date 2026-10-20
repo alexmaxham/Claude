@@ -578,6 +578,7 @@ export default function App() {
           user={cloud.user}
           sync={cloud.sync}
           onSignOut={cloud.signOut}
+          onDeleteAccount={cloud.deleteAccount}
           onClose={() => setSheet(null)}
         />
       )}
@@ -587,7 +588,7 @@ export default function App() {
           state={state}
           user={cloud.user}
           sync={cloud.sync}
-          onSignIn={() => setSheet('account')}
+          onOpenAccount={() => setSheet('account')}
           onSignOut={cloud.signOut}
           onOpenTrophies={() => setSheet('trophies')}
           onClose={() => setSheet(null)}

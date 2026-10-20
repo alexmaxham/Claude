@@ -1,6 +1,13 @@
+/** An error whose message is written for the user and shown as is. */
+export class FriendlyError extends Error {}
+
 /** Human-friendly message for a Firebase auth error, or null to stay silent. */
 export function authErrorMessage(e: unknown): string | null {
+  if (e instanceof FriendlyError) return e.message;
   const code = (e as { code?: string })?.code ?? '';
+  const message = (e as { message?: string })?.message ?? '';
+  // The native Google and Apple sheets report a cancel as an error.
+  if (/cancel|error 1001\b/i.test(message)) return null;
   switch (code) {
     case 'auth/popup-closed-by-user':
     case 'auth/cancelled-popup-request':
@@ -31,6 +38,10 @@ export function authErrorMessage(e: unknown): string | null {
       return 'Your browser blocked the Google popup. Allow popups for this site and try again.';
     case 'auth/operation-not-allowed':
       return 'This sign-in method isn’t enabled in Firebase yet.';
+    case 'auth/requires-recent-login':
+      return 'For security, sign out and sign back in, then try again.';
+    case 'permission-denied':
+      return 'Tasko couldn’t delete your saved data. Please try again later.';
     default:
       return 'Something went wrong. Please try again.';
   }

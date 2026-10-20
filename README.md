@@ -22,7 +22,7 @@ Sign-in (Google or email/password) and cloud sync use Firebase. Until it's confi
 One-time setup:
 
 1. Create a project at https://console.firebase.google.com (Google Analytics not needed).
-2. **Authentication** → Get started → Sign-in method: enable **Google** and **Email/Password**.
+2. **Authentication** → Get started → Sign-in method: enable **Google** and **Email/Password** (and **Apple** for the iPhone app, see below).
 3. **Authentication** → Settings → Authorized domains: add `alexmaxham.github.io`.
 4. **Firestore Database** → Create database (production mode, any region). Open the **Rules** tab, paste the contents of `firestore.rules`, and publish.
 5. **Project settings** → General → Your apps → add a **Web** app. Copy the `firebaseConfig` values into `src/cloud/config.ts` and push.
@@ -40,6 +40,7 @@ How it works:
 - Signing in for the first time keeps anything you did as a guest. If the account already has data, the two are merged: tasks are combined and XP is added together.
 - Changes save about a second after you make them and appear live on your other devices. It works offline and catches up when you reconnect.
 - Signing out removes the account's data from that device.
+- **Account → Delete account** (tap your profile picture → Account) permanently deletes the account and its Firestore document after the user confirms who they are. This needs the current `firestore.rules`, which allow users to delete their own document.
 
 Local testing with the Firebase emulators (needs Java):
 
@@ -78,7 +79,8 @@ VITE_FIREBASE_EMULATORS=true npm run dev
   - 44 achievements (trophies) for totals, streaks, levels, daily goals, on-time and high-priority work, steps, repeating tasks and weekly challenges.
   - Confetti, floating XP, sounds (can be turned off) and haptics (Android, and the Taptic Engine in the iPhone app).
   - Un-checking a task takes back exactly the XP it earned, so you can't farm XP.
-- Optional sign-in with Google or email/password, with sync across devices (see above). Without an account, data stays in the browser.
+- Optional sign-in with Google, Apple (iPhone app) or email/password, with sync across devices (see above), and in-app account deletion. Without an account, data stays in the browser.
+- [Privacy policy](https://alexmaxham.github.io/Claude/privacy.html) (`public/privacy.html`), linked from the sign-in and account screens.
 - Undo after deleting a task. Light and dark mode follow the system. Reduced-motion is respected.
 
 ## Project layout
@@ -105,7 +107,8 @@ src/styles.css   Liquid glass design system
 | Daily reminder | Only while a tab is open | Real iOS notifications for the next 7 days, even when Tasko is closed |
 | Export | File download | Share sheet (Save to Files, AirDrop, Mail…) |
 | Saved data | localStorage | localStorage mirrored to native storage, so iOS clearing web data can't lose it |
-| Google sign-in | Popup | Native Google sign-in (after the setup below) |
+| Google sign-in | Popup | Native Google sign-in |
+| Sign in with Apple | — | Native Apple sign-in |
 | Status bar, launch screen, icon | — | Follows light/dark; launch screen and icon from the Tasko logo |
 
 All native calls live in `src/native.ts`; on the web each one is a no-op or falls back to the browser API.
@@ -117,9 +120,9 @@ npm install
 npm run ios          # builds the web app, syncs it into ios/, opens Xcode
 ```
 
-In Xcode: select the **App** target → **Signing & Capabilities** → pick your Team (a free Apple ID works for your own phone), then choose your iPhone or a simulator and press Run. After changing web code, run `npm run ios:sync` (or `npm run ios` again). Swift packages download on the first build.
+In Xcode: select the **App** target → **Signing & Capabilities** → pick your Team. Sign in with Apple needs a paid Apple Developer Program team; a free personal team can't sign apps with that capability, then choose your iPhone or a simulator and press Run. After changing web code, run `npm run ios:sync` (or `npm run ios` again). Swift packages download on the first build.
 
-The bundle ID is `com.alexmaxham.tasko` (in `capacitor.config.ts` and Xcode). To publish on the App Store you need an Apple Developer account; then **Product → Archive** in Xcode and upload to TestFlight/App Store Connect.
+The bundle ID is `com.alexmaxham.tasko` (in `capacitor.config.ts` and Xcode). The app is iPhone-only (no iPad build). To publish on the App Store you need an Apple Developer account; then **Product → Archive** in Xcode and upload to TestFlight/App Store Connect. Use `https://alexmaxham.github.io/Claude/privacy.html` as the privacy policy URL.
 
 `npm run ios:assets` re-renders the app icon and launch screen from `public/icon-maskable.svg`. The **iOS build** workflow compiles the app for the simulator on every push.
 
@@ -140,4 +143,12 @@ Email/password sign-in and sync work out of the box. Google blocks its sign-in p
 
 Calendar sync in the app asks for calendar access on the native Google screen the first time, using the same consent-screen scope as the web (see [Accounts and sync](#accounts-and-sync-firebase)).
 
-Until then the app hides the Google button and offers email sign-in only.
+Until then the app hides the Google and Apple buttons and offers email sign-in only.
+
+**Sign in with Apple** (App Store guideline 4.8 requires it in apps that offer Google sign-in) uses the same native setup, plus:
+
+1. Firebase console → **Authentication → Sign-in method → Add new provider → Apple** → enable. For an iOS-only setup the Services ID fields can stay empty.
+2. So that deleting an account also revokes Tasko's access to the user's Apple ID (which Apple requires): in the Apple Developer portal → **Keys**, create a key with *Sign in with Apple* enabled for the App ID `com.alexmaxham.tasko`. Then in Firebase's Apple provider settings, under *OAuth code flow configuration*, enter your Apple Team ID, the Key ID and the downloaded private key.
+3. In the Apple Developer portal → **Identifiers → com.alexmaxham.tasko**, make sure *Sign in with Apple* is ticked. Xcode does this automatically when you select a paid team, since the app ships `App/App.entitlements` with the capability.
+
+The Apple button only appears in the iPhone app. Accounts created with it are deleted from the iPhone app, which asks Apple to confirm.

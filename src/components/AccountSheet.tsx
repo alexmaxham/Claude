@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import type { CloudApi, CloudUser } from '../cloud/api';
-import { IOS_GOOGLE_SIGN_IN } from '../cloud/config';
+import { IOS_GOOGLE_SIGN_IN, PRIVACY_URL } from '../cloud/config';
 import { authErrorMessage } from '../cloud/errors';
 import { isNative } from '../native';
 import type { SyncStatus } from '../cloud/useCloudSync';
@@ -12,6 +12,7 @@ interface Props {
   user: CloudUser | null;
   sync: SyncStatus;
   onSignOut: () => Promise<void>;
+  onDeleteAccount: (password?: string) => Promise<void>;
   onClose: () => void;
 }
 
@@ -23,20 +24,31 @@ export const SYNC_LABEL: Record<SyncStatus, string> = {
   error: 'Couldn’t sync. Retrying on your next change.',
 };
 
-export function AccountSheet({ api, user, sync, onSignOut, onClose }: Props) {
+export function AccountSheet({ api, user, sync, onSignOut, onDeleteAccount, onClose }: Props) {
   return (
     <Sheet title={user ? 'Account' : 'Sign in'} onClose={onClose}>
       {user ? (
-        <SignedIn user={user} sync={sync} onSignOut={onSignOut} onClose={onClose} />
+        <SignedIn user={user} sync={sync} onSignOut={onSignOut} onDeleteAccount={onDeleteAccount} onClose={onClose} />
       ) : (
         <SignInForm api={api} />
       )}
+      <a className="privacy-link muted small" href={PRIVACY_URL} target="_blank" rel="noopener">
+        Privacy policy
+      </a>
     </Sheet>
   );
 }
 
-function SignedIn({ user, sync, onSignOut, onClose }: Pick<Props, 'sync' | 'onSignOut' | 'onClose'> & { user: CloudUser }) {
+function SignedIn({
+  user,
+  sync,
+  onSignOut,
+  onDeleteAccount,
+  onClose,
+}: Pick<Props, 'sync' | 'onSignOut' | 'onDeleteAccount' | 'onClose'> & { user: CloudUser }) {
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  if (deleting) return <DeleteAccount user={user} onDelete={onDeleteAccount} onCancel={() => setDeleting(false)} onDone={onClose} />;
   return (
     <div className="form">
       <div className="account-card glass-soft">
@@ -63,7 +75,81 @@ function SignedIn({ user, sync, onSignOut, onClose }: Pick<Props, 'sync' | 'onSi
       >
         {busy ? 'Signing out…' : 'Sign out'}
       </button>
+      <button className="link-btn danger-link" disabled={busy} onClick={() => setDeleting(true)}>
+        Delete account
+      </button>
     </div>
+  );
+}
+
+const CONFIRM_HINT: Record<CloudUser['confirmWith'], string> = {
+  password: 'Enter your password to confirm.',
+  google: 'You’ll confirm with Google.',
+  apple: 'You’ll confirm with Apple.',
+};
+
+function DeleteAccount({
+  user,
+  onDelete,
+  onCancel,
+  onDone,
+}: {
+  user: CloudUser;
+  onDelete: (password?: string) => Promise<void>;
+  onCancel: () => void;
+  onDone: () => void;
+}) {
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const needsPassword = user.confirmWith === 'password';
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      await onDelete(needsPassword ? password : undefined);
+      onDone();
+    } catch (err) {
+      setError(authErrorMessage(err));
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form className="form" onSubmit={submit}>
+      <p className="delete-warning">
+        This permanently deletes your Tasko account <strong>{user.email ?? user.name}</strong> and everything saved to
+        it: tasks, categories, XP, levels and trophies, on every device. It can’t be undone.
+      </p>
+      <p className="muted small">
+        {CONFIRM_HINT[user.confirmWith]} Events Tasko added to your Google Calendar stay there; delete them in Google
+        Calendar if you don’t want them.
+      </p>
+      {needsPassword && (
+        <label className="field">
+          <span>Password</span>
+          <input
+            className="text-input"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </label>
+      )}
+      {error && <p className="auth-error" role="alert">{error}</p>}
+      <div className="form-actions">
+        <button type="button" className="btn" disabled={busy} onClick={onCancel}>
+          Cancel
+        </button>
+        <button type="submit" className="btn danger-fill" disabled={busy}>
+          {busy ? 'Deleting…' : 'Delete forever'}
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -117,6 +203,12 @@ function SignInForm({ api }: { api: CloudApi | null }) {
 
       {mode !== 'reset' && (!isNative || IOS_GOOGLE_SIGN_IN) && (
         <>
+          {isNative && (
+            <button className="btn apple-btn" disabled={busy} onClick={() => run(() => api.signInWithApple())}>
+              {/* U+F8FF is the Apple logo in Apple's system fonts; this button only shows on iOS. */}
+              <span className="apple-mark" aria-hidden="true">{'\uF8FF'}</span> Continue with Apple
+            </button>
+          )}
           <button className="btn google-btn" disabled={busy} onClick={() => run(() => api.signInWithGoogle())}>
             <GoogleLogo /> Continue with Google
           </button>
@@ -207,3 +299,4 @@ function GoogleLogo() {
     </svg>
   );
 }
+

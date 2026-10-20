@@ -278,6 +278,23 @@ input { font: inherit; color: inherit; }
   color: #1f1f1f;
   border-color: rgba(0, 0, 0, 0.12);
 }
+.btn.apple-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 48px;
+  background: #000;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+:root[data-scheme='light'] .btn.apple-btn { border-color: #000; }
+.apple-mark { font-family: -apple-system, system-ui; font-size: 1.2rem; line-height: 1; margin-top: -3px; }
+.btn.danger-fill { background: var(--danger); color: #fff; border-color: transparent; }
+.link-btn.danger-link { color: var(--danger); align-self: center; }
+.delete-warning { margin: 0; line-height: 1.45; }
+.privacy-link { display: block; text-align: center; margin-top: 16px; text-decoration: none; }
+.privacy-link:hover { text-decoration: underline; }
 .divider { display: flex; align-items: center; gap: 12px; color: var(--muted-color); font-size: 0.8rem; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--track); }
 .auth-error, .auth-info { margin: 0; padding: 10px 12px; border-radius: 12px; font-size: 0.88rem; }

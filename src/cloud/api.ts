@@ -4,22 +4,30 @@ import { initializeApp } from 'firebase/app';
 import {
   connectAuthEmulator,
   createUserWithEmailAndPassword,
+  deleteUser,
+  EmailAuthProvider,
   getAuth,
   GoogleAuthProvider,
   indexedDBLocalPersistence,
   initializeAuth,
   linkWithPopup,
+  OAuthProvider,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   reauthenticateWithPopup,
+  revokeAccessToken,
   sendPasswordResetEmail,
   signInWithCredential,
   signInWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
   signOut,
+  updateProfile,
+  type User,
 } from 'firebase/auth';
 import {
   connectFirestoreEmulator,
+  deleteDoc,
   doc,
   initializeFirestore,
   onSnapshot,
@@ -31,6 +39,7 @@ import {
 import type { Task } from '../core/types';
 import { isNative } from '../native';
 import { syncCalendar } from './calendar';
+import { FriendlyError } from './errors';
 import { IOS_GOOGLE_SIGN_IN, type CloudConfig } from './config';
 
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
@@ -40,6 +49,8 @@ export interface CloudUser {
   email: string | null;
   name: string | null;
   photoURL: string | null;
+  /** How the user proves it's them again before deleting the account. */
+  confirmWith: 'password' | 'google' | 'apple';
 }
 
 export interface CloudDoc {
@@ -81,6 +92,20 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
     return credential;
   }
 
+  /** Sign in with Apple through the native sheet (iPhone app only). */
+  async function nativeApple() {
+    if (!IOS_GOOGLE_SIGN_IN) throw new Error('Sign in with Apple isn’t set up in the iPhone app yet.');
+    const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+    const { credential, user } = await FirebaseAuthentication.signInWithApple();
+    if (!credential?.idToken) throw new Error('Sign in with Apple was cancelled.');
+    return {
+      credential: new OAuthProvider('apple.com').credential({ idToken: credential.idToken, rawNonce: credential.nonce }),
+      authorizationCode: credential.authorizationCode,
+      // Apple shares the name only the first time someone signs in.
+      displayName: user?.displayName ?? null,
+    };
+  }
+
   /**
    * An OAuth access token allowed to edit the user's calendar events. Asks Google
    * once (a popup); the token is kept in memory for most of its one-hour life.
@@ -109,9 +134,7 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
 
   return {
     onUser(cb: (user: CloudUser | null) => void) {
-      return onAuthStateChanged(auth, (u) =>
-        cb(u ? { uid: u.uid, email: u.email, name: u.displayName, photoURL: u.photoURL } : null),
-      );
+      return onAuthStateChanged(auth, (u) => cb(u ? toCloudUser(u) : null));
     },
 
     async signInWithGoogle() {
@@ -129,6 +152,13 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
         if ((e as { code?: string }).code === 'auth/popup-blocked') await signInWithRedirect(auth, provider);
         else throw e;
       }
+    },
+
+    /** iPhone app only: Apple requires it next to Google sign-in. */
+    async signInWithApple() {
+      const { credential, displayName } = await nativeApple();
+      const { user } = await signInWithCredential(auth, credential);
+      if (!user.displayName && displayName) await updateProfile(user, { displayName }).catch(() => {});
     },
 
     async signInWithEmail(email: string, password: string) {
@@ -151,6 +181,37 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
         await FirebaseAuthentication.signOut().catch(() => {});
       }
       return signOut(auth);
+    },
+
+    /**
+     * Permanently deletes the account and its saved data. Firebase only allows this
+     * right after signing in, so the user confirms who they are first (`password`
+     * for email accounts). For Apple accounts this also revokes Tasko's access.
+     */
+    async deleteAccount(password?: string) {
+      const user = auth.currentUser;
+      if (!user) throw new Error('You’re not signed in.');
+      const method = toCloudUser(user).confirmWith;
+      if (method === 'apple') {
+        if (!isNative) throw new FriendlyError('Open Tasko on your iPhone to delete an account that uses Sign in with Apple.');
+        const { credential, authorizationCode } = await nativeApple();
+        await reauthenticateWithCredential(user, credential);
+        if (authorizationCode) await revokeAccessToken(auth, authorizationCode).catch(() => {});
+      } else if (method === 'password') {
+        await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email ?? '', password ?? ''));
+      } else if (isNative) {
+        const { idToken, accessToken } = await nativeGoogle();
+        await reauthenticateWithCredential(user, GoogleAuthProvider.credential(idToken, accessToken));
+      } else {
+        await reauthenticateWithPopup(user, new GoogleAuthProvider());
+      }
+      calendarToken = null;
+      await deleteDoc(userDoc(user.uid));
+      await deleteUser(user);
+      if (isNative && IOS_GOOGLE_SIGN_IN) {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        await FirebaseAuthentication.signOut().catch(() => {});
+      }
     },
 
     /** Puts every open task with a due date on the user's Google Calendar (and cleans up old ones). */
@@ -188,4 +249,17 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
       return setDoc(userDoc(uid), { data: json, clientId, updatedAt: serverTimestamp() });
     },
   };
+}
+
+function toCloudUser(u: User): CloudUser {
+  const providers = u.providerData.map((p) => p.providerId);
+  const confirmWith =
+    providers.includes('apple.com') && (isNative || providers.length === 1)
+      ? 'apple'
+      : providers.includes('password')
+        ? 'password'
+        : providers.includes('google.com')
+          ? 'google'
+          : 'apple';
+  return { uid: u.uid, email: u.email, name: u.displayName, photoURL: u.photoURL, confirmWith };
 }
