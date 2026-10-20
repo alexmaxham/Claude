@@ -18,7 +18,7 @@ const config = {
  * turns this on (see README → iPhone app). Until then the app offers email sign-in
  * only, since Google blocks sign-in pages inside embedded web views.
  */
-export const IOS_GOOGLE_SIGN_IN = false;
+export const IOS_GOOGLE_SIGN_IN = true;
 
 export interface CloudConfig {
   options: typeof config;
