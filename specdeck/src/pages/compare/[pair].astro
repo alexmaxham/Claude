@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CompareView from '../../components/CompareView.astro';
+import AdSlot from '../../components/AdSlot.astro';
 import { allDevices, comparePairs, compareSlug, deviceUrl, fullName } from '../../lib/devices';
 import { SECTIONS, visibleRows, bestIndex } from '../../lib/specs';
 import { breadcrumbLd } from '../../lib/seo';
@@ -46,6 +47,7 @@ const title = `${fullName(a)} vs ${fullName(b)}: Specs Compared`;
     {summary && <p class="muted">{summary} Values not yet published by a maker are left out of the ranking.</p>}
   </header>
   <CompareView devices={devices} all={all} />
+  <AdSlot spot="compare" />
   <p class="more muted">
     Full spec sheets: <a href={deviceUrl(a)}>{fullName(a)}</a> · <a href={deviceUrl(b)}>{fullName(b)}</a>
   </p>

@@ -5,6 +5,7 @@ import DeviceArt from '../../components/DeviceArt.astro';
 import DeviceCard from '../../components/DeviceCard.astro';
 import CompareButton from '../../components/CompareButton.astro';
 import Icon from '../../components/Icon.astro';
+import AdSlot from '../../components/AdSlot.astro';
 import {
   allDevices, rivals, deviceUrl, fullName, brandSlug, compareSlug, CATEGORY_PATH, CATEGORY_LABEL,
 } from '../../lib/devices';
@@ -115,6 +116,8 @@ const description = `${name} full specifications: ${[k.display, k.chip, k.batter
     </p>
   )}
 
+  <AdSlot spot="deviceTop" />
+
   <nav class="secnav" aria-label="Spec sections">
     {sections.map((s) => <a class="chip" href={`#${s.id}`}><Icon name={s.icon} />{s.label}</a>)}
   </nav>
@@ -137,6 +140,8 @@ const description = `${name} full specifications: ${[k.display, k.chip, k.batter
       </section>
     ))}
   </div>
+
+  <AdSlot spot="deviceBottom" />
 
   {d.notes && (
     <section class="notes" aria-labelledby="h-notes">

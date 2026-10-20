@@ -5,6 +5,7 @@ import Icon from '../components/Icon.astro';
 import { allDevices, deviceUrl, fullName } from '../lib/devices';
 import Logo from '../components/Logo.astro';
 import { SITE_NAME } from '../lib/site';
+import { ADSENSE, adsEnabled } from '../lib/ads';
 
 interface Props {
   title: string;
@@ -51,6 +52,12 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap.xml" />
+    {adsEnabled() && !noindex && (
+      <>
+        <meta name="google-adsense-account" content={ADSENSE.client} />
+        <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE.client}`} crossorigin="anonymous"></script>
+      </>
+    )}
     <script is:inline>
       // Apply the saved theme before first paint so the page never flashes the wrong one.
       try {
@@ -109,6 +116,7 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
             <a href="/brands/">Brands</a>
             <a href="/compare/">Compare</a>
             <a href="/about/">About the data</a>
+            <a href="/privacy/">Privacy</a>
           </nav>
         </footer>
       </div>

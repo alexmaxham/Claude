@@ -1,6 +1,7 @@
 ---
 import DeviceCard from './DeviceCard.astro';
 import Icon from './Icon.astro';
+import AdSlot from './AdSlot.astro';
 import type { Device } from '../lib/schema';
 
 interface Props {
@@ -69,6 +70,7 @@ const sorts = [
     <p class="muted">Try a shorter search or clear the filters.</p>
     <button type="button" class="btn outlined" data-clear>Clear filters</button>
   </div>
+  <AdSlot spot="listing" />
 </section>
 
 <script>

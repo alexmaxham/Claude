@@ -67,6 +67,19 @@ npm run build && npm run preview
 
 `FIRESTORE_URL=http://localhost:8080 ACCESS_TOKEN=owner node scripts/admin-sync.mjs import` pulls the emulator's saved changes into the repo, as the workflow does.
 
+## Ads (Google AdSense)
+
+Ad spots are built in but switched off. While `client` in `src/lib/ads.ts` is empty, no ad script loads, no spots render, `/ads.txt` is empty and the privacy policy says the site shows no ads.
+
+To switch ads on:
+
+1. Connect a custom domain to Firebase Hosting (AdSense won't approve a `web.app` address), and build with `SITE_URL` set to it.
+2. Add the site in AdSense and wait for approval.
+3. In AdSense, turn on a consent message for the EEA, UK and Switzerland (Privacy & messaging). It loads through the AdSense script, so no code change is needed.
+4. Create a display ad unit for each spot, then fill in `src/lib/ads.ts`: `client` is your publisher ID (`ca-pub-…`), and each `slots` entry is a unit's `data-ad-slot` number.
+
+The spots are below the device grid on listing pages, after the headline specs and after the spec sheet on device pages, and below the table on comparison pages. There are no ads on the admin page or the 404 page. Each spot is labelled "Advertisement" and reserves its height so the page doesn't jump when the ad loads. Once `client` is set, `/ads.txt` and the privacy policy's advertising section fill in automatically.
+
 ## Adding a new phone or tablet from the command line
 
 The admin page is the easiest way. To do the same by hand:
