@@ -5,6 +5,7 @@ import { AccountSheet, Avatar, SYNC_LABEL } from './components/AccountSheet';
 import { CategoryBar, type Filter } from './components/CategoryBar';
 import { CategoryManager } from './components/CategoryManager';
 import { Header } from './components/Header';
+import { LogoMark, Wordmark } from './components/Logo';
 import { ProfileSheet } from './components/ProfileSheet';
 import { QuickAdd } from './components/QuickAdd';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
@@ -349,7 +350,7 @@ export default function App() {
         ? { icon: '📅', text: `Nothing due on ${dayTitle(activeDay)}.` }
         : activeCategory
           ? { icon: activeCategory.emoji, text: `No open quests in ${activeCategory.name}.` }
-          : { icon: '🗺', text: 'Your quest log is empty. Add your first task above to start earning XP!' };
+          : { icon: 'logo', text: 'Your quest log is empty. Add your first task above to start earning XP!' };
 
   const renderTask = (t: Task, draggable: boolean) => (
     <TaskItem
@@ -380,8 +381,9 @@ export default function App() {
 
       <main className={`app ${drag.draggingId ? 'is-dragging' : ''}`}>
         <div className="topbar">
-          <h1>
-            Task<span>o</span>
+          <h1 className="brand">
+            <LogoMark size={34} />
+            <Wordmark />
           </h1>
           <div className="topbar-actions">
             {cloud.status === 'signedIn' && cloud.user ? (
@@ -485,7 +487,9 @@ export default function App() {
 
             {open.length === 0 ? (
               <div className="empty glass-soft">
-                <span className="empty-icon">{done.length && !q ? '🎉' : emptyMessage.icon}</span>
+                <span className="empty-icon">
+                  {done.length && !q ? '🎉' : emptyMessage.icon === 'logo' ? <LogoMark size={56} /> : emptyMessage.icon}
+                </span>
                 <p>{done.length && !q ? 'All clear! Every quest here is done.' : emptyMessage.text}</p>
               </div>
             ) : (
@@ -544,6 +548,7 @@ export default function App() {
         <div className="sheet-backdrop center" onClick={() => setLevelUp(null)}>
           <div className="levelup glass" role="dialog" aria-modal="true" aria-label="Level up" onClick={(e) => e.stopPropagation()}>
             <div className="levelup-glow" />
+            <div className="levelup-mark"><LogoMark size={64} /></div>
             <div className="levelup-kicker">LEVEL UP</div>
             <div className="levelup-num">{levelUp}</div>
             <div className="levelup-title">{levelTitle(levelUp)}</div>

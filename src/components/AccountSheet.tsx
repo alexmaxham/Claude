@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import type { CloudApi, CloudUser } from '../cloud/api';
 import { authErrorMessage } from '../cloud/errors';
 import type { SyncStatus } from '../cloud/useCloudSync';
+import { LogoMark } from './Logo';
 import { Sheet } from './Sheet';
 
 interface Props {
@@ -104,6 +105,9 @@ function SignInForm({ api }: { api: CloudApi | null }) {
 
   return (
     <div className="form">
+      <div className="auth-brand">
+        <LogoMark size={56} />
+      </div>
       <p className="muted small auth-pitch">
         Sign in to back up your quests and progress and sync them across your devices. Anything you’ve done here
         already comes with you.
