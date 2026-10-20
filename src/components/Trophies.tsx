@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { addDays, dayKey } from '../core/dates';
 import { ACHIEVEMENTS, levelFromXp } from '../core/gamification';
-import { THEMES, type Action } from '../core/store';
-import type { Stats, ThemeId } from '../core/types';
+import { isThemeUnlocked, THEMES, type Action } from '../core/store';
+import type { Category, Stats, ThemeId } from '../core/types';
+import { notificationsSupported } from '../useReminders';
 import { Sheet } from './Sheet';
+import { WeeklyChallenges } from './WeeklyChallenges';
 
 export type TrophiesTab = 'trophies' | 'settings';
 
@@ -15,19 +17,22 @@ const TABS: { id: TrophiesTab; label: string; title: string }[] = [
 interface Props {
   initialTab: TrophiesTab;
   stats: Stats;
+  categories: Category[];
   theme: ThemeId;
   soundOn: boolean;
+  reminders: { on: boolean; time: string };
+  onReminders: (r: { on: boolean; time: string }) => void;
   signedIn: boolean;
   onToggleSound: () => void;
   dispatch: (a: Action) => void;
   onClose: () => void;
 }
 
-export function Trophies({ initialTab, stats, theme, soundOn, signedIn, onToggleSound, dispatch, onClose }: Props) {
+export function Trophies({ initialTab, stats, categories, ...settings }: Props) {
   const [tab, setTab] = useState(initialTab);
 
   return (
-    <Sheet title={TABS.find((t) => t.id === tab)!.title} onClose={onClose}>
+    <Sheet title={TABS.find((t) => t.id === tab)!.title} onClose={settings.onClose}>
       <div className="segmented sheet-tabs" role="tablist" aria-label="Section">
         {TABS.map((t) => (
           <button
@@ -46,24 +51,16 @@ export function Trophies({ initialTab, stats, theme, soundOn, signedIn, onToggle
 
       <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`}>
         {tab === 'trophies' ? (
-          <TrophiesPanel stats={stats} />
+          <TrophiesPanel stats={stats} categories={categories} />
         ) : (
-          <SettingsPanel
-            stats={stats}
-            theme={theme}
-            soundOn={soundOn}
-            signedIn={signedIn}
-            onToggleSound={onToggleSound}
-            dispatch={dispatch}
-            onClose={onClose}
-          />
+          <SettingsPanel stats={stats} {...settings} />
         )}
       </div>
     </Sheet>
   );
 }
 
-function TrophiesPanel({ stats }: { stats: Stats }) {
+function TrophiesPanel({ stats, categories }: { stats: Stats; categories: Category[] }) {
   const level = levelFromXp(stats.xp);
   const today = dayKey();
   const week = Array.from({ length: 7 }, (_, i) => addDays(today, i - 6));
@@ -77,6 +74,9 @@ function TrophiesPanel({ stats }: { stats: Stats }) {
         <div className="stat-card glass-soft"><strong>{stats.totalCompleted}</strong><span>Completed</span></div>
         <div className="stat-card glass-soft"><strong>{stats.bestStreak}</strong><span>Best streak</span></div>
       </div>
+
+      <h3>This week’s challenges</h3>
+      <WeeklyChallenges stats={stats} categories={categories} />
 
       <h3>Last 7 days</h3>
       <div className="week glass-soft" role="img" aria-label="Tasks completed over the last 7 days">
@@ -112,26 +112,77 @@ function TrophiesPanel({ stats }: { stats: Stats }) {
   );
 }
 
-function SettingsPanel({ stats, theme, soundOn, signedIn, onToggleSound, dispatch, onClose }: Omit<Props, 'initialTab'>) {
+function SettingsPanel({
+  stats,
+  theme,
+  soundOn,
+  signedIn,
+  reminders,
+  onReminders,
+  onToggleSound,
+  dispatch,
+  onClose,
+}: Omit<Props, 'initialTab' | 'categories'>) {
   const [confirmReset, setConfirmReset] = useState(false);
+  const [notifyError, setNotifyError] = useState<string | null>(null);
+  const level = levelFromXp(stats.xp).level;
+
+  const toggleReminders = async () => {
+    setNotifyError(null);
+    if (reminders.on) return onReminders({ ...reminders, on: false });
+    if (!notificationsSupported()) return setNotifyError('This browser doesn’t support notifications.');
+    const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+    if (permission !== 'granted') return setNotifyError('Notifications are blocked. Allow them for this site in your browser settings.');
+    onReminders({ ...reminders, on: true });
+  };
 
   return (
     <div className="settings glass-soft">
       <div className="setting">
         <span>Color</span>
         <div className="theme-swatches" role="radiogroup" aria-label="App color">
-          {THEMES.map((t) => (
-            <button
-              key={t.id}
-              role="radio"
-              aria-checked={theme === t.id}
-              aria-label={t.name}
-              title={t.name}
-              className={`swatch theme-swatch ${theme === t.id ? 'active' : ''}`}
-              style={{ background: t.color }}
-              onClick={() => dispatch({ type: 'setTheme', theme: t.id })}
+          {THEMES.map((t) => {
+            const locked = !isThemeUnlocked(t.id, level);
+            const label = locked ? `${t.name}, unlocks at level ${t.unlockLevel}` : t.name;
+            return (
+              <button
+                key={t.id}
+                role="radio"
+                aria-checked={theme === t.id}
+                aria-disabled={locked}
+                aria-label={label}
+                title={label}
+                className={`swatch theme-swatch ${theme === t.id ? 'active' : ''} ${locked ? 'locked' : ''}`}
+                style={{ background: t.color }}
+                onClick={() => !locked && dispatch({ type: 'setTheme', theme: t.id })}
+              >
+                {locked && <span className="lock">🔒</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="setting setting-wrap">
+        <span>
+          Daily reminder
+          <span className="muted small" style={{ display: 'block' }}>
+            Lists quests due today. Works while Questlog is open in a tab.
+          </span>
+          {notifyError && <span className="small error-text" style={{ display: 'block' }}>{notifyError}</span>}
+        </span>
+        <div className="reminder-controls">
+          {reminders.on && (
+            <input
+              type="time"
+              className="text-input time-input"
+              value={reminders.time}
+              onChange={(e) => e.target.value && onReminders({ ...reminders, time: e.target.value })}
+              aria-label="Reminder time"
             />
-          ))}
+          )}
+          <button className={`toggle ${reminders.on ? 'on' : ''}`} role="switch" aria-checked={reminders.on} onClick={toggleReminders} aria-label="Daily reminder">
+            <span />
+          </button>
         </div>
       </div>
       <div className="setting">

@@ -4,6 +4,8 @@ import type { AppState, Priority, Stats, Task } from './types';
 export const BASE_XP: Record<Priority, number> = { low: 10, medium: 20, high: 35 };
 export const ON_TIME_BONUS = 5;
 export const GOAL_BONUS = 25;
+/** Extra XP per checked-off subtask when the task is completed. */
+export const SUBTASK_BONUS = 3;
 const STREAK_STEP = 0.05;
 const MAX_STREAK_STEPS = 10; // caps the multiplier at 1.5x
 
@@ -32,6 +34,7 @@ export function nextStreak(stats: Stats, now = Date.now()): number {
 export function xpForTask(task: Task, streak: number, now = Date.now()): number {
   let xp = BASE_XP[task.priority];
   if (task.dueDate && dayKey(now) <= task.dueDate) xp += ON_TIME_BONUS;
+  xp += (task.subtasks?.filter((s) => s.done).length ?? 0) * SUBTASK_BONUS;
   return Math.round(xp * streakMultiplier(streak));
 }
 

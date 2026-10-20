@@ -45,6 +45,15 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 
 - **Quick add:** type and press Enter. Tap ⌄ to add a description or set category, priority and due date. Press `N` anywhere to jump to the input.
 - **Descriptions:** each task can have optional notes. The first two lines show in the list; tap a task to read or edit the rest.
+- **Steps (subtasks):** break a task into a checklist in the editor. Each finished step adds +3 XP when you complete the task.
+- **Repeating tasks:** daily, weekdays, weekly on chosen days, or monthly. Completing one creates the next occurrence; un-completing removes it again.
+- **Search and sort:** search titles, descriptions and steps; sort by smart order, due date, priority, newest, or your own order.
+- **Drag and drop:** drag a task by its ⋮⋮ handle to reorder it, or onto a category to move it. Works with mouse and touch.
+- **Week strip:** the next seven days with a dot per quest due; tap a day to see just those.
+- **Weekly challenges:** three new challenges every Monday for bonus XP, shown in the sidebar and the Trophies tab.
+- **Theme rewards:** Teal, Pink, Gold and Midnight unlock at levels 3, 5, 8 and 12.
+- **Daily reminder:** an optional browser notification at a time you pick, listing what's due. It only fires while Questlog is open in a tab (there's no push server).
+- **Keyboard shortcuts:** `N` add, `/` search, `J`/`K` move, `X` complete, `E` edit, `?` all shortcuts.
 - **Desktop layout:** on wide screens, progress and categories sit in a sticky sidebar and the task list gets the rest of the width.
 - **Color themes:** pick Blue, Orange, Red, Green or Purple under ⚙︎ → Settings (Settings and Trophies are separate tabs). The whole app (backgrounds, buttons, XP bar, confetti) follows it, and it syncs with your account.
 - **Categories:** filter with the tabs. Tap ✏️ Edit to rename, change emoji or color, reorder, add or delete categories. Deleting a category keeps its tasks; they become uncategorized.
