@@ -11,6 +11,7 @@ export const GET: APIRoute = async ({ site }) => {
     { path: '/compare/', lastmod: latest },
     { path: '/brands/', lastmod: latest },
     { path: '/about/' },
+    { path: '/privacy/' },
     ...devices.map((d) => ({ path: deviceUrl(d), lastmod: d.checked })),
     ...brands(devices).map(([b]) => ({ path: `/brands/${brandSlug(b)}/` })),
     ...comparePairs(devices).map(([a, b]) => ({

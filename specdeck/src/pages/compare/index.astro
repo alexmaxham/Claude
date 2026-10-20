@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CompareView from '../../components/CompareView.astro';
 import Icon from '../../components/Icon.astro';
+import AdSlot from '../../components/AdSlot.astro';
 import { allDevices, comparePairs, compareSlug, fullName } from '../../lib/devices';
 
 const all = await allDevices();
@@ -27,6 +28,8 @@ const crumbs = [{ label: 'Home', href: '/' }, { label: 'Compare' }];
     <p class="muted">Add up to four phones or tablets. You can also tap + on any device card while browsing.</p>
     <button type="button" class="btn filled" data-open-picker><Icon name="add" />Add a device</button>
   </section>
+
+  <AdSlot spot="compare" />
 
   <section class="pairs" aria-labelledby="h-pairs">
     <h2 id="h-pairs" class="title">Comparisons people look for</h2>

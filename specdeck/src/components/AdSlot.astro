@@ -1,0 +1,33 @@
+---
+// One AdSense display unit. Renders nothing until ads are configured in src/lib/ads.ts.
+import { ADSENSE, adsEnabled, type AdSpot } from '../lib/ads';
+
+interface Props {
+  spot: AdSpot;
+}
+const { spot } = Astro.props;
+const slot = ADSENSE.slots[spot];
+const show = adsEnabled() && /^\d+$/.test(slot);
+---
+{show && (
+  <aside class="ad" aria-label="Advertisement">
+    <span class="ad-label">Advertisement</span>
+    <ins
+      class="adsbygoogle"
+      style="display:block"
+      data-ad-client={ADSENSE.client}
+      data-ad-slot={slot}
+      data-ad-format="auto"
+      data-full-width-responsive="true"
+    ></ins>
+    <script is:inline>(window.adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+)}
+
+<style>
+  /* Space is reserved up front so the page doesn't jump when the ad loads. */
+  .ad { margin: 32px 0; display: grid; gap: 6px; }
+  .ad-label { font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--on-surface-var); }
+  .ad ins { min-height: 250px; border-radius: var(--shape-m); background: var(--surface-low); overflow: hidden; }
+  @media (min-width: 841px) { .ad ins { min-height: 120px; } }
+</style>
