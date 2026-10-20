@@ -27,10 +27,10 @@ export function seed(s: string): number {
   return h;
 }
 
-type ArtDevice = { slug: string; formFactor: keyof typeof SILHOUETTE; art: [string, string] };
+type ArtDevice = { slug: string; formFactor: keyof typeof SILHOUETTE; art: [string, string]; thumb?: string | null };
 
 /** The device illustration as an HTML string, so pages and browser scripts render it the same way. */
-export function artHtml(d: ArtDevice, height: number, label: string, shape = true, className = ''): string {
+export function artHtml(d: ArtDevice, height: number, name: string, shape = true, className = ''): string {
   const base = SILHOUETTE[d.formFactor];
   const scale = (height * 0.74) / base.h;
   const w = Math.round(base.w * scale);
@@ -40,5 +40,9 @@ export function artHtml(d: ArtDevice, height: number, label: string, shape = tru
   const cookie = shape
     ? `<svg class="cookie" width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true"><path d="${cookiePath(points, 0.12, (seed(d.slug) % 10) / 10)}" fill="currentColor"/></svg>`
     : '';
-  return `<div class="art ${className}" style="height:${height}px">${cookie}<div class="device ${d.formFactor}" style="width:${w}px;height:${h}px;background:linear-gradient(150deg,${d.art[0]},${d.art[1]})" role="img" aria-label="${label.replace(/"/g, '&quot;')}"></div></div>`;
+  const alt = (d.thumb ? name : `Illustration of the ${name}`).replace(/"/g, '&quot;');
+  const body = d.thumb
+    ? `<img class="photo" src="${d.thumb}" alt="${alt}" style="height:${Math.round(height * 0.86)}px" loading="lazy" decoding="async">`
+    : `<div class="device ${d.formFactor}" style="width:${w}px;height:${h}px;background:linear-gradient(150deg,${d.art[0]},${d.art[1]})" role="img" aria-label="${alt}"></div>`;
+  return `<div class="art ${className}" style="height:${height}px">${cookie}${body}</div>`;
 }

@@ -13,7 +13,7 @@ export function compareTableHtml(devices: Device[], icons: Record<string, string
   const head = devices
     .map(
       (d) => `<th scope="col" class="devhead">
-        <div class="mini">${artHtml(d, 104, `Illustration of the ${fullName(d)}`)}
+        <div class="mini">${artHtml(d, 104, fullName(d))}
           <button type="button" class="x" data-remove="${d.slug}" aria-label="Remove ${esc(fullName(d))}">${icons.close}</button>
         </div>
         <span class="label">${esc(d.brand)}</span>

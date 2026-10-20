@@ -32,6 +32,18 @@ export const deviceSchema = z.object({
     .default(null),
   /** Two colors for the generated device illustration: highlight, then shadow. */
   art: z.tuple([hex, hex]),
+  /** Product photo in src/assets/devices/. Without one, the generated illustration is shown. */
+  image: z
+    .object({
+      file: z.string().regex(/^[a-z0-9-]+\.(jpg|jpeg|png|webp|avif)$/, 'A file name in src/assets/devices/, e.g. "google-pixel-11-pro.webp"'),
+      alt: z.string().optional(),
+      /** Who owns the photo, shown under it, e.g. "Samsung". */
+      credit: z.string().min(1),
+      /** Where the photo came from (a press kit or newsroom page). */
+      source: z.string().url(),
+    })
+    .nullable()
+    .default(null),
 
   body: z
     .object({
@@ -111,4 +123,8 @@ export const deviceSchema = z.object({
 });
 
 export type DeviceData = z.infer<typeof deviceSchema>;
-export type Device = DeviceData & { slug: string };
+export type Device = DeviceData & {
+  slug: string;
+  /** URL of a small optimized photo, added at build time for the compare table. */
+  thumb?: string | null;
+};

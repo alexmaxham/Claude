@@ -99,3 +99,6 @@ img, svg { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Product photos sit on the same shape as the illustrations and keep their own aspect ratio. */
+.art .photo { position: relative; width: auto; height: auto; max-width: 92%; max-height: 86%; object-fit: contain; filter: drop-shadow(0 16px 20px rgba(0,0,0,.22)); }

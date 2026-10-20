@@ -10,6 +10,7 @@ import {
 } from '../../lib/devices';
 import { SECTIONS, visibleRows, keySpecs, describe, completeness, formatDate, ppi, NOT_CONFIRMED } from '../../lib/specs';
 import { breadcrumbLd } from '../../lib/seo';
+import { shareImageUrl } from '../../lib/images';
 import type { Device } from '../../lib/schema';
 
 export async function getStaticPaths() {
@@ -37,6 +38,7 @@ const crumbs = [
 ];
 const sections = SECTIONS.map((s) => ({ ...s, rows: visibleRows(s, [d]) }));
 
+const shareImage = await shareImageUrl(d);
 const product = {
   '@context': 'https://schema.org',
   '@type': 'Product',
@@ -46,6 +48,7 @@ const product = {
   description: summary,
   url: new URL(deviceUrl(d), Astro.site).href,
   releaseDate: d.released ?? d.announced,
+  ...(shareImage ? { image: new URL(shareImage, Astro.site).href } : {}),
   additionalProperty: sections.flatMap((s) =>
     s.rows
       .map((r) => ({ r, v: r.value(d) }))
@@ -64,7 +67,7 @@ const ppiValue = ppi(d);
 const title = `${name} Specs`;
 const description = `${name} full specifications: ${[k.display, k.chip, k.battery, k.camera && `${k.camera} camera`].filter(Boolean).join(', ')}. ${summary.split('. ')[0]}.`;
 ---
-<Base title={title} description={description} nav={CATEGORY_PATH[d.category] as 'phones' | 'tablets'} jsonLd={[product, breadcrumbLd(crumbs, Astro.site!)]}>
+<Base title={title} description={description} nav={CATEGORY_PATH[d.category] as 'phones' | 'tablets'} jsonLd={[product, breadcrumbLd(crumbs, Astro.site!)]} image={shareImage}>
   <Breadcrumbs items={crumbs} />
 
   <div class="dhero">
@@ -81,9 +84,14 @@ const description = `${name} full specifications: ${[k.display, k.chip, k.batter
         )}
       </div>
     </div>
-    <div class="dart">
-      <DeviceArt device={d} height={260} />
-    </div>
+    <figure class="dart">
+      <DeviceArt device={d} height={260} loading="eager" />
+      {d.image && (
+        <figcaption>
+          Image: <a href={d.image.source} rel="nofollow noopener" target="_blank">{d.image.credit}</a>
+        </figcaption>
+      )}
+    </figure>
   </div>
 
   <div class="tiles">
@@ -168,7 +176,9 @@ const description = `${name} full specifications: ${[k.display, k.chip, k.batter
   .h1-sub { display: block; font-size: .5em; font-weight: 600; letter-spacing: 0; color: var(--on-surface-var); margin-top: 6px; }
   .summary { margin: 0; max-width: 62ch; color: var(--on-surface-var); }
   .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
-  .dart { min-height: 260px; border-radius: var(--shape-xl); background: var(--primary-container); overflow: hidden; display: grid; place-items: center; }
+  .dart { position: relative; margin: 0; min-height: 260px; border-radius: var(--shape-xl); background: var(--primary-container); overflow: hidden; display: grid; place-items: center; }
+  .dart figcaption { position: absolute; right: 16px; bottom: 12px; font-size: 12px; color: var(--on-primary-container); opacity: .75; }
+  .dart figcaption a { color: inherit; }
   .dart :global(.cookie) { color: color-mix(in srgb, var(--primary) 22%, var(--primary-container)); }
 
   .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
