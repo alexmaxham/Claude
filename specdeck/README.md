@@ -1,5 +1,7 @@
 # SpecAtlas
 
+Planned work and the owner's decisions are in [ROADMAP.md](ROADMAP.md).
+
 A spec database for phones and tablets, built with [Astro](https://astro.build) as a fully static site and styled with Material 3 Expressive.
 
 - Every device gets its own page with the full spec sheet, structured data (`Product`, `BreadcrumbList`) and a canonical URL.
