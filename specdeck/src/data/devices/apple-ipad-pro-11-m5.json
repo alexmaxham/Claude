@@ -1,0 +1,27 @@
+{
+  "name": "iPad Pro 11\" (M5)",
+  "brand": "Apple",
+  "category": "tablet",
+  "formFactor": "tablet",
+  "announced": "2025-10-15",
+  "released": "2025-10-22",
+  "price": { "amount": 999, "currency": "USD", "config": "256 GB, Wi-Fi" },
+  "art": ["#5b5d62", "#1c1d20"],
+  "image": { "file": "apple-ipad-pro-11-m5.webp", "alt": "Apple iPad Pro (M5) in Space Black, back and front", "credit": "Apple", "source": "https://www.apple.com/ipad-pro/" },
+  "body": { "dimensions": "249.7 × 177.5 × 5.3 mm", "weight_g": 444, "thickness_mm": 5.3, "build": "Aluminum unibody", "colors": ["Space Black", "Silver"] },
+  "display": { "size_in": 11.1, "type": "Ultra Retina XDR, tandem OLED", "resolution": "2420 × 1668", "ppi": 264, "refresh": "10–120 Hz ProMotion", "refresh_hz": 120, "peak_nits": 1600, "protection": "Optional nano-texture glass" },
+  "platform": { "os": "iPadOS 26", "chipset": "Apple M5", "cpu": "9-core (256 GB, 512 GB) or 10-core (1 TB, 2 TB)", "gpu": "10-core Apple GPU" },
+  "memory": { "ram_gb": [12, 16], "storage_gb": [256, 512, 1024, 2048], "card": "No" },
+  "camera": { "main": "12 MP, f/1.8, LiDAR scanner", "ultrawide": "None", "telephoto": "None", "video": "4K 60 fps, ProRes" },
+  "selfie": { "main": "12 MP Center Stage, landscape", "video": "1080p 60 fps" },
+  "battery": { "life": "Up to 10 h web browsing on Wi-Fi (Apple)" },
+  "connectivity": { "network": "5G (cellular models, Apple C1X)", "wifi": "Wi-Fi 7 (Apple N1)", "bluetooth": "Bluetooth 6", "nfc": false, "usb": "Thunderbolt / USB 4" },
+  "features": { "biometrics": "Face ID", "speakers": "Four speakers", "jack": false, "stylus": "Apple Pencil Pro (sold separately)" },
+  "sources": [
+    "https://en.wikipedia.org/wiki/IPad_Pro_(M5)",
+    "https://www.phonearena.com/ipad-pro-m5-release-date-price-features-news",
+    "https://www.techradar.com/tablets/ipad/ipad-pro-m5-review"
+  ],
+  "checked": "2026-10-20",
+  "notes": "Released in October 2025; listed alongside the 2026 tablets as Apple's current iPad Pro. 12 GB of RAM with 256 GB or 512 GB storage, 16 GB with 1 TB or 2 TB."
+}
