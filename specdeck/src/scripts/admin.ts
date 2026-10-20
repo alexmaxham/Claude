@@ -219,8 +219,10 @@ if (root) {
       if (!data.price.config) delete data.price.config;
     }
     if (!data.notes) delete data.notes;
+    if (!data.rumored?.length) delete data.rumored;
     delete data.slug;
     delete data.thumb;
+    delete data.scaleImage;
     return data;
   }
 
@@ -236,8 +238,8 @@ if (root) {
     const general: string[] = [];
     let first: HTMLElement | null = null;
     for (const { path, message } of list) {
-      // Errors on a whole group (e.g. "price") attach to its first field.
-      const key = [...labels.keys()].find((p) => p === path || p.startsWith(path + '.')) ?? null;
+      // Errors on a whole group (e.g. "price") attach to its first field; errors on a list item (e.g. "rumored.1") to the list.
+      const key = [...labels.keys()].find((p) => p === path || p.startsWith(path + '.') || path.startsWith(p + '.')) ?? null;
       const slot = key ? form.querySelector<HTMLElement>(`[data-error-for="${key}"]`) : null;
       if (slot) {
         slot.textContent = message;

@@ -50,12 +50,12 @@ async function list(collection) {
   }));
 }
 
-const KEY_ORDER = ['name', 'brand', 'category', 'formFactor', 'announced', 'released', 'status', 'markets', 'price', 'art', 'image',
+const KEY_ORDER = ['name', 'brand', 'category', 'formFactor', 'announced', 'released', 'status', 'rumored', 'markets', 'price', 'art', 'image',
   'body', 'display', 'platform', 'memory', 'camera', 'selfie', 'battery', 'connectivity', 'features', 'sources', 'checked', 'verified', 'notes'];
 
 /** Writes a device file with its keys in the same order as hand-written ones. */
 function writeDevice(slug, device) {
-  const { slug: _s, thumb: _t, ...rest } = device;
+  const { slug: _s, thumb: _t, scaleImage: _i, ...rest } = device;
   const ordered = Object.fromEntries([
     ...KEY_ORDER.filter((k) => k in rest).map((k) => [k, rest[k]]),
     ...Object.entries(rest).filter(([k]) => !KEY_ORDER.includes(k)),

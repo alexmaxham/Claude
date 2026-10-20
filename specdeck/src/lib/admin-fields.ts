@@ -30,6 +30,10 @@ export const FIELD_GROUPS: FieldGroup[] = [
       { path: 'announced', label: 'Announced', required: true, placeholder: '2026-09-09', hint: 'YYYY-MM-DD, or YYYY-MM if the day is unknown.' },
       { path: 'released', label: 'Released', placeholder: '2026-09-18', hint: 'YYYY-MM-DD or YYYY-MM.' },
       { path: 'status', label: 'Status', type: 'select', options: [['available', 'Available'], ['upcoming', 'Upcoming'], ['discontinued', 'Discontinued']] },
+      {
+        path: 'rumored', label: 'Rumoured specs', type: 'texts', placeholder: 'price, capacity, chipset',
+        hint: 'Spec rows whose values are rumours, not from the maker. Use row keys, separated by commas; saving lists the valid keys if one is wrong.',
+      },
       { path: 'markets', label: 'Markets', placeholder: 'China only', hint: 'Leave empty if sold worldwide.' },
     ],
   },

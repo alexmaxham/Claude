@@ -89,6 +89,10 @@ img, svg { max-width: 100%; }
 .chip .check { display: none; }
 .chip[aria-pressed='true'] .check { display: inline-block; }
 
+/* Status tags: an upcoming device, and a value that is a rumour rather than published by the maker. */
+.upbadge { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: var(--shape-full); background: var(--tertiary-container); color: var(--on-tertiary-container); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; vertical-align: 1px; }
+.rumor { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: var(--shape-full); border: 1px dashed var(--outline); color: var(--on-surface-var); font-size: 11px; font-weight: 650; font-style: normal; letter-spacing: .03em; vertical-align: 1px; white-space: nowrap; }
+
 /* Device illustration: a front view drawn like a press render, for devices without one.
    --c1 and --c2 are the device's two art colors (see the device JSON). */
 .art { position: relative; width: 100%; display: grid; place-items: center; overflow: hidden; }

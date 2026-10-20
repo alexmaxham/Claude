@@ -1,0 +1,59 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import DeviceCard from '../components/DeviceCard.astro';
+import Icon from '../components/Icon.astro';
+import { allDevices, fullName } from '../lib/devices';
+import { RUMORED } from '../lib/specs';
+import { breadcrumbLd } from '../lib/seo';
+
+// Soonest first.
+const upcoming = (await allDevices())
+  .filter((d) => d.status === 'upcoming')
+  .sort((a, b) => a.announced.localeCompare(b.announced) || a.name.localeCompare(b.name));
+const crumbs = [{ label: 'Home', href: '/' }, { label: 'Upcoming' }];
+const names = upcoming.map(fullName);
+---
+<Base
+  title="Upcoming Phones and Tablets"
+  description={upcoming.length
+    ? `Announced and rumoured phones and tablets not yet on sale: ${names.slice(0, 5).join(', ')}${names.length > 5 ? ' and more' : ''}.`
+    : 'Announced and rumoured phones and tablets that are not on sale yet.'}
+  noindex={upcoming.length === 0}
+  jsonLd={[breadcrumbLd(crumbs, Astro.site!)]}
+>
+  <Breadcrumbs items={crumbs} />
+  <header class="phead">
+    <h1 class="headline">Upcoming</h1>
+    <p class="muted">Phones and tablets that have been announced or are expected soon but aren't on sale yet, soonest first. Values that come from leaks and reports rather than the maker are marked <span class="rumor">{RUMORED}</span>.</p>
+  </header>
+  {upcoming.length ? (
+    <div class="grid">
+      {upcoming.map((d) => <DeviceCard device={d} />)}
+    </div>
+  ) : (
+    <div class="empty">
+      <Icon name="event_upcoming" size={40} />
+      <p class="title">Nothing upcoming right now</p>
+      <p class="muted">New devices show up here once they're announced or credibly reported.</p>
+      <a class="btn filled" href="/">Browse devices</a>
+    </div>
+  )}
+</Base>
+
+<style>
+  .phead { display: grid; gap: 8px; margin-bottom: 24px; }
+  .phead p { margin: 0; max-width: 66ch; }
+  .phead .rumor { margin-left: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .empty { padding: 48px 24px; text-align: center; border-radius: var(--shape-xl); background: var(--surface-low); display: grid; justify-items: center; gap: 4px; }
+  .empty > :global(.icon) { color: var(--tertiary); margin-bottom: 8px; }
+  .empty p { margin: 0; }
+  .empty .btn { margin-top: 16px; }
+  @media (max-width: 840px) {
+    .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  }
+  @media (max-width: 420px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>

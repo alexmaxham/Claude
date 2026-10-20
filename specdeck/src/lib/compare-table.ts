@@ -1,5 +1,5 @@
 import type { Device } from './schema';
-import { SECTIONS, visibleRows, bestIndex, NOT_CONFIRMED } from './specs';
+import { SECTIONS, visibleRows, bestIndex, isRumored, NOT_CONFIRMED, RUMORED } from './specs';
 import { artHtml } from './art';
 import { deviceUrl, fullName } from './names';
 
@@ -35,7 +35,8 @@ export function compareTableHtml(devices: Device[], icons: Record<string, string
           .map((v, i) => {
             const cls = [i === best ? 'win' : '', v === null ? 'missing' : ''].filter(Boolean).join(' ');
             const badge = i === best ? '<span class="best">Best</span>' : '';
-            return `<td${cls ? ` class="${cls}"` : ''}>${badge}${esc(v ?? NOT_CONFIRMED)}</td>`;
+            const rumor = v !== null && isRumored(devices[i], r.key) ? ` <span class="rumor">${RUMORED}</span>` : '';
+            return `<td${cls ? ` class="${cls}"` : ''}>${badge}${esc(v ?? NOT_CONFIRMED)}${rumor}</td>`;
           })
           .join('');
         return `<tr${same ? ' class="same"' : ''}><th scope="row">${esc(r.label)}</th>${cells}${canAdd ? '<td class="pad"></td>' : ''}</tr>`;

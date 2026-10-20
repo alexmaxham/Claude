@@ -1,4 +1,5 @@
 import { z } from 'astro/zod';
+import { SPEC_KEYS } from './specs';
 
 // One JSON file in src/data/devices/ per device, validated against this schema at build time.
 // Unknown values are null (shown as "Not confirmed" on the site), never guessed.
@@ -19,6 +20,11 @@ export const deviceSchema = z.object({
   announced: date,
   released: date.nullable().default(null),
   status: z.enum(['available', 'upcoming', 'discontinued']).default('available'),
+  /**
+   * Spec rows whose values are rumours rather than published by the maker, by row key (see specs.ts),
+   * e.g. ["price", "capacity"]. For devices not yet announced, include "announced" when its date is expected, not confirmed.
+   */
+  rumored: z.array(z.enum(SPEC_KEYS)).default([]),
   /** Where it is sold, when that is narrower than worldwide (e.g. "China only"). */
   markets: text,
   price: z
@@ -127,4 +133,6 @@ export type Device = DeviceData & {
   slug: string;
   /** URL of a small optimized photo, added at build time for the compare table. */
   thumb?: string | null;
+  /** The product render placed to scale, for the size comparison. Added at build time. */
+  scaleImage?: { src: string; x: number; y: number; w: number; h: number } | null;
 };

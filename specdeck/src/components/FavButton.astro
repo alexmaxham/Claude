@@ -1,0 +1,36 @@
+---
+// Saves a device to the visitor's favourites (kept in this browser only; see scripts/favorites.ts).
+import Icon from './Icon.astro';
+import { fullName } from '../lib/names';
+import type { Device } from '../lib/schema';
+
+interface Props {
+  device: Device;
+  /** "icon" for cards, "full" for the device page header. */
+  variant?: 'icon' | 'full';
+}
+const { device, variant = 'icon' } = Astro.props;
+---
+{variant === 'icon' ? (
+  <button type="button" class="favbtn" data-fav-toggle={device.slug} aria-pressed="false" aria-label={`Save ${fullName(device)} to favourites`}>
+    <Icon name="favorite" class="off" />
+    <Icon name="favorite" fill class="on" />
+  </button>
+) : (
+  <button type="button" class="btn tonal favfull" data-fav-toggle={device.slug} data-labelled aria-pressed="false">
+    <Icon name="favorite" class="off" />
+    <Icon name="favorite" fill class="on" />
+    <span class="off">Save</span>
+    <span class="on">Saved</span>
+  </button>
+)}
+
+<style>
+  .favbtn { flex: none; position: relative; z-index: 2; width: 40px; height: 40px; border-radius: var(--shape-full); border: 1px solid var(--outline-var); background: var(--surface); display: grid; place-items: center; cursor: pointer; color: var(--on-surface-var); transition: border-radius .35s var(--spring), background .2s, transform .35s var(--spring); }
+  .favbtn:hover { transform: scale(1.06); }
+  .favbtn > :global(.icon) { grid-area: 1 / 1; }
+  .favbtn[aria-pressed='true'] { border-color: transparent; background: var(--tertiary-container); color: var(--on-tertiary-container); border-radius: var(--shape-s); }
+  .favbtn[aria-pressed='true'] :global(.on) { animation: fav-pop .45s var(--spring); }
+  @keyframes fav-pop { from { transform: scale(.4); } }
+  [aria-pressed='true'] > :global(.off), [aria-pressed='false'] > :global(.on) { display: none; }
+</style>

@@ -131,6 +131,9 @@ Use the maker's official press render of the **front** of the device, on a trans
 | `battery.wireless_w` | `0` means no wireless charging, `null` means unknown |
 | `battery.life` | Use when the maker publishes playback time rather than mAh |
 | `display.cover`, `body.folded` | Foldables only |
+| `body.dimensions` | `"163.6 × 78.1 × 7.9 mm"` (height × width × thickness). Foldables use the open size. The size comparison draws devices from this |
+| `status` | `"upcoming"` for announced or credibly rumoured devices not yet on sale. They get a badge and appear on `/upcoming/` |
+| `rumored` | Spec row keys (from `src/lib/specs.ts`) whose values are rumours, e.g. `["price", "capacity"]`. They're labelled "Rumoured" and never count in rankings, filters or "Best" in compare. Add `"announced"` when the launch date is only expected |
 | `image` | Written by `npm run add-image`; `file` must exist in `src/assets/devices/` |
 | `verified` | Set to `true` once every value is checked against the manufacturer's own spec sheet. This removes the "compiled from launch coverage" notice |
 

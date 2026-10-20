@@ -1,0 +1,79 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import SizeView from '../components/SizeView.astro';
+import Icon from '../components/Icon.astro';
+import { allDevices, fullName, CATEGORY_LABEL } from '../lib/devices';
+import { dims } from '../lib/size';
+import { breadcrumbLd } from '../lib/seo';
+
+const all = await allDevices();
+const sized = all.filter((d) => dims(d));
+// Shown before the visitor picks: the two newest bar phones from different brands with known dimensions.
+const bars = sized.filter((d) => d.formFactor === 'bar');
+const initial = bars.slice(0, 1).concat(bars.filter((d) => d.brand !== bars[0]?.brand).slice(0, 1));
+const groups = (['phone', 'tablet'] as const).map((c) => ({ label: CATEGORY_LABEL[c], list: all.filter((d) => d.category === c) }));
+// Only what the drawing needs, so the page doesn't have to download every spec.
+const data = sized.map((d) => ({
+  slug: d.slug, name: d.name, brand: d.brand, category: d.category, formFactor: d.formFactor,
+  art: d.art, body: { dimensions: d.body.dimensions }, scaleImage: d.scaleImage,
+}));
+const crumbs = [{ label: 'Home', href: '/' }, { label: 'Size comparison' }];
+---
+<Base
+  title="Phone and Tablet Size Comparison, Drawn to Scale"
+  description={`See up to four phones and tablets side by side at true relative size, drawn from their published dimensions. ${sized.length} devices available.`}
+  jsonLd={[breadcrumbLd(crumbs, Astro.site!)]}
+>
+  <Breadcrumbs items={crumbs} />
+  <header class="phead">
+    <h1 class="headline">Size comparison</h1>
+    <p class="muted">Pick up to four phones or tablets to see them side by side at true relative size, drawn from the dimensions their makers publish. The link updates as you pick, so you can share it.</p>
+  </header>
+
+  <div class="sizepage" data-size-page data-initial={initial.map((d) => d.slug).join(',')}>
+    <SizeView devices={initial} />
+    <p class="pickcount muted" aria-live="polite" data-pick-count></p>
+    {groups.map((g) => (
+      <fieldset class="pickgroup">
+        <legend class="label">{g.label}</legend>
+        <div class="chips">
+          {g.list.map((d) => {
+            const ok = !!dims(d);
+            return (
+              <button
+                type="button"
+                class="chip"
+                data-size-pick={d.slug}
+                aria-pressed={initial.includes(d) ? 'true' : 'false'}
+                disabled={!ok}
+                title={ok ? undefined : 'Dimensions not confirmed yet'}
+              >
+                <Icon name="check" class="check" />{fullName(d)}
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+    ))}
+    <p class="muted foot">Greyed-out devices don't have confirmed dimensions yet.</p>
+  </div>
+
+  <script type="application/json" id="size-data" set:html={JSON.stringify(data)} />
+</Base>
+
+<script>
+  import '../scripts/size-page';
+</script>
+
+<style>
+  .phead { display: grid; gap: 8px; margin-bottom: 20px; }
+  .phead p { margin: 0; max-width: 68ch; }
+  .pickcount { margin: 20px 0 4px; font-size: 14px; }
+  .pickgroup { border: 0; margin: 12px 0 0; padding: 0; min-width: 0; }
+  .pickgroup legend { padding: 0; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip:disabled { opacity: .45; cursor: default; }
+  .chip:disabled:hover { background: none; }
+  .foot { font-size: 13px; margin: 16px 0 0; }
+</style>

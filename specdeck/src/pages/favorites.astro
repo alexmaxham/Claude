@@ -1,0 +1,76 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import DeviceCard from '../components/DeviceCard.astro';
+import Icon from '../components/Icon.astro';
+import { allDevices } from '../lib/devices';
+
+const devices = await allDevices();
+const crumbs = [{ label: 'Home', href: '/' }, { label: 'Favourites' }];
+---
+<Base title="Favourites" description="Phones and tablets you saved on this device." noindex>
+  <Breadcrumbs items={crumbs} />
+  <header class="phead">
+    <h1 class="headline">Favourites</h1>
+    <p class="muted">Devices you saved with <Icon name="favorite" size={18} class="inline" />. They're kept in this browser only, so they won't show up on your other devices.</p>
+  </header>
+
+  <div data-favorites>
+    <div class="bar" data-fav-filled hidden>
+      <p class="count" aria-live="polite" data-fav-total></p>
+      <a class="btn tonal" href="/compare/" data-fav-compare><Icon name="compare_arrows" size={20} />Compare these</a>
+    </div>
+    <div class="grid" data-grid>
+      {devices.map((d) => <DeviceCard device={d} />)}
+    </div>
+    <div class="empty" data-fav-empty>
+      <Icon name="favorite" size={40} />
+      <p class="title">Nothing saved yet</p>
+      <p class="muted">Tap the heart on any device to keep it here.</p>
+      <a class="btn filled" href="/">Browse devices</a>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { getFavorites } from '../scripts/favorites';
+
+  const root = document.querySelector<HTMLElement>('[data-favorites]')!;
+  const cards = [...root.querySelectorAll<HTMLElement>('.card')];
+  // Server-rendered cards for every device; only the saved ones are shown.
+  const render = () => {
+    const list = getFavorites();
+    for (const c of cards) c.hidden = !list.includes(c.dataset.slug!);
+    root.querySelector('[data-grid]')!.setAttribute('data-ready', '');
+    root.querySelector('[data-fav-total]')!.textContent = `${list.length} saved device${list.length === 1 ? '' : 's'}`;
+    root.querySelectorAll<HTMLElement>('[data-fav-filled]').forEach((el) => (el.hidden = list.length === 0));
+    root.querySelector<HTMLElement>('[data-fav-empty]')!.hidden = list.length > 0;
+    const cmp = root.querySelector<HTMLAnchorElement>('[data-fav-compare]')!;
+    cmp.hidden = list.length < 2;
+    cmp.href = `/compare/?d=${list.slice(0, 4).join(',')}`;
+    cmp.lastChild!.textContent = list.length > 4 ? 'Compare the first 4' : 'Compare these';
+  };
+  document.addEventListener('favorites:change', render);
+  render();
+</script>
+
+<style>
+  .phead { display: grid; gap: 8px; }
+  .phead p { margin: 0; max-width: 62ch; }
+  .phead :global(.inline) { vertical-align: -3px; color: var(--tertiary); }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 24px 0 12px; }
+  .count { margin: 0; font-weight: 700; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  /* Every card is in the HTML; none show until the script has picked the saved ones. */
+  .grid:not([data-ready]) :global(.card) { display: none; }
+  .empty { margin-top: 24px; padding: 48px 24px; text-align: center; border-radius: var(--shape-xl); background: var(--surface-low); display: grid; justify-items: center; gap: 4px; }
+  .empty > :global(.icon) { color: var(--tertiary); margin-bottom: 8px; }
+  .empty p { margin: 0; }
+  .empty .btn { margin-top: 16px; }
+  @media (max-width: 840px) {
+    .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  }
+  @media (max-width: 420px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
