@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import { addDays, dayKey } from '../core/dates';
-import { ACHIEVEMENTS, levelFromXp } from '../core/gamification';
+import type { Appearance } from '../appearance';
+import type { SyncResult } from '../cloud/calendar';
+import { authErrorMessage } from '../cloud/errors';
+import { ACHIEVEMENTS, levelFromXp, levelTitle, MAX_LEVEL, xpForLevel } from '../core/gamification';
+import { toCsv, toJson, toMarkdown, toTodoistCsv } from '../core/export';
 import { isThemeUnlocked, THEMES, type Action } from '../core/store';
-import type { Category, Stats, ThemeId } from '../core/types';
+import type { AppState, Category, Stats, ThemeId } from '../core/types';
+import { download } from '../download';
 import { notificationsSupported } from '../useReminders';
 import { Sheet } from './Sheet';
 import { WeeklyChallenges } from './WeeklyChallenges';
@@ -16,9 +21,14 @@ const TABS: { id: TrophiesTab; label: string; title: string }[] = [
 
 interface Props {
   initialTab: TrophiesTab;
+  state: AppState;
   stats: Stats;
   categories: Category[];
   theme: ThemeId;
+  appearance: Appearance;
+  onAppearance: (a: Appearance) => void;
+  /** Present when signed in: syncs open, dated tasks to Google Calendar. */
+  syncCalendar: (() => Promise<SyncResult>) | null;
   soundOn: boolean;
   reminders: { on: boolean; time: string };
   onReminders: (r: { on: boolean; time: string }) => void;
@@ -68,52 +78,186 @@ function TrophiesPanel({ stats, categories }: { stats: Stats; categories: Catego
 
   return (
     <>
-      <div className="stat-grid">
-        <div className="stat-card glass-soft"><strong>{level.level}</strong><span>Level</span></div>
-        <div className="stat-card glass-soft"><strong>{stats.xp.toLocaleString()}</strong><span>Total XP</span></div>
-        <div className="stat-card glass-soft"><strong>{stats.totalCompleted}</strong><span>Completed</span></div>
-        <div className="stat-card glass-soft"><strong>{stats.bestStreak}</strong><span>Best streak</span></div>
-      </div>
+        <div className="stat-grid">
+          <div className="stat-card glass-soft"><strong>{level.level}</strong><span>Level</span></div>
+          <div className="stat-card glass-soft"><strong>{stats.xp.toLocaleString()}</strong><span>Total XP</span></div>
+          <div className="stat-card glass-soft"><strong>{stats.totalCompleted}</strong><span>Completed</span></div>
+          <div className="stat-card glass-soft"><strong>{stats.bestStreak}</strong><span>Best streak</span></div>
+        </div>
 
-      <h3>This week’s challenges</h3>
-      <WeeklyChallenges stats={stats} categories={categories} />
+        <h3>Level milestones</h3>
+        <Milestones xp={stats.xp} />
 
-      <h3>Last 7 days</h3>
-      <div className="week glass-soft" role="img" aria-label="Tasks completed over the last 7 days">
-        {week.map((d) => {
-          const n = stats.completionsByDay[d] ?? 0;
-          const [y, m, dd] = d.split('-').map(Number);
-          return (
-            <div key={d} className={`week-col ${n >= stats.dailyGoal ? 'hit' : n > 0 ? 'some' : ''}`}>
-              <span className="week-n">{n || ''}</span>
-              <div className="week-bar" style={{ height: `${(n / max) * 100}%` }} />
-              <span className="week-day">{new Date(y, m - 1, dd).toLocaleDateString(undefined, { weekday: 'narrow' })}</span>
-            </div>
-          );
-        })}
-      </div>
+        <h3>This week’s challenges</h3>
+        <WeeklyChallenges stats={stats} categories={categories} />
 
-      <h3>
-        Achievements <span className="muted">{Object.keys(stats.achievements).length}/{ACHIEVEMENTS.length}</span>
-      </h3>
-      <div className="badges">
-        {/* Earned first (in the order they were defined), then the ones still to get. */}
-        {[...ACHIEVEMENTS].sort((a, b) => Number(!stats.achievements[a.id]) - Number(!stats.achievements[b.id])).map((a) => {
-          const at = stats.achievements[a.id];
-          return (
-            <div key={a.id} className={`badge glass-soft ${at ? 'earned' : 'locked'}`} title={a.description}>
-              <span className="badge-icon">{at ? a.icon : '🔒'}</span>
-              <strong>{a.name}</strong>
-              <span className="muted small">{a.description}</span>
-            </div>
-          );
-        })}
-      </div>
+        <h3>Last 7 days</h3>
+        <div className="week glass-soft" role="img" aria-label="Tasks completed over the last 7 days">
+          {week.map((d) => {
+            const n = stats.completionsByDay[d] ?? 0;
+            const [y, m, dd] = d.split('-').map(Number);
+            return (
+              <div key={d} className={`week-col ${n >= stats.dailyGoal ? 'hit' : n > 0 ? 'some' : ''}`}>
+                <span className="week-n">{n || ''}</span>
+                <div className="week-bar" style={{ height: `${(n / max) * 100}%` }} />
+                <span className="week-day">{new Date(y, m - 1, dd).toLocaleDateString(undefined, { weekday: 'narrow' })}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <h3>
+          Achievements <span className="muted">{Object.keys(stats.achievements).length}/{ACHIEVEMENTS.length}</span>
+        </h3>
+        <div className="badges">
+          {/* Earned first (in the order they were defined), then the ones still to get. */}
+          {[...ACHIEVEMENTS].sort((a, b) => Number(!stats.achievements[a.id]) - Number(!stats.achievements[b.id])).map((a) => {
+            const at = stats.achievements[a.id];
+            return (
+              <div key={a.id} className={`badge glass-soft ${at ? 'earned' : 'locked'}`} title={a.description}>
+                <span className="badge-icon">{at ? a.icon : '🔒'}</span>
+                <strong>{a.name}</strong>
+                <span className="muted small">{a.description}</span>
+              </div>
+            );
+          })}
+        </div>
     </>
   );
 }
 
+/** Big levels ahead (and behind) with the XP still needed and what each one unlocks. */
+function Milestones({ xp }: { xp: number }) {
+  const current = levelFromXp(xp).level;
+  const rewards = new Map<number, string[]>();
+  const add = (level: number, what: string) => rewards.set(level, [...(rewards.get(level) ?? []), what]);
+  for (const t of THEMES) if (t.unlockLevel) add(t.unlockLevel, `${t.name} theme`);
+  for (const a of ACHIEVEMENTS) if (a.level) add(a.level, `${a.icon} ${a.name}`);
+  for (const l of [25]) if (!rewards.has(l)) add(l, levelTitle(l));
+  const levels = [...rewards.keys()].sort((a, b) => a - b);
+  const upcoming = levels.filter((l) => l > current);
+  const reached = levels.filter((l) => l <= current);
+
+  return (
+    <div className="milestones glass-soft">
+      {upcoming.slice(0, 5).map((l, i) => {
+        const need = xpForLevel(l);
+        const left = Math.max(0, need - xp);
+        return (
+          <div key={l} className={`milestone ${i === 0 ? 'next' : ''}`}>
+            <div className="milestone-level">
+              <span className="milestone-num">{l}</span>
+              <span className="muted small">{levelTitle(l)}</span>
+            </div>
+            <div className="milestone-body">
+              <div className="milestone-text">
+                <span>{rewards.get(l)!.join(' · ')}</span>
+                <strong>{left.toLocaleString()} XP to go</strong>
+              </div>
+              <div className="mini-bar" role="progressbar" aria-valuemin={0} aria-valuemax={need} aria-valuenow={xp} aria-label={`Progress to level ${l}`}>
+                <div style={{ width: `${Math.min(100, (xp / need) * 100)}%` }} />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      {upcoming.length === 0 && <p className="muted small milestone-done">You’ve reached level {MAX_LEVEL}. Every milestone is yours.</p>}
+      {reached.length > 0 && (
+        <p className="muted small milestone-done">
+          Reached: {reached.map((l) => `Lv ${l}`).join(', ')}
+        </p>
+      )}
+    </div>
+  );
+}
+
+const APPEARANCES: { id: Appearance; label: string }[] = [
+  { id: 'system', label: 'Auto' },
+  { id: 'light', label: '☀︎ Light' },
+  { id: 'dark', label: '☾ Dark' },
+];
+
+function ExportButtons({ state }: { state: AppState }) {
+  const stamp = new Date().toISOString().slice(0, 10);
+  const formats = [
+    { label: 'Todoist', hint: 'CSV template', run: () => download(`questlog-todoist-${stamp}.csv`, toTodoistCsv(state), 'text/csv') },
+    { label: 'Spreadsheet', hint: 'CSV', run: () => download(`questlog-${stamp}.csv`, toCsv(state), 'text/csv', { bom: true }) },
+    { label: 'Checklist', hint: 'Markdown', run: () => download(`questlog-${stamp}.md`, toMarkdown(state), 'text/markdown') },
+    { label: 'Backup', hint: 'JSON', run: () => download(`questlog-backup-${stamp}.json`, toJson(state), 'application/json') },
+  ];
+  return (
+    <div className="export-grid">
+      {formats.map((f) => (
+        <button key={f.label} className="btn export-btn" onClick={f.run}>
+          <strong>{f.label}</strong>
+          <span className="muted small">{f.hint}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const CALENDAR_API_URL = 'https://console.cloud.google.com/apis/library/calendar-json.googleapis.com?project=questlog2-e03f9';
+
+function CalendarSync({ sync }: { sync: (() => Promise<SyncResult>) | null }) {
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [error, setError] = useState<{ text: string; notEnabled?: boolean } | null>(null);
+
+  const run = async () => {
+    if (!sync) return;
+    setBusy(true);
+    setError(null);
+    setResult(null);
+    try {
+      const r = await sync();
+      const parts = [r.created && `${r.created} added`, r.updated && `${r.updated} updated`, r.removed && `${r.removed} removed`].filter(Boolean);
+      setResult(parts.length ? `Synced: ${parts.join(', ')}.` : 'Already up to date.');
+    } catch (e) {
+      const kind = (e as { kind?: string }).kind;
+      if (kind === 'notEnabled') setError({ text: (e as Error).message, notEnabled: true });
+      else if ((e as { code?: string }).code) {
+        const msg = authErrorMessage(e);
+        if (msg) setError({ text: msg });
+      } else setError({ text: (e as Error).message || 'Couldn’t sync with Google Calendar.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="setting setting-wrap">
+      <span>
+        Google Calendar
+        <span className="muted small" style={{ display: 'block' }}>
+          {sync
+            ? 'Adds each open quest with a due date to your calendar as an all-day event, and removes ones you’ve finished.'
+            : 'Sign in to sync your quests to Google Calendar.'}
+        </span>
+        {result && <span className="small success-text" style={{ display: 'block' }}>{result}</span>}
+        {error && (
+          <span className="small error-text" style={{ display: 'block' }}>
+            {error.text}{' '}
+            {error.notEnabled && (
+              <a href={CALENDAR_API_URL} target="_blank" rel="noreferrer">
+                Enable it here
+              </a>
+            )}
+          </span>
+        )}
+      </span>
+      <button className="btn" disabled={!sync || busy} onClick={run}>
+        {busy ? 'Syncing…' : 'Sync now'}
+      </button>
+    </div>
+  );
+}
+
 function SettingsPanel({
+  state,
+  appearance,
+  onAppearance,
+  syncCalendar,
   stats,
   theme,
   soundOn,
@@ -138,6 +282,7 @@ function SettingsPanel({
   };
 
   return (
+    <>
     <div className="settings glass-soft">
       <div className="setting">
         <span>Color</span>
@@ -161,6 +306,22 @@ function SettingsPanel({
               </button>
             );
           })}
+        </div>
+      </div>
+      <div className="setting">
+        <span>Appearance</span>
+        <div className="segmented appearance" role="radiogroup" aria-label="Appearance">
+          {APPEARANCES.map((a) => (
+            <button
+              key={a.id}
+              role="radio"
+              aria-checked={appearance === a.id}
+              className={`seg ${appearance === a.id ? 'active' : ''}`}
+              onClick={() => onAppearance(a.id)}
+            >
+              {a.label}
+            </button>
+          ))}
         </div>
       </div>
       <div className="setting setting-wrap">
@@ -215,5 +376,19 @@ function SettingsPanel({
         )}
       </div>
     </div>
+
+    <h3>Connected apps</h3>
+    <div className="settings glass-soft">
+      <CalendarSync sync={syncCalendar} />
+    </div>
+
+    <h3>Export your tasks</h3>
+    <p className="muted small export-intro">
+      Take your quests to another app. <strong>Todoist</strong>: create a project, then ⋯ → Import from template.{' '}
+      <strong>Spreadsheet</strong> opens in Excel, Numbers or Google Sheets. <strong>Checklist</strong> pastes into
+      Things, Notion, Obsidian or Apple Notes. <strong>Backup</strong> keeps everything, including your progress.
+    </p>
+    <ExportButtons state={state} />
+    </>
   );
 }

@@ -23,6 +23,12 @@ export function authErrorMessage(e: unknown): string | null {
       return 'This email is already used with a different sign-in method.';
     case 'auth/unauthorized-domain':
       return 'This website isn’t authorized for sign-in yet (add it under Authentication → Settings → Authorized domains in Firebase).';
+    case 'auth/credential-already-in-use':
+      return 'That Google account is already used by a different Questlog account. Pick another Google account.';
+    case 'auth/user-mismatch':
+      return 'Choose the same Google account you signed in with.';
+    case 'auth/popup-blocked':
+      return 'Your browser blocked the Google popup. Allow popups for this site and try again.';
     case 'auth/operation-not-allowed':
       return 'This sign-in method isn’t enabled in Firebase yet.';
     default:

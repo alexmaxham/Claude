@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { challengeProgress, generateChallenges, weekKey } from './challenges';
 import { addDays, dayKey, daysBetween } from './dates';
-import { ACHIEVEMENTS, effectiveStreak, levelFromXp, levelTitle, MAX_LEVEL, streakMultiplier, SUBTASK_BONUS, xpForTask, xpToNext } from './gamification';
+import { toCsv, toMarkdown, todoistRepeat, toTodoistCsv } from './export';
+import { ACHIEVEMENTS, effectiveStreak, levelFromXp, levelTitle, MAX_LEVEL, streakMultiplier, SUBTASK_BONUS, xpForLevel, xpForTask, xpToNext } from './gamification';
 import { mergeStates } from './merge';
 import { nextDueDate, repeatLabel, repeatPreset } from './recurrence';
 import { parseState } from './storage';
@@ -361,5 +362,53 @@ describe('lifetime counters', () => {
     const s = parseState(JSON.stringify({ stats: { xp: 10 } }));
     expect(s.stats.highCompleted).toBe(0);
     expect(s.stats.challengesCompleted).toBe(0);
+  });
+});
+
+describe('milestone XP', () => {
+  it('totals the XP needed to reach a level', () => {
+    expect(xpForLevel(1)).toBe(0);
+    expect(xpForLevel(2)).toBe(xpToNext(1));
+    expect(levelFromXp(xpForLevel(50)).level).toBe(50);
+    expect(levelFromXp(xpForLevel(50) - 1).level).toBe(49);
+  });
+});
+
+describe('export', () => {
+  const sample = () =>
+    run(createInitialState(), [
+      { type: 'addTask', title: 'Plan "big" trip, soon', description: 'Flights\nHotel', categoryId: 'default-personal', priority: 'high',
+        dueDate: '2026-10-25', subtasks: [{ id: 'a', title: 'Book flights', done: false }, { id: 'b', title: 'Passport', done: true }] },
+      { type: 'addTask', title: 'Gym', categoryId: null, priority: 'low', dueDate: '2026-10-21', repeat: { kind: 'weekly', days: [1, 2, 3, 4, 5] } },
+    ]);
+
+  it('writes a Todoist template with sections, priorities, recurring dates and sub-tasks', () => {
+    const csv = toTodoistCsv(sample());
+    const lines = csv.trim().split('\r\n');
+    expect(lines[0]).toBe('TYPE,CONTENT,DESCRIPTION,PRIORITY,INDENT,AUTHOR,RESPONSIBLE,DATE,DATE_LANG,TIMEZONE');
+    expect(lines).toContain('task,Gym,,4,1,,,every weekday starting 2026-10-21,en,');
+    expect(lines).toContain('section,Personal,,,,,,,,');
+    expect(csv).toContain('task,"Plan ""big"" trip, soon","Flights\nHotel",1,1,,,2026-10-25,en,');
+    expect(lines).toContain('task,Book flights,,4,2,,,,,');
+    expect(csv).not.toContain('Passport'); // finished steps are left out
+  });
+
+  it('maps repeats to Todoist phrases', () => {
+    expect(todoistRepeat({ kind: 'daily', interval: 3 })).toBe('every 3 days');
+    expect(todoistRepeat({ kind: 'weekly', days: [0, 6] })).toBe('every sat, sun');
+    expect(todoistRepeat({ kind: 'weekly', days: [1, 3] })).toBe('every mon, wed');
+    expect(todoistRepeat({ kind: 'yearly' })).toBe('every year');
+  });
+
+  it('writes a spreadsheet and a markdown checklist', () => {
+    const s = sample();
+    const csv = toCsv(s).split('\r\n');
+    expect(csv[0]).toBe('Title,Description,Category,Priority,Due date,Repeat,Steps,Status,Completed at,Created at');
+    expect(csv[1].startsWith('Gym,,,low,2026-10-21,Weekdays,,open,')).toBe(true);
+    const md = toMarkdown(s);
+    expect(md).toContain('## 🏡 Personal');
+    expect(md).toContain('- [ ] Plan "big" trip, soon (due 2026-10-25, high priority)');
+    expect(md).toContain('  - [x] Passport');
+    expect(md).toContain('- [ ] Gym (due 2026-10-21, weekdays)');
   });
 });
