@@ -12,8 +12,15 @@ export interface Subtask {
   done: boolean;
 }
 
-/** How a task comes back after it's completed. Weekly `days` are 0 (Sun) – 6 (Sat). */
-export type Repeat = { kind: 'daily' } | { kind: 'weekly'; days: number[] } | { kind: 'monthly' };
+/**
+ * How a task comes back after it's completed. Weekly `days` are 0 (Sun) – 6 (Sat).
+ * `interval` means "every N days/weeks/months" and defaults to 1.
+ */
+export type Repeat =
+  | { kind: 'daily'; interval?: number }
+  | { kind: 'weekly'; days: number[]; interval?: number }
+  | { kind: 'monthly'; interval?: number }
+  | { kind: 'yearly' };
 
 export type ChallengeKind = 'complete' | 'high' | 'onTime' | 'goalDays' | 'category';
 
@@ -76,6 +83,11 @@ export interface Stats {
   /** Completion count per day key, used for the daily goal ring and history. */
   completionsByDay: Record<string, number>;
   achievements: Record<string, number>; // achievement id -> unlocked timestamp
+  /** Lifetime counters for trophies (un-completing a task takes its counts back). */
+  highCompleted: number;
+  onTimeCompleted: number;
+  repeatCompleted: number;
+  challengesCompleted: number;
   week: WeekProgress | null;
 }
 

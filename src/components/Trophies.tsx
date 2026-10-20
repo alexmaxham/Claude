@@ -70,7 +70,7 @@ function TrophiesPanel({ stats, categories }: { stats: Stats; categories: Catego
     <>
       <div className="stat-grid">
         <div className="stat-card glass-soft"><strong>{level.level}</strong><span>Level</span></div>
-        <div className="stat-card glass-soft"><strong>{stats.xp}</strong><span>Total XP</span></div>
+        <div className="stat-card glass-soft"><strong>{stats.xp.toLocaleString()}</strong><span>Total XP</span></div>
         <div className="stat-card glass-soft"><strong>{stats.totalCompleted}</strong><span>Completed</span></div>
         <div className="stat-card glass-soft"><strong>{stats.bestStreak}</strong><span>Best streak</span></div>
       </div>
@@ -97,7 +97,8 @@ function TrophiesPanel({ stats, categories }: { stats: Stats; categories: Catego
         Achievements <span className="muted">{Object.keys(stats.achievements).length}/{ACHIEVEMENTS.length}</span>
       </h3>
       <div className="badges">
-        {ACHIEVEMENTS.map((a) => {
+        {/* Earned first (in the order they were defined), then the ones still to get. */}
+        {[...ACHIEVEMENTS].sort((a, b) => Number(!stats.achievements[a.id]) - Number(!stats.achievements[b.id])).map((a) => {
           const at = stats.achievements[a.id];
           return (
             <div key={a.id} className={`badge glass-soft ${at ? 'earned' : 'locked'}`} title={a.description}>

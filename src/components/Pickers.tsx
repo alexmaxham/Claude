@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { addDays, dayKey } from '../core/dates';
 import { BASE_XP } from '../core/gamification';
-import { DAY_NAMES } from '../core/recurrence';
+import { DAY_NAMES, repeatLabel, repeatPreset, WEEKDAYS, WEEKENDS, type RepeatPreset } from '../core/recurrence';
 import type { Category, Priority, Repeat } from '../core/types';
 
 const PRIORITIES: { value: Priority; label: string }[] = [
@@ -87,15 +88,23 @@ export function CategoryPicker({
   );
 }
 
-type RepeatPreset = 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly';
+const REPEAT_OPTIONS: { id: RepeatPreset; label: string }[] = [
+  { id: 'none', label: 'Never' },
+  { id: 'daily', label: 'Every day' },
+  { id: 'weekdays', label: 'Weekdays' },
+  { id: 'weekends', label: 'Weekends' },
+  { id: 'weekly', label: 'Weekly' },
+  { id: 'monthly', label: 'Monthly' },
+  { id: 'yearly', label: 'Yearly' },
+  { id: 'custom', label: 'Custom…' },
+];
 
-function presetOf(repeat: Repeat | null | undefined): RepeatPreset {
-  if (!repeat) return 'none';
-  if (repeat.kind === 'weekly') return [...repeat.days].sort().join() === '1,2,3,4,5' ? 'weekdays' : 'weekly';
-  return repeat.kind;
-}
+type Unit = 'daily' | 'weekly' | 'monthly';
 
-/** Repeat schedule. "Weekly" reveals day toggles; it starts on the due date's weekday. */
+/**
+ * Repeat schedule: presets, plus "Custom" for every N days/weeks/months.
+ * Weekly schedules reveal day toggles; they start on the due date's weekday.
+ */
 export function RepeatPicker({
   value,
   dueDate,
@@ -105,42 +114,77 @@ export function RepeatPicker({
   dueDate: string | null;
   onChange: (r: Repeat | null) => void;
 }) {
-  const preset = presetOf(value);
+  const preset = repeatPreset(value);
+  // "Custom" stays open even when its settings happen to match a preset (e.g. every 1 week).
+  const [customOpen, setCustomOpen] = useState(preset === 'custom');
+  const shown = customOpen ? 'custom' : preset;
   const dueDay = (() => {
     const [y, m, d] = (dueDate ?? dayKey()).split('-').map(Number);
     return new Date(y, m - 1, d).getDay();
   })();
+  const interval = value && value.kind !== 'yearly' ? (value.interval ?? 1) : 1;
+  const unit: Unit = value && value.kind !== 'yearly' ? value.kind : 'daily';
+  const days = value?.kind === 'weekly' ? value.days : [dueDay];
+
+  const build = (u: Unit, n: number, d = days): Repeat =>
+    u === 'weekly' ? { kind: 'weekly', days: d, interval: n } : { kind: u, interval: n };
+
   const pick = (p: RepeatPreset) => {
+    setCustomOpen(p === 'custom');
     if (p === 'none') onChange(null);
     else if (p === 'daily') onChange({ kind: 'daily' });
+    else if (p === 'weekdays') onChange({ kind: 'weekly', days: [...WEEKDAYS] });
+    else if (p === 'weekends') onChange({ kind: 'weekly', days: [...WEEKENDS] });
+    else if (p === 'weekly') onChange({ kind: 'weekly', days: [dueDay] });
     else if (p === 'monthly') onChange({ kind: 'monthly' });
-    else if (p === 'weekdays') onChange({ kind: 'weekly', days: [1, 2, 3, 4, 5] });
-    else onChange({ kind: 'weekly', days: [dueDay] });
+    else if (p === 'yearly') onChange({ kind: 'yearly' });
+    else onChange(build(unit, Math.max(2, interval)));
   };
-  const options: { id: RepeatPreset; label: string }[] = [
-    { id: 'none', label: 'Never' },
-    { id: 'daily', label: 'Daily' },
-    { id: 'weekdays', label: 'Weekdays' },
-    { id: 'weekly', label: 'Weekly' },
-    { id: 'monthly', label: 'Monthly' },
-  ];
+
   return (
     <div className="repeat-picker">
-      <div className="chip-row" role="radiogroup" aria-label="Repeat">
-        {options.map((o) => (
+      <div className="chip-row wrap" role="radiogroup" aria-label="Repeat">
+        {REPEAT_OPTIONS.map((o) => (
           <button
             key={o.id}
             type="button"
             role="radio"
-            aria-checked={preset === o.id}
-            className={`chip ${preset === o.id ? 'active' : ''}`}
+            aria-checked={shown === o.id}
+            className={`chip ${shown === o.id ? 'active' : ''}`}
             onClick={() => pick(o.id)}
           >
-            {o.id === 'none' ? o.label : `🔁 ${o.label}`}
+            {o.label}
           </button>
         ))}
       </div>
-      {value?.kind === 'weekly' && preset === 'weekly' && (
+      {shown === 'custom' && (
+        <div className="repeat-custom">
+          <span>Every</span>
+          <input
+            type="number"
+            className="text-input interval-input"
+            min={1}
+            max={99}
+            value={interval}
+            onChange={(e) => {
+              const n = Math.max(1, Math.min(99, Math.round(Number(e.target.value) || 1)));
+              onChange(build(unit, n));
+            }}
+            aria-label="Repeat every"
+          />
+          <select
+            className="text-input unit-select"
+            value={unit}
+            onChange={(e) => onChange(build(e.target.value as Unit, interval))}
+            aria-label="Repeat unit"
+          >
+            <option value="daily">{interval === 1 ? 'day' : 'days'}</option>
+            <option value="weekly">{interval === 1 ? 'week' : 'weeks'}</option>
+            <option value="monthly">{interval === 1 ? 'month' : 'months'}</option>
+          </select>
+        </div>
+      )}
+      {value?.kind === 'weekly' && (shown === 'weekly' || shown === 'custom') && (
         <div className="day-toggles" role="group" aria-label="Repeat on">
           {DAY_NAMES.map((name, d) => {
             const on = value.days.includes(d);
@@ -152,8 +196,8 @@ export function RepeatPicker({
                 aria-label={name}
                 className={`day-toggle ${on ? 'active' : ''}`}
                 onClick={() => {
-                  const days = on ? value.days.filter((x) => x !== d) : [...value.days, d];
-                  onChange({ kind: 'weekly', days: days.length ? days.sort() : [d] });
+                  const next = on ? value.days.filter((x) => x !== d) : [...value.days, d];
+                  onChange({ ...value, days: next.length ? next.sort() : [d] });
                 }}
               >
                 {name[0]}
@@ -162,6 +206,7 @@ export function RepeatPicker({
           })}
         </div>
       )}
+      {value && <span className="muted small">🔁 {repeatLabel(value)}</span>}
     </div>
   );
 }
