@@ -11,7 +11,8 @@
     "typecheck": "tsc -b",
     "ios": "npm run build && cap sync ios && cap open ios",
     "ios:sync": "npm run build && cap sync ios",
-    "ios:assets": "node scripts/ios-assets.mjs"
+    "ios:assets": "node scripts/ios-assets.mjs",
+    "ios:google": "node scripts/ios-google.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^8.5.2",

@@ -11,7 +11,8 @@ interface Props {
   state: AppState;
   user: CloudUser | null;
   sync: SyncStatus;
-  onSignIn: () => void;
+  /** Opens the sign-in sheet, or account settings when signed in. */
+  onOpenAccount: () => void;
   onSignOut: () => Promise<void>;
   onOpenTrophies: () => void;
   onClose: () => void;
@@ -20,7 +21,7 @@ interface Props {
 const WEEKS = 15;
 
 /** Your stats at a glance: level, XP, tasks done, streaks, activity and trophies. */
-export function ProfileSheet({ state, user, sync, onSignIn, onSignOut, onOpenTrophies, onClose }: Props) {
+export function ProfileSheet({ state, user, sync, onOpenAccount, onSignOut, onOpenTrophies, onClose }: Props) {
   const { stats, tasks, categories } = state;
   const level = levelFromXp(stats.xp);
   const today = dayKey();
@@ -143,11 +144,16 @@ export function ProfileSheet({ state, user, sync, onSignIn, onSignOut, onOpenTro
 
       <div className="profile-actions">
         {user ? (
-          <button className="btn" onClick={async () => { await onSignOut(); onClose(); }}>
-            Sign out
-          </button>
+          <>
+            <button className="btn" onClick={onOpenAccount}>
+              Account
+            </button>
+            <button className="btn" onClick={async () => { await onSignOut(); onClose(); }}>
+              Sign out
+            </button>
+          </>
         ) : (
-          <button className="btn primary" onClick={onSignIn}>
+          <button className="btn primary" onClick={onOpenAccount}>
             Sign in to sync across devices
           </button>
         )}

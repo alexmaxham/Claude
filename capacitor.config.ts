@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 // Native iPhone app: the same web build (dist/) running in a WKWebView, with
-// native plugins for haptics, notifications, storage, sharing and Google sign-in.
+// native plugins for haptics, notifications, storage, sharing and Google/Apple sign-in.
 const config: CapacitorConfig = {
   appId: 'com.alexmaxham.tasko',
   appName: 'Tasko',
@@ -41,9 +41,9 @@ const config: CapacitorConfig = {
       iconColor: '#2f63e0',
     },
     FirebaseAuthentication: {
-      // Native Google sign-in hands its credential to the Firebase JS SDK (src/cloud/api.ts).
+      // Native Google and Apple sign-in hand their credentials to the Firebase JS SDK (src/cloud/api.ts).
       skipNativeAuth: true,
-      providers: ['google.com'],
+      providers: ['google.com', 'apple.com'],
     },
   },
 };

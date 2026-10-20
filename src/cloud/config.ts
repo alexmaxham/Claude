@@ -13,11 +13,16 @@ const config = {
 
 /**
  * Google sign-in (and Calendar sync) in the iPhone app goes through the native
- * Google SDK, since Google blocks sign-in pages inside embedded web views. It uses
- * ios/App/App/GoogleService-Info.plist and the URL scheme from it in Info.plist
- * (see README → iPhone app). Turning this off leaves email sign-in only.
+ * Google SDK, which needs GoogleService-Info.plist in ios/App/App and the URL scheme
+ * from it in Info.plist. `npm run ios:google -- <path to the plist>` does both and
+ * turns this on (see README → iPhone app). Until then the app offers email sign-in
+ * only, since Google blocks sign-in pages inside embedded web views.
+ * Sign in with Apple uses the same native setup, so it follows this too.
  */
 export const IOS_GOOGLE_SIGN_IN = true;
+
+/** Linked from the sign-in and account screens, and from the App Store listing. */
+export const PRIVACY_URL = 'https://alexmaxham.github.io/Claude/privacy.html';
 
 export interface CloudConfig {
   options: typeof config;

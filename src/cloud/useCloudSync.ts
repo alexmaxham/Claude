@@ -201,5 +201,25 @@ export function useCloudSync(state: AppState, dispatch: (a: Action) => void, not
     dispatch({ type: 'load', state: createInitialState() });
   }, [api, uid, save, dispatch]);
 
-  return { api, status, user, sync, signOut };
+  const deleteAccount = useCallback(
+    async (password?: string) => {
+      if (!api) return;
+      // Stop saving, so a pending edit can't recreate the data while it's being deleted.
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+      ready.current = false;
+      try {
+        await api.deleteAccount(password);
+      } catch (e) {
+        ready.current = true;
+        throw e;
+      }
+      writeOwner(null);
+      lastJson.current = null;
+      dispatch({ type: 'load', state: createInitialState() });
+    },
+    [api, dispatch],
+  );
+
+  return { api, status, user, sync, signOut, deleteAccount };
 }
