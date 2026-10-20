@@ -18,10 +18,27 @@ interface Props {
   onClose: () => void;
 }
 
+type ViewProps = Omit<Props, 'onClose'>;
+
 const WEEKS = 15;
 
-/** Your stats at a glance: level, XP, tasks done, streaks, activity and trophies. */
-export function ProfileSheet({ state, user, sync, onOpenAccount, onSignOut, onOpenTrophies, onClose }: Props) {
+/** Your stats at a glance in a sheet (the iPhone app shows ProfileView as a tab instead). */
+export function ProfileSheet({ onClose, onSignOut, ...props }: Props) {
+  return (
+    <Sheet title="Profile" onClose={onClose}>
+      <ProfileView
+        {...props}
+        onSignOut={async () => {
+          await onSignOut();
+          onClose();
+        }}
+      />
+    </Sheet>
+  );
+}
+
+/** Level, XP, tasks done, streaks, activity and trophies. */
+export function ProfileView({ state, user, sync, onOpenAccount, onSignOut, onOpenTrophies }: ViewProps) {
   const { stats, tasks, categories } = state;
   const level = levelFromXp(stats.xp);
   const today = dayKey();
@@ -49,7 +66,7 @@ export function ProfileSheet({ state, user, sync, onOpenAccount, onSignOut, onOp
   const maxCat = Math.max(1, ...byCategory.map((c) => c.n));
 
   return (
-    <Sheet title="Profile" onClose={onClose}>
+    <>
       <div className="profile-head">
         {user ? <Avatar user={user} size={72} /> : <span className="avatar avatar-initial guest" style={{ width: 72, height: 72, fontSize: 30 }}>?</span>}
         <div className="profile-id">
@@ -148,7 +165,7 @@ export function ProfileSheet({ state, user, sync, onOpenAccount, onSignOut, onOp
             <button className="btn" onClick={onOpenAccount}>
               Account
             </button>
-            <button className="btn" onClick={async () => { await onSignOut(); onClose(); }}>
+            <button className="btn" onClick={onSignOut}>
               Sign out
             </button>
           </>
@@ -158,6 +175,6 @@ export function ProfileSheet({ state, user, sync, onOpenAccount, onSignOut, onOp
           </button>
         )}
       </div>
-    </Sheet>
+    </>
   );
 }

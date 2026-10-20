@@ -3,6 +3,7 @@
 // or falls back to the browser API, so the rest of the app doesn't need to care.
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { Keyboard } from '@capacitor/keyboard';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Preferences } from '@capacitor/preferences';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -41,6 +42,14 @@ export async function setUpDurableStorage(): Promise<void> {
     removeItem.call(this, key);
     if (this === localStorage && key.startsWith(KEY_PREFIX)) void Preferences.remove({ key }).catch(() => {});
   };
+}
+
+/** Marks <html> with .keyboard-open while the keyboard is up, so the tab bar can step aside. */
+export function watchKeyboard() {
+  if (!isNative) return;
+  const set = (open: boolean) => () => document.documentElement.classList.toggle('keyboard-open', open);
+  void Keyboard.addListener('keyboardWillShow', set(true)).catch(() => {});
+  void Keyboard.addListener('keyboardWillHide', set(false)).catch(() => {});
 }
 
 /** Hides the launch screen once the app has painted. */
