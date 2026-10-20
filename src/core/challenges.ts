@@ -8,7 +8,7 @@ export function weekKey(now = Date.now()): string {
   return addDays(today, -((dow + 6) % 7));
 }
 
-function hash(s: string): number {
+export function hash(s: string): number {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
   return h >>> 0;

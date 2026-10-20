@@ -1,4 +1,4 @@
-import { addDays, dayKey } from './dates';
+import { dayKey, daysBetween } from './dates';
 import type { AppState, Priority, Stats, Task } from './types';
 
 export const BASE_XP: Record<Priority, number> = { low: 10, medium: 20, high: 35 };
@@ -6,36 +6,57 @@ export const ON_TIME_BONUS = 5;
 export const GOAL_BONUS = 25;
 /** Extra XP per checked-off subtask when the task is completed. */
 export const SUBTASK_BONUS = 3;
+/** A boss pays this bounty when beaten, plus BOSS_PER_STEP for each step (its health). */
+export const BOSS_BOUNTY = 40;
+export const BOSS_PER_STEP = 10;
+/** Focus timer XP per minute: a 25-minute session earns 10 XP. */
+export const FOCUS_XP_PER_MINUTE = 0.4;
+/** A streak freeze is earned every this many streak days, up to MAX_FREEZES in reserve. */
+export const FREEZE_EVERY = 7;
+export const MAX_FREEZES = 3;
 const STREAK_STEP = 0.05;
 const MAX_STREAK_STEPS = 10; // caps the multiplier at 1.5x
 
-/** The streak as it should be shown today: it's broken if yesterday was missed. */
+/** Whole days skipped since the last active day (0 if active today or yesterday). */
+export function missedDays(stats: Stats, now = Date.now()): number {
+  if (!stats.lastActiveDay) return 0;
+  return Math.max(0, daysBetween(stats.lastActiveDay, dayKey(now)) - 1);
+}
+
+/**
+ * The streak as it should be shown today: it's broken if a day was missed,
+ * unless there are enough streak freezes to cover the gap.
+ */
 export function effectiveStreak(stats: Stats, now = Date.now()): number {
   if (!stats.lastActiveDay) return 0;
-  const today = dayKey(now);
-  if (stats.lastActiveDay === today || stats.lastActiveDay === addDays(today, -1)) {
-    return stats.currentStreak;
-  }
-  return 0;
+  return missedDays(stats, now) <= (stats.streakFreezes ?? 0) ? stats.currentStreak : 0;
 }
 
 export function streakMultiplier(streak: number): number {
   return 1 + Math.min(streak, MAX_STREAK_STEPS) * STREAK_STEP;
 }
 
-/** Streak after completing something today. */
+/** Streak after completing something today. Missed days covered by freezes don't break it. */
 export function nextStreak(stats: Stats, now = Date.now()): number {
-  const today = dayKey(now);
-  if (stats.lastActiveDay === today) return stats.currentStreak;
-  if (stats.lastActiveDay === addDays(today, -1)) return stats.currentStreak + 1;
-  return 1;
+  if (stats.lastActiveDay === dayKey(now)) return stats.currentStreak;
+  return stats.lastActiveDay && missedDays(stats, now) <= (stats.streakFreezes ?? 0) ? stats.currentStreak + 1 : 1;
 }
 
-export function xpForTask(task: Task, streak: number, now = Date.now()): number {
+export function bossBounty(task: Task): number {
+  return task.boss ? BOSS_BOUNTY + (task.subtasks?.length ?? 0) * BOSS_PER_STEP : 0;
+}
+
+/** True if `task` is today's double-XP surprise. */
+export function isSurprise(stats: Stats, task: Task, now = Date.now()): boolean {
+  return stats.surprise?.taskId === task.id && stats.surprise.day === dayKey(now);
+}
+
+export function xpForTask(task: Task, streak: number, now = Date.now(), double = false): number {
   let xp = BASE_XP[task.priority];
   if (task.dueDate && dayKey(now) <= task.dueDate) xp += ON_TIME_BONUS;
   xp += (task.subtasks?.filter((s) => s.done).length ?? 0) * SUBTASK_BONUS;
-  return Math.round(xp * streakMultiplier(streak));
+  xp += bossBounty(task);
+  return Math.round(xp * streakMultiplier(streak) * (double ? 2 : 1));
 }
 
 /** The highest level for now; more can be added later by extending TITLES and raising this. */
@@ -283,4 +304,18 @@ export const ACHIEVEMENTS: Achievement[] = [
     test: (s) => ['teal', 'pink', 'gold', 'midnight'].includes(s.theme) },
   { id: 'organizer', name: 'Organizer', description: 'Create your own category', icon: '🗂️',
     test: (s) => s.categories.some((c) => !c.id.startsWith('default-')) },
+  { id: 'boss1', name: 'Giant Slayer', description: 'Defeat a boss', icon: '⚔️',
+    test: (s) => s.stats.bossesDefeated >= 1 },
+  { id: 'boss10', name: 'Dragon Hunter', description: 'Defeat 10 bosses', icon: '🐲',
+    test: (s) => s.stats.bossesDefeated >= 10 },
+  { id: 'focus1', name: 'In the Zone', description: 'Finish a focus session', icon: '🎧',
+    test: (s) => s.stats.focusSessions >= 1 },
+  { id: 'focus600', name: 'Deep Diver', description: 'Spend 10 hours in focus sessions', icon: '🤿',
+    test: (s) => s.stats.focusMinutes >= 600 },
+  { id: 'freeze', name: 'Ice Cold', description: 'Let a streak freeze save your streak', icon: '🧊',
+    test: (s) => s.stats.frozenDays.length >= 1 },
+  { id: 'surprise', name: 'Lucky Find', description: 'Complete the daily surprise for double XP', icon: '🍀',
+    test: (s, c) => !!c.justCompleted && isSurprise(s.stats, c.justCompleted, c.now) },
+  { id: 'blueprint', name: 'Blueprint', description: 'Save your own template', icon: '📐',
+    test: (s) => s.templates.some((t) => !t.id.startsWith('builtin-')) },
 ];

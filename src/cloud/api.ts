@@ -38,7 +38,7 @@ import {
 } from 'firebase/firestore';
 import type { Task } from '../core/types';
 import { isNative } from '../native';
-import { syncCalendar } from './calendar';
+import { listEvents, syncCalendar } from './calendar';
 import { FriendlyError } from './errors';
 import { IOS_GOOGLE_SIGN_IN, type CloudConfig } from './config';
 
@@ -221,6 +221,17 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
         return await syncCalendar(token, tasks);
       } catch (e) {
         // A revoked or expired token: forget it so the next try asks again.
+        if ((e as { kind?: string }).kind === 'auth') calendarToken = null;
+        throw e;
+      }
+    },
+
+    /** The user's own Google Calendar events between two day keys. */
+    async googleEvents(from: string, to: string) {
+      const token = await getCalendarToken();
+      try {
+        return await listEvents(token, from, to);
+      } catch (e) {
         if ((e as { kind?: string }).kind === 'auth') calendarToken = null;
         throw e;
       }

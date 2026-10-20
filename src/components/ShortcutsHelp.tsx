@@ -7,7 +7,15 @@ const SHORTCUTS: [string, string][] = [
   ['K / ↑', 'Select previous quest'],
   ['X / Space', 'Complete or un-complete the selected quest'],
   ['E / Enter', 'Edit the selected quest'],
+  ['F', 'Focus timer for the selected quest'],
+  ['S', 'Snooze the selected quest to tomorrow'],
+  ['P', 'Plan my day'],
+  ['T', 'Add from a template'],
+  ['B', 'Switch between list and board'],
+  ['⌘K / Ctrl+K', 'Commands and search'],
   ['Esc', 'Clear search and selection'],
+  ['1 – 4', 'Go to Tasks, Trophies, Calendar or Profile'],
+  ['[', 'Collapse or expand the side menu'],
   ['?', 'Show these shortcuts'],
 ];
 

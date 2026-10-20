@@ -69,6 +69,27 @@ export interface Task {
   completedAt: number | null;
   /** XP granted when completed, so un-completing can take back exactly that much. */
   xpAwarded: number;
+  /** A big project: its steps are the boss's health, and beating it pays a bounty. */
+  boss?: boolean;
+  /** On the board: being worked on right now. */
+  doing?: boolean;
+  /** Rough time it'll take, in minutes. */
+  estimate?: number;
+  /** Minutes spent on it with the focus timer. */
+  focusMinutes?: number;
+}
+
+/** A reusable quest, e.g. a weekly review or a packing list. */
+export interface Template {
+  id: string;
+  name: string;
+  emoji: string;
+  description?: string;
+  categoryId: string | null;
+  priority: Priority;
+  steps: string[];
+  estimate?: number;
+  boss?: boolean;
 }
 
 export interface Stats {
@@ -89,6 +110,15 @@ export interface Stats {
   repeatCompleted: number;
   challengesCompleted: number;
   week: WeekProgress | null;
+  /** Streak freezes in reserve. Each one covers a missed day without breaking the streak. */
+  streakFreezes: number;
+  /** Day keys a freeze covered. */
+  frozenDays: string[];
+  bossesDefeated: number;
+  focusMinutes: number;
+  focusSessions: number;
+  /** Today's surprise: completing this task pays double XP. */
+  surprise: { day: string; taskId: string } | null;
 }
 
 export interface AppState {
@@ -97,6 +127,7 @@ export interface AppState {
   categories: Category[];
   stats: Stats;
   theme: ThemeId;
+  templates: Template[];
 }
 
 /** Things the UI should celebrate after an action. */
@@ -106,4 +137,10 @@ export type GameEvent =
   | { type: 'goalReached'; bonus: number }
   | { type: 'achievement'; id: string }
   | { type: 'challenge'; challenge: Challenge }
-  | { type: 'themeUnlocked'; theme: ThemeId };
+  | { type: 'themeUnlocked'; theme: ThemeId }
+  | { type: 'bossHit'; taskId: string; hp: number; maxHp: number }
+  | { type: 'bossDefeated'; taskId: string; bounty: number }
+  | { type: 'freezeEarned'; total: number }
+  | { type: 'freezeUsed'; days: number }
+  | { type: 'focusDone'; minutes: number; xp: number }
+  | { type: 'surprise'; bonus: number };
