@@ -7,6 +7,7 @@
   "released": "2026-08-07",
   "price": { "amount": 1199, "currency": "USD" },
   "art": ["#e7c9d4", "#8c5a6c"],
+  "image": { "file": "samsung-galaxy-z-flip8.webp", "alt": "Samsung Galaxy Z Flip8 folded, showing its cover screen", "credit": "Kyu3a, CC BY-SA 4.0 (Wikimedia Commons)", "source": "https://commons.wikimedia.org/wiki/File:Galaxy_Z_Flip8_-_1.jpg" },
   "body": { "dimensions": "166.9 × 75.4 × 6.1 mm (unfolded)", "folded": "85.7 × 75.4 × 13.1 mm", "weight_g": 180, "thickness_mm": 6.1, "ip": "IP48" },
   "display": { "size_in": 6.9, "type": "Foldable Dynamic AMOLED 2X", "resolution": "1080 × 2520", "refresh_hz": 120, "cover": "4.1\"" },
   "platform": { "os": "Android 17, One UI 9", "chipset": "Snapdragon 8 Elite Gen 5 (US), Exynos 2600 (other regions)" },

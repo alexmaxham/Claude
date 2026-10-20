@@ -6,6 +6,7 @@
   "announced": "2026-07-22",
   "released": "2026-08-07",
   "art": ["#bfc6cf", "#3f4752"],
+  "image": { "file": "samsung-galaxy-z-fold8-ultra.webp", "alt": "Samsung Galaxy Z Fold8 Ultra unfolded on a store display", "credit": "P1898, CC BY 4.0 (Wikimedia Commons)", "source": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Z_Fold8_Ultra_5G_2026-08-09_Samsung_Galaxy_Watch_Ultra_2.jpg" },
   "body": { "folded": "8.9 mm thick folded, 4.1 mm unfolded", "weight_g": 215, "thickness_mm": 4.1 },
   "display": { "size_in": 8.0, "type": "Foldable LTPO Dynamic AMOLED 2X", "resolution": "2256 × 2504", "refresh_hz": 120, "refresh": "Up to 120 Hz", "peak_nits": 3000, "cover": "6.5\"" },
   "camera": { "main": "200 MP", "ultrawide": "50 MP", "telephoto": "10 MP, 3×" },

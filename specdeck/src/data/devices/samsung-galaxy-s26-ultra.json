@@ -6,6 +6,7 @@
   "announced": "2026-02",
   "price": { "amount": 1299.99, "currency": "USD", "config": "12 GB / 256 GB" },
   "art": ["#c3c9d4", "#5e6878"],
+  "image": { "file": "samsung-galaxy-s26-ultra.webp", "alt": "Samsung Galaxy S26 Ultra on a store display", "credit": "Dinkun Chen, CC BY-SA 4.0 (Wikimedia Commons)", "source": "https://commons.wikimedia.org/wiki/File:SAMSUNG_Galaxy_S26_Ultra_%26_SAMSUNG_Galaxy_Buds4_Pro.jpg" },
   "body": { "dimensions": "163.6 × 78.1 × 7.9 mm", "weight_g": 214, "thickness_mm": 7.9 },
   "display": { "size_in": 6.9, "type": "Dynamic AMOLED 2X", "resolution": "1440 × 3120", "refresh_hz": 120, "refresh": "Up to 120 Hz", "peak_nits": 2600 },
   "platform": { "chipset": "Snapdragon 8 Elite Gen 5 for Galaxy (3 nm)" },

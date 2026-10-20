@@ -6,6 +6,7 @@
   "announced": "2026-08-12",
   "price": { "amount": 1899, "currency": "USD" },
   "art": ["#dfe3e6", "#6d757c"],
+  "image": { "file": "google-pixel-11-pro-fold.webp", "alt": "Google Pixel 11 Pro Fold", "credit": "Google", "source": "https://store.google.com/product/pixel_11_pro_fold?hl=en-US" },
   "body": { "folded": "155.2 × 76 × 10.1 mm", "weight_g": 239 },
   "display": { "size_in": 8.0, "type": "Super Actua Flex (foldable OLED)", "cover": "6.5\" Super Actua" },
   "platform": { "chipset": "Google Tensor G6" },

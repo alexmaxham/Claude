@@ -6,6 +6,7 @@
   "announced": "2026-02",
   "price": { "amount": 899.99, "currency": "USD" },
   "art": ["#cfe0e8", "#5d7d8c"],
+  "image": { "file": "samsung-galaxy-s26.webp", "alt": "Samsung Galaxy S26 series on a store display", "credit": "Striker9498, CC0 (Wikimedia Commons)", "source": "https://commons.wikimedia.org/wiki/File:20260227_%EC%82%BC%EC%84%B1_%EA%B0%A4%EB%9F%AD%EC%8B%9C_S26_%EC%8B%9C%EB%A6%AC%EC%A6%88.jpg" },
   "body": { "dimensions": "149.6 × 71.7 × 7.2 mm", "weight_g": 167, "thickness_mm": 7.2 },
   "display": { "size_in": 6.3, "type": "Dynamic AMOLED 2X", "resolution": "1080 × 2340", "refresh_hz": 120, "refresh": "Up to 120 Hz", "peak_nits": 2600 },
   "platform": { "chipset": "Exynos 2600 (most regions), Snapdragon 8 Elite Gen 5 for Galaxy (US, Canada, China)" },

@@ -7,6 +7,7 @@
   "released": "2026-08-07",
   "price": { "amount": 1899.99, "currency": "USD", "config": "12 GB / 256 GB" },
   "art": ["#c9d3cf", "#55665f"],
+  "image": { "file": "samsung-galaxy-z-fold8.webp", "alt": "Samsung Galaxy Z Fold8 unfolded on a store display", "credit": "Danielrayyan09, CC BY 4.0 (Wikimedia Commons)", "source": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Z_Fold8.jpg" },
   "body": { "dimensions": "161.4 × 123.9 × 4.5 mm (unfolded)", "folded": "123.9 × 81.9 × 9.7 mm", "weight_g": 201, "thickness_mm": 4.5, "ip": "IP48" },
   "display": { "size_in": 7.6, "type": "Dynamic AMOLED 2X (4:3)", "resolution": "1848 × 2448", "refresh_hz": 120, "refresh": "1–120 Hz", "cover": "5.5\", 1248 × 1972" },
   "platform": { "os": "Android 17, One UI 9", "chipset": "Snapdragon 8 Elite Gen 5 for Galaxy" },
