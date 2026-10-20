@@ -35,6 +35,7 @@ interface Props {
   onReminders: (r: { on: boolean; time: string }) => void;
   signedIn: boolean;
   onToggleSound: () => void;
+  onImport: () => void;
   dispatch: (a: Action) => void;
   onClose: () => void;
 }
@@ -266,6 +267,7 @@ function SettingsPanel({
   reminders,
   onReminders,
   onToggleSound,
+  onImport,
   dispatch,
   onClose,
 }: Omit<Props, 'initialTab' | 'categories'>) {
@@ -395,6 +397,21 @@ function SettingsPanel({
       Things, Notion, Obsidian or Apple Notes. <strong>Backup</strong> keeps everything, including your progress.
     </p>
     <ExportButtons state={state} />
+
+    <h3>Import</h3>
+    <div className="settings glass-soft">
+      <div className="setting setting-wrap">
+        <span>
+          Bring quests in
+          <span className="muted small" style={{ display: 'block' }}>
+            From Todoist, a spreadsheet, a list copied from Apple Reminders or Notes, or a Tasko backup.
+          </span>
+        </span>
+        <button className="btn" onClick={onImport}>
+          Import…
+        </button>
+      </div>
+    </div>
     </>
   );
 }

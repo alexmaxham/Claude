@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { snoozeOptions } from '../core/dates';
+import { bossBounty } from '../core/gamification';
 import type { TaskPatch } from '../core/store';
-import type { Category, Task } from '../core/types';
-import { CategoryPicker, DuePicker, PriorityPicker, RepeatPicker } from './Pickers';
+import type { Category, Task, Template } from '../core/types';
+import { CategoryPicker, DuePicker, EstimatePicker, PriorityPicker, RepeatPicker } from './Pickers';
 import { Sheet } from './Sheet';
 import { SubtaskEditor } from './SubtaskEditor';
 
@@ -10,10 +12,12 @@ interface Props {
   categories: Category[];
   onSave: (patch: TaskPatch) => void;
   onDelete: () => void;
+  onFocus: () => void;
+  onSaveTemplate: (template: Omit<Template, 'id'>) => void;
   onClose: () => void;
 }
 
-export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Props) {
+export function TaskEditor({ task, categories, onSave, onDelete, onFocus, onSaveTemplate, onClose }: Props) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description ?? '');
   const [categoryId, setCategoryId] = useState(task.categoryId);
@@ -21,11 +25,16 @@ export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Prop
   const [dueDate, setDueDate] = useState(task.dueDate);
   const [subtasks, setSubtasks] = useState(task.subtasks ?? []);
   const [repeat, setRepeat] = useState(task.repeat ?? null);
+  const [estimate, setEstimate] = useState(task.estimate);
+  const [boss, setBoss] = useState(!!task.boss);
+  const [savedTemplate, setSavedTemplate] = useState(false);
+
+  const steps = () => subtasks.map((s) => ({ ...s, title: s.title.trim() })).filter((s) => s.title);
+  const patch = (): TaskPatch => ({ title: title.trim(), description: description.trim(), subtasks: steps(), repeat, categoryId, priority, dueDate, estimate, boss });
 
   const save = () => {
     if (!title.trim()) return;
-    const steps = subtasks.map((s) => ({ ...s, title: s.title.trim() })).filter((s) => s.title);
-    onSave({ title: title.trim(), description: description.trim(), subtasks: steps, repeat, categoryId, priority, dueDate });
+    onSave(patch());
     onClose();
   };
 
@@ -42,6 +51,35 @@ export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Prop
           <span>Title</span>
           <input className="text-input" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
         </label>
+        {!task.completedAt && (
+          <div className="editor-actions">
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                if (title.trim()) onSave(patch());
+                onFocus();
+                onClose();
+              }}
+            >
+              🎧 Focus
+            </button>
+            {snoozeOptions().map((o) => (
+              <button
+                key={o.day}
+                type="button"
+                className="btn"
+                onClick={() => {
+                  if (!title.trim()) return;
+                  onSave({ ...patch(), dueDate: o.day });
+                  onClose();
+                }}
+              >
+                💤 {o.label}
+              </button>
+            ))}
+          </div>
+        )}
         <label className="field">
           <span>Description</span>
           <textarea
@@ -59,6 +97,19 @@ export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Prop
           </span>
           <SubtaskEditor value={subtasks} onChange={setSubtasks} />
         </div>
+        <div className="setting boss-setting glass-soft">
+          <span>
+            🐉 Boss battle
+            <span className="muted small" style={{ display: 'block' }}>
+              {boss
+                ? `Each step is a hit point. Beat it for a +${bossBounty({ ...task, boss: true, subtasks })} XP bounty.`
+                : 'For big projects: steps become the boss’s health, and finishing pays a bounty.'}
+            </span>
+          </span>
+          <button type="button" className={`toggle ${boss ? 'on' : ''}`} role="switch" aria-checked={boss} aria-label="Boss battle" onClick={() => setBoss((b) => !b)}>
+            <span />
+          </button>
+        </div>
         <div className="field">
           <span>Category</span>
           <CategoryPicker categories={categories} value={categoryId} onChange={setCategoryId} />
@@ -72,6 +123,10 @@ export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Prop
           <DuePicker value={dueDate} onChange={setDueDate} />
         </div>
         <div className="field">
+          <span>Time estimate</span>
+          <EstimatePicker value={estimate} onChange={setEstimate} />
+        </div>
+        <div className="field">
           <span>Repeat</span>
           <RepeatPicker value={repeat} dueDate={dueDate} onChange={setRepeat} />
         </div>
@@ -80,6 +135,26 @@ export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Prop
             Completed {new Date(task.completedAt).toLocaleString()} · earned {task.xpAwarded} XP
           </p>
         )}
+        <button
+          type="button"
+          className="link-btn template-save"
+          disabled={!title.trim() || savedTemplate}
+          onClick={() => {
+            onSaveTemplate({
+              name: title.trim(),
+              emoji: boss ? '🐉' : '📋',
+              description: description.trim() || undefined,
+              categoryId,
+              priority,
+              steps: steps().map((s) => s.title),
+              estimate,
+              boss,
+            });
+            setSavedTemplate(true);
+          }}
+        >
+          {savedTemplate ? '✓ Saved as a template' : '📋 Save as a template'}
+        </button>
         <div className="form-actions">
           <button
             type="button"

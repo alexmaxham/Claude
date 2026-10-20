@@ -32,6 +32,7 @@ export function parseState(raw: string | null): AppState {
       version: 1,
       stats: { ...base.stats, ...parsed.stats },
       theme: THEMES.some((t) => t.id === parsed.theme) ? parsed.theme! : base.theme,
+      templates: Array.isArray(parsed.templates) ? parsed.templates : base.templates,
     };
   } catch {
     return createInitialState();

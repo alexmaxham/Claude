@@ -1,20 +1,40 @@
-import { challengeProgress, currentWeek, weekKey } from './challenges';
-import { dayKey } from './dates';
-import { ACHIEVEMENTS, GOAL_BONUS, levelFromXp, nextStreak, xpForTask } from './gamification';
+import { challengeProgress, currentWeek, hash, weekKey } from './challenges';
+import { addDays, dayKey } from './dates';
+import {
+  ACHIEVEMENTS,
+  bossBounty,
+  FOCUS_XP_PER_MINUTE,
+  FREEZE_EVERY,
+  GOAL_BONUS,
+  isSurprise,
+  levelFromXp,
+  MAX_FREEZES,
+  missedDays,
+  nextStreak,
+  xpForTask,
+} from './gamification';
 import { nextDueDate } from './recurrence';
-import type { AppState, Category, GameEvent, Priority, Repeat, Subtask, Task, ThemeId, WeekProgress } from './types';
+import type { AppState, Category, GameEvent, Priority, Repeat, Subtask, Task, Template, ThemeId, WeekProgress } from './types';
+
+/** What it takes to make a task; everything but the title is optional. */
+export interface NewTask {
+  title: string;
+  description?: string;
+  categoryId?: string | null;
+  priority?: Priority;
+  dueDate?: string | null;
+  repeat?: Repeat | null;
+  subtasks?: Subtask[];
+  boss?: boolean;
+  estimate?: number;
+  /** Imports only: a finished task and when it was done. Earns no XP. */
+  completedAt?: number | null;
+}
 
 export type Action =
-  | {
-      type: 'addTask';
-      title: string;
-      description?: string;
-      categoryId: string | null;
-      priority: Priority;
-      dueDate: string | null;
-      repeat?: Repeat | null;
-      subtasks?: Subtask[];
-    }
+  | ({ type: 'addTask' } & NewTask)
+  /** Adds a batch, e.g. from an import. Categories are matched by name and created if missing. */
+  | { type: 'importTasks'; tasks: (NewTask & { categoryName?: string })[] }
   | { type: 'updateTask'; id: string; patch: TaskPatch }
   | { type: 'toggleTask'; id: string }
   | { type: 'toggleSubtask'; taskId: string; subtaskId: string }
@@ -29,11 +49,20 @@ export type Action =
   | { type: 'moveCategory'; id: string; delta: -1 | 1 }
   | { type: 'setDailyGoal'; goal: number }
   | { type: 'setTheme'; theme: ThemeId }
+  /** Moves these tasks to `day`, in this order, e.g. after planning the day. */
+  | { type: 'planDay'; ids: string[]; day: string }
+  | { type: 'focusComplete'; taskId: string | null; minutes: number }
+  /** Picks today's double-XP surprise if there isn't one for today yet. */
+  | { type: 'rollSurprise' }
+  | { type: 'saveTemplate'; template: Omit<Template, 'id'> & { id?: string } }
+  | { type: 'deleteTemplate'; id: string }
   | { type: 'reset' }
   /** Replace everything, e.g. with data loaded from the cloud. */
   | { type: 'load'; state: AppState };
 
-export type TaskPatch = Partial<Pick<Task, 'title' | 'description' | 'categoryId' | 'priority' | 'dueDate' | 'subtasks' | 'repeat'>>;
+export type TaskPatch = Partial<
+  Pick<Task, 'title' | 'description' | 'categoryId' | 'priority' | 'dueDate' | 'subtasks' | 'repeat' | 'boss' | 'doing' | 'estimate'>
+>;
 
 /** The first five are free; the rest unlock as rewards when you reach their level. */
 export const THEMES: { id: ThemeId; name: string; color: string; unlockLevel?: number }[] = [
@@ -68,6 +97,46 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'default-errands', name: 'Errands', emoji: '🛒', color: '#ff9f43' },
 ];
 
+/** Starter templates; ids starting with "builtin-" mark them as not made by the user. */
+export const BUILTIN_TEMPLATES: Template[] = [
+  {
+    id: 'builtin-weekly-review',
+    name: 'Weekly review',
+    emoji: '🗓️',
+    categoryId: null,
+    priority: 'medium',
+    estimate: 30,
+    steps: ['Clear inbox', 'Review last week’s calendar', 'Check next week’s calendar', 'Update open quests', 'Pick 3 big goals'],
+  },
+  {
+    id: 'builtin-packing',
+    name: 'Packing list',
+    emoji: '🧳',
+    categoryId: 'default-personal',
+    priority: 'medium',
+    steps: ['Clothes', 'Toiletries', 'Chargers', 'Passport / ID', 'Medication', 'Snacks'],
+  },
+  {
+    id: 'builtin-morning',
+    name: 'Morning routine',
+    emoji: '🌅',
+    categoryId: 'default-health',
+    priority: 'low',
+    estimate: 20,
+    steps: ['Glass of water', 'Stretch', 'Plan the day'],
+  },
+  {
+    id: 'builtin-project',
+    name: 'Big project',
+    emoji: '🐉',
+    description: 'A boss battle: each step you finish deals damage.',
+    categoryId: 'default-work',
+    priority: 'high',
+    boss: true,
+    steps: ['Define the goal', 'Break it into milestones', 'First draft', 'Get feedback', 'Finish and ship'],
+  },
+];
+
 export function createInitialState(): AppState {
   return {
     version: 1,
@@ -88,8 +157,15 @@ export function createInitialState(): AppState {
       repeatCompleted: 0,
       challengesCompleted: 0,
       week: null,
+      streakFreezes: 0,
+      frozenDays: [],
+      bossesDefeated: 0,
+      focusMinutes: 0,
+      focusSessions: 0,
+      surprise: null,
     },
     theme: 'blue',
+    templates: BUILTIN_TEMPLATES.map((t) => ({ ...t, steps: [...t.steps] })),
   };
 }
 
@@ -110,25 +186,98 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
 
   switch (action.type) {
     case 'addTask': {
-      const title = action.title.trim();
-      if (!title) return { state, events };
-      const description = action.description?.trim();
-      const task: Task = {
-        id: uid(),
-        title,
-        ...(description ? { description } : {}),
-        ...(action.subtasks?.length ? { subtasks: action.subtasks } : {}),
-        ...(action.repeat ? { repeat: action.repeat } : {}),
-        categoryId: action.categoryId,
-        priority: action.priority,
-        dueDate: action.dueDate,
-        createdAt: now,
-        completedAt: null,
-        xpAwarded: 0,
-      };
+      const task = makeTask(action, now);
+      if (!task) return { state, events };
       next = { ...state, tasks: [task, ...state.tasks] };
       break;
     }
+
+    case 'importTasks': {
+      const categories = [...state.categories];
+      const byName = new Map(categories.map((c) => [c.name.trim().toLowerCase(), c.id]));
+      const added: Task[] = [];
+      action.tasks.forEach((t, i) => {
+        let categoryId = t.categoryId ?? null;
+        const name = t.categoryName?.trim();
+        if (name) {
+          categoryId = byName.get(name.toLowerCase()) ?? null;
+          if (!categoryId) {
+            categoryId = uid();
+            byName.set(name.toLowerCase(), categoryId);
+            categories.push({ id: categoryId, name, emoji: '📥', color: CATEGORY_COLORS[categories.length % CATEGORY_COLORS.length] });
+          }
+        }
+        // Keep the file's order: earlier rows come first when sorted by newest.
+        const task = makeTask({ ...t, categoryId }, now - i);
+        if (task) added.push(task);
+      });
+      if (!added.length) return { state, events };
+      next = { ...state, categories, tasks: [...added, ...state.tasks] };
+      break;
+    }
+
+    case 'planDay': {
+      const ids = action.ids.filter((id) => state.tasks.some((t) => t.id === id && !t.completedAt));
+      if (!ids.length) return { state, events };
+      const planned = new Set(ids);
+      next = {
+        ...state,
+        tasks: state.tasks.map((t) => (planned.has(t.id) ? { ...t, dueDate: action.day } : t)),
+      };
+      // Their order in the plan becomes their manual order.
+      next = reduce(next, { type: 'reorderTasks', ids }, now).state;
+      break;
+    }
+
+    case 'focusComplete': {
+      const minutes = Math.max(1, Math.min(180, Math.round(action.minutes)));
+      const xp = Math.max(1, Math.round(minutes * FOCUS_XP_PER_MINUTE));
+      const levelBefore = levelFromXp(state.stats.xp).level;
+      const stats = {
+        ...state.stats,
+        xp: state.stats.xp + xp,
+        focusMinutes: state.stats.focusMinutes + minutes,
+        focusSessions: state.stats.focusSessions + 1,
+      };
+      events.push({ type: 'focusDone', minutes, xp });
+      levelEvents(levelBefore, stats.xp, events);
+      next = {
+        ...state,
+        stats,
+        tasks: state.tasks.map((t) => (t.id === action.taskId ? { ...t, focusMinutes: (t.focusMinutes ?? 0) + minutes } : t)),
+      };
+      break;
+    }
+
+    case 'rollSurprise': {
+      const today = dayKey(now);
+      const current = state.stats.surprise;
+      if (current?.day === today && state.tasks.some((t) => t.id === current.taskId)) return { state, events };
+      // Prefer something due by today, so the surprise is something you'd actually do.
+      const open = state.tasks.filter((t) => !t.completedAt);
+      const due = open.filter((t) => t.dueDate && t.dueDate <= today);
+      const pool = (due.length ? due : open).map((t) => t.id).sort();
+      const surprise = pool.length ? { day: today, taskId: pool[hash(today) % pool.length] } : null;
+      if (!surprise && !current) return { state, events };
+      next = { ...state, stats: { ...state.stats, surprise } };
+      break;
+    }
+
+    case 'saveTemplate': {
+      const name = action.template.name.trim();
+      if (!name) return { state, events };
+      const template: Template = { ...action.template, name, id: action.template.id ?? uid() };
+      const exists = state.templates.some((t) => t.id === template.id);
+      next = {
+        ...state,
+        templates: exists ? state.templates.map((t) => (t.id === template.id ? template : t)) : [...state.templates, template],
+      };
+      break;
+    }
+
+    case 'deleteTemplate':
+      next = { ...state, templates: state.templates.filter((t) => t.id !== action.id) };
+      break;
 
     case 'updateTask':
       next = {
@@ -149,6 +298,7 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
         stats.totalCompleted = Math.max(0, stats.totalCompleted - 1);
         stats.completionsByDay[day] = Math.max(0, (stats.completionsByDay[day] ?? 0) - 1);
         Object.assign(stats, countLifetime(stats, task, -1));
+        if (task.boss) stats.bossesDefeated = Math.max(0, stats.bossesDefeated - 1);
         if (stats.week && weekKey(task.completedAt) === stats.week.key) {
           stats.week = countCompletion(stats.week, task, -1);
         }
@@ -167,8 +317,22 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
 
       const today = dayKey(now);
       const streak = nextStreak(state.stats, now);
-      const xp = xpForTask(task, streak, now);
+      const surprise = isSurprise(state.stats, task, now);
+      const xp = xpForTask(task, streak, now, surprise);
       const levelBefore = levelFromXp(stats.xp).level;
+
+      // Missed days the streak survived use up freezes.
+      const missed = state.stats.lastActiveDay && streak > 1 ? missedDays(state.stats, now) : 0;
+      if (missed > 0) {
+        stats.streakFreezes -= missed;
+        stats.frozenDays = [...stats.frozenDays, ...Array.from({ length: missed }, (_, i) => addDays(today, -missed + i))];
+        events.push({ type: 'freezeUsed', days: missed });
+      }
+      // Every FREEZE_EVERY days of streak earns a freeze.
+      if (streak > state.stats.currentStreak && streak % FREEZE_EVERY === 0 && stats.streakFreezes < MAX_FREEZES) {
+        stats.streakFreezes += 1;
+        events.push({ type: 'freezeEarned', total: stats.streakFreezes });
+      }
 
       stats.xp += xp;
       stats.totalCompleted += 1;
@@ -177,6 +341,11 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
       stats.lastActiveDay = today;
       stats.completionsByDay[today] = (stats.completionsByDay[today] ?? 0) + 1;
       events.push({ type: 'xp', amount: xp, taskId: task.id });
+      if (surprise) events.push({ type: 'surprise', bonus: Math.round(xp / 2) });
+      if (task.boss) {
+        stats.bossesDefeated += 1;
+        events.push({ type: 'bossDefeated', taskId: task.id, bounty: bossBounty(task) });
+      }
       Object.assign(stats, countLifetime(stats, { ...task, completedAt: now }, 1));
 
       let week = countCompletion(currentWeek(state.stats, state.categories, now), { ...task, completedAt: now }, 1);
@@ -198,15 +367,7 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
       }
       stats.week = week;
 
-      const levelAfter = levelFromXp(stats.xp).level;
-      if (levelAfter > levelBefore) {
-        events.push({ type: 'levelUp', level: levelAfter });
-        for (const t of THEMES) {
-          if (t.unlockLevel && t.unlockLevel > levelBefore && t.unlockLevel <= levelAfter) {
-            events.push({ type: 'themeUnlocked', theme: t.id });
-          }
-        }
-      }
+      levelEvents(levelBefore, stats.xp, events);
 
       let tasks = state.tasks;
       let spawnedId: string | undefined;
@@ -216,6 +377,8 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
           id: uid(),
           dueDate: nextDueDate(task.repeat, task.dueDate, today),
           subtasks: task.subtasks?.map((s) => ({ ...s, done: false })),
+          doing: undefined,
+          focusMinutes: undefined,
           createdAt: now,
           completedAt: null,
           xpAwarded: 0,
@@ -225,7 +388,7 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
         tasks = [occurrence, ...tasks];
       }
 
-      justCompleted = { ...task, completedAt: now, xpAwarded: xp, ...(spawnedId ? { spawnedId } : {}) };
+      justCompleted = { ...task, completedAt: now, xpAwarded: xp, doing: undefined, ...(spawnedId ? { spawnedId } : {}) };
       next = {
         ...state,
         stats,
@@ -234,7 +397,14 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
       break;
     }
 
-    case 'toggleSubtask':
+    case 'toggleSubtask': {
+      const task = state.tasks.find((t) => t.id === action.taskId);
+      const sub = task?.subtasks?.find((s) => s.id === action.subtaskId);
+      if (!task || !sub) return { state, events };
+      if (task.boss && !sub.done && !task.completedAt) {
+        const maxHp = task.subtasks!.length;
+        events.push({ type: 'bossHit', taskId: task.id, hp: task.subtasks!.filter((s) => !s.done).length - 1, maxHp });
+      }
       next = {
         ...state,
         tasks: state.tasks.map((t) =>
@@ -244,6 +414,7 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
         ),
       };
       break;
+    }
 
     case 'reorderTasks': {
       const byId = new Map(state.tasks.map((t) => [t.id, t]));
@@ -342,6 +513,40 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
   }
 
   return { state: next, events };
+}
+
+function makeTask(t: NewTask, now: number): Task | null {
+  const title = t.title.trim();
+  if (!title) return null;
+  const description = t.description?.trim();
+  const estimate = t.estimate && t.estimate > 0 ? Math.round(t.estimate) : undefined;
+  return {
+    id: uid(),
+    title,
+    ...(description ? { description } : {}),
+    ...(t.subtasks?.length ? { subtasks: t.subtasks } : {}),
+    ...(t.repeat ? { repeat: t.repeat } : {}),
+    ...(t.boss ? { boss: true } : {}),
+    ...(estimate ? { estimate } : {}),
+    categoryId: t.categoryId ?? null,
+    priority: t.priority ?? 'medium',
+    dueDate: t.dueDate ?? null,
+    createdAt: now,
+    completedAt: t.completedAt ?? null,
+    xpAwarded: 0,
+  };
+}
+
+/** Level-up and theme-unlock events for XP going from a level to `xpAfter`. */
+function levelEvents(levelBefore: number, xpAfter: number, events: GameEvent[]) {
+  const levelAfter = levelFromXp(xpAfter).level;
+  if (levelAfter <= levelBefore) return;
+  events.push({ type: 'levelUp', level: levelAfter });
+  for (const t of THEMES) {
+    if (t.unlockLevel && t.unlockLevel > levelBefore && t.unlockLevel <= levelAfter) {
+      events.push({ type: 'themeUnlocked', theme: t.id });
+    }
+  }
 }
 
 /** Adjust this week's counters for a task being completed (+1) or un-completed (-1). */

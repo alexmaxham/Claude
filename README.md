@@ -66,7 +66,20 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 - **Level milestones:** the Trophies tab shows how much XP is left to the next big levels and what each unlocks.
 - **Export:** Settings → Export gives a Todoist import template, a spreadsheet CSV, a Markdown checklist (Things, Notion, Obsidian, Apple Notes) or a full JSON backup.
 - **Google Calendar sync:** Settings → Connected apps → Sync now puts every open quest with a due date on your Google Calendar as an all-day event, updates changed ones and removes finished ones. Needs sign-in; see setup below.
-- **Keyboard shortcuts:** `N` add, `/` search, `J`/`K` move, `X` complete, `E` edit, `?` all shortcuts.
+- **Navigation:** Tasks, Trophies, Calendar and Profile. A floating glass bar at the bottom on phones; a side menu on wide screens that folds to icons (`[`).
+- **Quick-add shorthand:** type `Call mom tomorrow #personal !high ~15m`. Dates (`today`, `fri`, `next week`, `in 3 days`, `oct 31`, `11/5`), repeats (`every day`, `every mon, wed`, `weekly`), `#category`, `!high`/`!low`, `~30m`/`~1h` estimates and `!boss` are pulled out and shown as chips; tap a chip to keep that word in the title.
+- **Command menu:** `⌘K` / `Ctrl+K` (or the ⌘ button) runs any action or jumps to a quest.
+- **Plan my day** (`P`): pick quests from overdue, today, this week and undated, in the order you'll do them; shows the total estimated time against the hours you have, and can move unpicked overdue quests to tomorrow.
+- **Snooze:** 💤 on a quest (or `S`, or swipe left on a phone) moves it to tomorrow; the editor also offers this weekend and next week.
+- **Templates** (`T`): reusable quests with steps (weekly review, packing list, morning routine, big project). Save any quest as a template from its editor.
+- **Time estimates:** shown on quests and added up per list and per day; Today warns when you've planned more than your hours.
+- **Board view** (`B`): To do / Doing / Done columns. Drag a card to start it or drop it on Done to complete it.
+- **Calendar week view:** drag quests between days; signed-in users can show their Google Calendar events alongside.
+- **Focus timer:** 🎧 on a quest (or `F`) starts a 15/25/50-minute session. It survives reloads, shows in the tab title, and pays XP when it ends (stopping after 5+ minutes pays for the time done).
+- **Import:** Settings → Import reads Todoist CSV exports, spreadsheets (CSV), lists pasted from Apple Reminders, Notes, Things or Notion, Markdown checklists and Tasko backups (which can also be restored in full).
+- **Year in review:** Profile → Your year in review, with a summary to share.
+- **Offline:** the web app caches itself (`public/sw.js`), so it opens without a connection.
+- **Keyboard shortcuts:** `N` add, `/` search, `J`/`K` move, `X` complete, `E` edit, `F` focus, `S` snooze, `P` plan, `T` templates, `B` board, `1`–`4` sections, `⌘K` commands, `?` all shortcuts.
 - **Desktop layout:** on wide screens, progress and categories sit in a sticky sidebar and the task list gets the rest of the width.
 - **Color themes:** pick Blue, Orange, Red, Green or Purple under ⚙︎ → Settings (Settings and Trophies are separate tabs). The whole app (backgrounds, buttons, XP bar, confetti) follows it, and it syncs with your account.
 - **Categories:** filter with the tabs. Tap ✏️ Edit to rename, change emoji or color, reorder, add or delete categories. Deleting a category keeps its tasks; they become uncategorized.
@@ -76,9 +89,13 @@ VITE_FIREBASE_EMULATORS=true npm run dev
   - Streaks: each consecutive active day adds +5% XP, up to +50%.
   - Daily goal ring (adjustable). Hitting it pays a +25 XP bonus once per day.
   - 100 levels, each with its own rank title (Novice → Questlord), and a level-up celebration.
-  - 44 achievements (trophies) for totals, streaks, levels, daily goals, on-time and high-priority work, steps, repeating tasks and weekly challenges.
+  - Achievements (trophies) for totals, streaks, levels, daily goals, on-time and high-priority work, steps, repeating tasks and weekly challenges.
   - Confetti, floating XP, sounds (can be turned off) and haptics (Android, and the Taptic Engine in the iPhone app).
   - Un-checking a task takes back exactly the XP it earned, so you can't farm XP.
+  - **Boss battles:** mark a big quest as a boss (or type `!boss`). Its steps are its health; strike them one by one, then beat it for a bounty of 40 XP + 10 per step.
+  - **Streak freezes:** every 7 streak days earns a 🧊 (up to 3). A freeze covers a missed day so the streak survives.
+  - **Daily surprise:** one open quest a day (🍀) pays double XP.
+  - Focus sessions earn 0.4 XP a minute. 51 achievements in all.
 - Optional sign-in with Google, Apple (iPhone app) or email/password, with sync across devices (see above), and in-app account deletion. Without an account, data stays in the browser.
 - [Privacy policy](https://alexmaxham.github.io/Claude/privacy.html) (`public/privacy.html`), linked from the sign-in and account screens.
 - Undo after deleting a task. Light and dark mode follow the system. Reduced-motion is respected.
@@ -103,7 +120,7 @@ src/styles.css   Liquid glass design system
 
 | | Web | iPhone app |
 |---|---|---|
-| Navigation | One page, with sheets for trophies, profile and settings | A floating liquid glass tab bar: **Tasks**, **Trophies**, **Calendar** (a month view; tap a day to see and add its quests) and **Profile**. Settings stay behind ⚙︎. Add `?tabbar` to the web URL to preview it in a browser |
+| Navigation | **Tasks**, **Trophies**, **Calendar** (a month view; tap a day to see and add its quests) and **Profile**. On phone-sized screens they're in a floating glass bar at the bottom; on wide screens in a glass side menu that folds down to icons (<kbd>[</kbd>), with <kbd>1</kbd>–<kbd>4</kbd> to switch | The same floating glass tab bar. Settings stay behind ⚙︎ |
 | Haptics | `navigator.vibrate` (Android only) | Taptic Engine: light/medium taps, a success buzz on level up |
 | Daily reminder | Only while a tab is open | Real iOS notifications for the next 7 days, even when Tasko is closed |
 | Export | File download | Share sheet (Save to Files, AirDrop, Mail…) |

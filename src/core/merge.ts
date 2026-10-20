@@ -38,6 +38,7 @@ export function mergeStates(account: AppState, guest: AppState): AppState {
     ...account,
     tasks: [...extraTasks, ...account.tasks],
     categories: [...account.categories, ...extraCategories],
+    templates: [...account.templates, ...guest.templates.filter((t) => !account.templates.some((x) => x.id === t.id))],
     stats: mergeStats(account.stats, guest.stats),
   };
 }
@@ -73,5 +74,11 @@ function mergeStats(a: Stats, b: Stats): Stats {
     challengesCompleted: a.challengesCompleted + b.challengesCompleted,
     // Weekly challenge progress isn't additive in a meaningful way; keep the newer week.
     week: (b.week?.key ?? '') > (a.week?.key ?? '') ? b.week : a.week,
+    streakFreezes: Math.max(a.streakFreezes, b.streakFreezes),
+    frozenDays: [...new Set([...a.frozenDays, ...b.frozenDays])].sort(),
+    bossesDefeated: a.bossesDefeated + b.bossesDefeated,
+    focusMinutes: a.focusMinutes + b.focusMinutes,
+    focusSessions: a.focusSessions + b.focusSessions,
+    surprise: a.surprise,
   };
 }

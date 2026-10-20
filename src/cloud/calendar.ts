@@ -68,3 +68,43 @@ export async function syncCalendar(token: string, tasks: Task[]): Promise<SyncRe
   ]);
   return { created: plan.create.length, updated: plan.update.length, removed: plan.remove.length };
 }
+
+/** Someone's own calendar event, for showing next to quests. */
+export interface GoogleEvent {
+  id: string;
+  title: string;
+  /** Day key the event starts on. */
+  day: string;
+  /** "09:30", or null for all-day events. */
+  time: string | null;
+}
+
+/** Events on the primary calendar from `from` to `to` (day keys, inclusive), leaving out Tasko's own. */
+export async function listEvents(token: string, from: string, to: string): Promise<GoogleEvent[]> {
+  const toDate = (key: string) => {
+    const [y, m, d] = key.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  };
+  const end = toDate(to);
+  end.setDate(end.getDate() + 1);
+  const q = new URLSearchParams({
+    timeMin: toDate(from).toISOString(),
+    timeMax: end.toISOString(),
+    singleEvents: 'true',
+    orderBy: 'startTime',
+    maxResults: '250',
+  });
+  type Item = { id: string; summary?: string; status?: string; start?: { date?: string; dateTime?: string }; extendedProperties?: { private?: { questlog?: string } } };
+  const page = await call<{ items?: Item[] }>(token, `${BASE}?${q}`);
+  return (page.items ?? [])
+    .filter((e) => e.status !== 'cancelled' && e.extendedProperties?.private?.questlog !== '1' && e.start)
+    .map((e) => {
+      const dt = e.start!.dateTime ? new Date(e.start!.dateTime) : null;
+      return {
+        id: e.id,
+        title: e.summary || '(No title)',
+        day: dt ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}` : e.start!.date!,
+        time: dt ? dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : null,
+      };
+    });
+}
