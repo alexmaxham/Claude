@@ -3,12 +3,12 @@
 // These values are not secrets: they identify the project, and the Firestore
 // security rules in firestore.rules are what keep each user's data private.
 const config = {
-  apiKey: '',
-  authDomain: '',
-  projectId: '',
-  storageBucket: '',
-  messagingSenderId: '',
-  appId: '',
+  apiKey: '', // still needed: Project settings → General → Your apps → Web app → apiKey
+  authDomain: 'questlog2-e03f9.firebaseapp.com',
+  projectId: 'questlog2-e03f9',
+  storageBucket: 'questlog2-e03f9.firebasestorage.app',
+  messagingSenderId: '304688994859',
+  appId: '1:304688994859:web:0615aa39d895a41e67286e',
 };
 
 export interface CloudConfig {
