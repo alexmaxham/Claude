@@ -103,7 +103,7 @@ src/styles.css   Liquid glass design system
 
 | | Web | iPhone app |
 |---|---|---|
-| Navigation | One page, with sheets for trophies, profile and settings | A floating liquid glass tab bar: **Tasks**, **Trophies**, **Calendar** (a month view; tap a day to see and add its quests) and **Profile**. Settings stay behind ⚙︎. Add `?tabbar` to the web URL to preview it in a browser |
+| Navigation | **Tasks**, **Trophies**, **Calendar** (a month view; tap a day to see and add its quests) and **Profile**. On phone-sized screens they're in a floating glass bar at the bottom; on wide screens in a glass side menu that folds down to icons (<kbd>[</kbd>), with <kbd>1</kbd>–<kbd>4</kbd> to switch | The same floating glass tab bar. Settings stay behind ⚙︎ |
 | Haptics | `navigator.vibrate` (Android only) | Taptic Engine: light/medium taps, a success buzz on level up |
 | Daily reminder | Only while a tab is open | Real iOS notifications for the next 7 days, even when Tasko is closed |
 | Export | File download | Share sheet (Save to Files, AirDrop, Mail…) |

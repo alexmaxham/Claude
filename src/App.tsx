@@ -7,7 +7,7 @@ import { CategoryManager } from './components/CategoryManager';
 import { Header } from './components/Header';
 import { LogoMark, Wordmark } from './components/Logo';
 import { CalendarView } from './components/CalendarView';
-import { ProfileSheet, ProfileView } from './components/ProfileSheet';
+import { ProfileView } from './components/ProfileView';
 import { QuickAdd } from './components/QuickAdd';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
 import { TaskEditor } from './components/TaskEditor';
@@ -59,11 +59,13 @@ interface Prefs {
   remindersOn: boolean;
   reminderTime: string;
   appearance: Appearance;
+  /** Wide screens: the side menu is folded down to icons. */
+  railCollapsed: boolean;
 }
 
 // Storage keys keep the app's original name so existing data and settings carry over.
 const PREFS_KEY = 'questlog:prefs';
-const DEFAULT_PREFS: Prefs = { soundOn: true, filter: 'all', sort: 'smart', remindersOn: false, reminderTime: '09:00', appearance: 'system' };
+const DEFAULT_PREFS: Prefs = { soundOn: true, filter: 'all', sort: 'smart', remindersOn: false, reminderTime: '09:00', appearance: 'system', railCollapsed: false };
 
 function readPrefs(): Prefs {
   try {
@@ -81,9 +83,7 @@ function writePrefs(prefs: Prefs) {
   }
 }
 
-/** The iPhone app gets a floating tab bar; add ?tabbar to the URL to try it in a browser. */
-const TAB_BAR = isNative || new URLSearchParams(location.search).has('tabbar');
-
+const TABS: Tab[] = ['tasks', 'trophies', 'calendar', 'profile'];
 const TAB_TITLES: Record<Tab, string> = { tasks: 'Tasks', trophies: 'Trophies', calendar: 'Calendar', profile: 'Profile' };
 
 let nextId = 1;
@@ -115,7 +115,7 @@ export default function App() {
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [pulse, setPulse] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<'categories' | 'account' | 'profile' | 'shortcuts' | TrophiesTab | null>(null);
+  const [sheet, setSheet] = useState<'categories' | 'account' | 'shortcuts' | TrophiesTab | null>(null);
   const [tab, setTab] = useState<Tab>('tasks');
   const [showDone, setShowDone] = useState(false);
   const [query, setQuery] = useState('');
@@ -206,9 +206,11 @@ export default function App() {
   useReminders(tasks, prefs.remindersOn, prefs.reminderTime);
   useAppearance(prefs.appearance);
 
+  // The stylesheet sizes the page around the side menu from these classes.
   useLayoutEffect(() => {
-    document.documentElement.classList.toggle('with-tabbar', TAB_BAR);
-  }, []);
+    document.documentElement.classList.add('with-tabbar');
+    document.documentElement.classList.toggle('rail-collapsed', prefs.railCollapsed);
+  }, [prefs.railCollapsed]);
 
   const changeTab = (next: Tab) => {
     // Tapping the current tab again scrolls back to the top, like iOS.
@@ -218,7 +220,8 @@ export default function App() {
     setSelectedId(null);
     window.scrollTo(0, 0);
   };
-  const openTrophies = () => (TAB_BAR ? changeTab('trophies') : setSheet('trophies'));
+  const openTrophies = () => changeTab('trophies');
+  const toggleRail = () => updatePrefs({ railCollapsed: !prefs.railCollapsed });
 
   // The stylesheet picks its accent colors from this attribute.
   useLayoutEffect(() => {
@@ -296,8 +299,8 @@ export default function App() {
   };
 
   // Keyboard shortcuts. Ignored while typing or while a sheet or dialog is open.
-  const keyState = useRef({ navigable, selectedId, toggle, blocked: false });
-  keyState.current = { navigable, selectedId, toggle, blocked: !!(sheet || editing || levelUp !== null || tab !== 'tasks') };
+  const keyState = useRef({ navigable, selectedId, toggle, blocked: false, onTasks: true, changeTab, toggleRail });
+  keyState.current = { navigable, selectedId, toggle, blocked: !!(sheet || editing || levelUp !== null), onTasks: tab === 'tasks', changeTab, toggleRail };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const k = keyState.current;
@@ -310,6 +313,16 @@ export default function App() {
         }
         return;
       }
+      // 1–4 switch sections and [ folds the side menu, from any section.
+      const n = Number(e.key);
+      if (n >= 1 && n <= TABS.length) return k.changeTab(TABS[n - 1]);
+      if (e.key === '[') return k.toggleRail();
+      if (e.key === '?') {
+        e.preventDefault();
+        return setSheet('shortcuts');
+      }
+      if (!k.onTasks) return;
+
       const list = k.navigable;
       const index = list.findIndex((t) => t.id === k.selectedId);
       const selected = index >= 0 ? list[index] : undefined;
@@ -338,9 +351,6 @@ export default function App() {
       } else if (e.key === '/') {
         e.preventDefault();
         searchRef.current?.focus();
-      } else if (e.key === '?') {
-        e.preventDefault();
-        setSheet('shortcuts');
       } else if (e.key === 'Escape') {
         setSelectedId(null);
         setQuery('');
@@ -402,9 +412,9 @@ export default function App() {
         <div className="blob b4" />
       </div>
 
-      <main className={`app ${TAB_BAR ? 'has-tabbar' : ''} ${drag.draggingId ? 'is-dragging' : ''}`}>
+      <main className={`app has-tabbar ${drag.draggingId ? 'is-dragging' : ''}`}>
         <div className="topbar">
-          {TAB_BAR && tab !== 'tasks' ? (
+          {tab !== 'tasks' ? (
             <h1 className="page-title">{TAB_TITLES[tab]}</h1>
           ) : (
             <h1 className="brand">
@@ -413,10 +423,11 @@ export default function App() {
             </h1>
           )}
           <div className="topbar-actions">
-            {TAB_BAR ? null : cloud.status === 'signedIn' && cloud.user ? (
+            {/* The iPhone app leaves these to the Profile tab; on the web they keep sign-in in reach. */}
+            {isNative ? null : cloud.status === 'signedIn' && cloud.user ? (
               <button
                 className={`account-btn sync-${cloud.sync}`}
-                onClick={() => setSheet('profile')}
+                onClick={() => changeTab('profile')}
                 aria-label={`Profile: ${cloud.user.email ?? ''}. ${SYNC_LABEL[cloud.sync]}`}
                 title={SYNC_LABEL[cloud.sync]}
               >
@@ -424,17 +435,9 @@ export default function App() {
                 <span className="sync-dot" />
               </button>
             ) : cloud.status === 'signedOut' ? (
-              <>
-                <button className="signin-btn glass-soft" onClick={() => setSheet('account')}>
-                  Sign in
-                </button>
-                <button className="icon-btn glass-soft guest-btn" onClick={() => setSheet('profile')} aria-label="Profile">
-                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                    <circle cx="12" cy="8.5" r="3.6" fill="none" stroke="currentColor" strokeWidth="1.7" />
-                    <path d="M4.8 19.5c1.3-3.3 4-5 7.2-5s5.9 1.7 7.2 5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                  </svg>
-                </button>
-              </>
+              <button className="signin-btn glass-soft" onClick={() => setSheet('account')}>
+                Sign in
+              </button>
             ) : null}
             <button className="icon-btn glass-soft" onClick={() => setSheet('settings')} aria-label="Settings">
               ⚙︎
@@ -442,12 +445,12 @@ export default function App() {
           </div>
         </div>
 
-        {TAB_BAR && tab === 'trophies' && (
+        {tab === 'trophies' && (
           <div className="page">
             <TrophiesPanel stats={stats} categories={categories} />
           </div>
         )}
-        {TAB_BAR && tab === 'calendar' && (
+        {tab === 'calendar' && (
           <CalendarView
             tasks={tasks}
             stats={stats}
@@ -456,7 +459,7 @@ export default function App() {
             renderTask={(t) => renderTask(t, false)}
           />
         )}
-        {TAB_BAR && tab === 'profile' && (
+        {tab === 'profile' && (
           <div className="page">
             <ProfileView
               state={state}
@@ -469,7 +472,7 @@ export default function App() {
           </div>
         )}
 
-        {(!TAB_BAR || tab === 'tasks') && (
+        {tab === 'tasks' && (
           <>
             {/* On phones these two wrappers vanish (display: contents) and their children
                 stack in one column; on wide screens they become a sidebar and a main column. */}
@@ -573,7 +576,7 @@ export default function App() {
         )}
       </main>
 
-      {TAB_BAR && <TabBar tab={tab} onChange={changeTab} dueCount={todayCount} />}
+      <TabBar tab={tab} onChange={changeTab} dueCount={todayCount} collapsed={prefs.railCollapsed} onToggleCollapsed={toggleRail} />
 
       {floats.map((f) => (
         <div key={f.id} className="xp-float" style={{ left: f.x, top: f.y }} aria-hidden="true">
@@ -643,17 +646,6 @@ export default function App() {
         />
       )}
       {sheet === 'shortcuts' && <ShortcutsHelp onClose={() => setSheet(null)} />}
-      {sheet === 'profile' && (
-        <ProfileSheet
-          state={state}
-          user={cloud.user}
-          sync={cloud.sync}
-          onOpenAccount={() => setSheet('account')}
-          onSignOut={cloud.signOut}
-          onOpenTrophies={openTrophies}
-          onClose={() => setSheet(null)}
-        />
-      )}
       {(sheet === 'trophies' || sheet === 'settings') && (
         <Trophies
           key={sheet}

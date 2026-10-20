@@ -59,19 +59,26 @@ interface Props {
   onChange: (tab: Tab) => void;
   /** Little badge on Tasks: how many are due today or overdue. */
   dueCount: number;
+  /** Wide screens: the side rail is folded down to icons. */
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
 }
 
-/** The iPhone app's floating liquid glass tab bar. A glass lens slides to the active tab. */
-export function TabBar({ tab, onChange, dueCount }: Props) {
+/**
+ * Liquid glass navigation. A floating bar at the bottom on phones, a side rail on wide
+ * screens that folds down to icons. A glass lens slides to the active tab.
+ */
+export function TabBar({ tab, onChange, dueCount, collapsed, onToggleCollapsed }: Props) {
   const index = TABS.findIndex((t) => t.id === tab);
   return (
-    <nav className="tabbar" aria-label="Sections" style={{ '--i': index } as CSSProperties}>
+    <nav className={`tabbar ${collapsed ? 'collapsed' : ''}`} aria-label="Sections" style={{ '--i': index } as CSSProperties}>
       <span className="tabbar-lens" aria-hidden="true" />
       {TABS.map((t) => (
         <button
           key={t.id}
           className={`tabbar-btn ${t.id === tab ? 'active' : ''}`}
           aria-current={t.id === tab ? 'page' : undefined}
+          title={collapsed ? t.label : undefined}
           onClick={() => onChange(t.id)}
         >
           <span className="tabbar-icon">
@@ -81,6 +88,15 @@ export function TabBar({ tab, onChange, dueCount }: Props) {
           <span className="tabbar-label">{t.label}</span>
         </button>
       ))}
+      <button
+        className="tabbar-collapse"
+        onClick={onToggleCollapsed}
+        aria-expanded={!collapsed}
+        aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
+        title={`${collapsed ? 'Expand' : 'Collapse'} menu ([)`}
+      >
+        {icon(<path d={collapsed ? 'M10 7l5 5-5 5' : 'M14 7l-5 5 5 5'} />)}
+      </button>
     </nav>
   );
 }

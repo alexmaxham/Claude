@@ -8,6 +8,8 @@ const SHORTCUTS: [string, string][] = [
   ['X / Space', 'Complete or un-complete the selected quest'],
   ['E / Enter', 'Edit the selected quest'],
   ['Esc', 'Clear search and selection'],
+  ['1 – 4', 'Go to Tasks, Trophies, Calendar or Profile'],
+  ['[', 'Collapse or expand the side menu'],
   ['?', 'Show these shortcuts'],
 ];
 

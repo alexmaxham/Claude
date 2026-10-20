@@ -5,7 +5,6 @@ import { addDays, dayKey } from '../core/dates';
 import { ACHIEVEMENTS, effectiveStreak, levelFromXp } from '../core/gamification';
 import type { AppState } from '../core/types';
 import { Avatar, SYNC_LABEL } from './AccountSheet';
-import { Sheet } from './Sheet';
 
 interface Props {
   state: AppState;
@@ -15,30 +14,12 @@ interface Props {
   onOpenAccount: () => void;
   onSignOut: () => Promise<void>;
   onOpenTrophies: () => void;
-  onClose: () => void;
 }
-
-type ViewProps = Omit<Props, 'onClose'>;
 
 const WEEKS = 15;
 
-/** Your stats at a glance in a sheet (the iPhone app shows ProfileView as a tab instead). */
-export function ProfileSheet({ onClose, onSignOut, ...props }: Props) {
-  return (
-    <Sheet title="Profile" onClose={onClose}>
-      <ProfileView
-        {...props}
-        onSignOut={async () => {
-          await onSignOut();
-          onClose();
-        }}
-      />
-    </Sheet>
-  );
-}
-
 /** Level, XP, tasks done, streaks, activity and trophies. */
-export function ProfileView({ state, user, sync, onOpenAccount, onSignOut, onOpenTrophies }: ViewProps) {
+export function ProfileView({ state, user, sync, onOpenAccount, onSignOut, onOpenTrophies }: Props) {
   const { stats, tasks, categories } = state;
   const level = levelFromXp(stats.xp);
   const today = dayKey();
