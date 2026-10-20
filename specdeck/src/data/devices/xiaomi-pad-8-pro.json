@@ -6,6 +6,7 @@
   "announced": "2026-02-28",
   "price": { "amount": 649.99, "currency": "EUR", "config": "8 GB / 256 GB" },
   "art": ["#b9c4b7", "#4b5a48"],
+  "image": { "file": "xiaomi-pad-8-pro.webp", "alt": "Front of the Xiaomi Pad 8 Pro", "credit": "Xiaomi", "source": "https://www.mi.com/global/product/xiaomi-pad-8-pro/" },
   "body": { "weight_g": 485 },
   "display": { "size_in": 11.2, "type": "LCD, 3:2, Dolby Vision", "resolution": "3200 × 2136", "refresh_hz": 144, "refresh": "Up to 144 Hz", "peak_nits": 800 },
   "platform": { "chipset": "Snapdragon 8 Elite (3 nm)", "gpu": "Adreno 830" },

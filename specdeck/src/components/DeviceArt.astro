@@ -19,7 +19,8 @@ const { device, height, shape = true, class: className = '', loading = 'lazy' } 
 const photo = photoFor(device);
 const points = device.formFactor === 'tablet' ? 4 : device.formFactor === 'book-fold' ? 6 : 9;
 const shapeSize = Math.round(height * 0.92);
-const imgHeight = Math.round(height * 0.86);
+// Renders are square canvases with the device centered, so one size fits every device.
+const imgHeight = Math.round(height * 0.84);
 ---
 {photo ? (
   <div class={`art ${className}`} style={`height:${height}px`}>

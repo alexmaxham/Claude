@@ -1,6 +1,6 @@
-name: Specdeck deploy
+name: SpecAtlas deploy
 
-# Publishes Specdeck to Firebase Hosting. Runs when specdeck/ changes on the default branch, and every
+# Publishes SpecAtlas to Firebase Hosting. Runs when specdeck/ changes on the default branch, and every
 # 10 minutes to pick up changes saved on the site's admin page (stored in Firestore until published).
 # Google Cloud access uses Workload Identity Federation, so no keys are stored in GitHub: only this
 # repository's default branch may act as the specdeck-publisher service account.

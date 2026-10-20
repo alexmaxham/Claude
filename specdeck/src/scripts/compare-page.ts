@@ -35,7 +35,7 @@ if (root) {
     document.querySelectorAll<HTMLElement>('[data-compare-filled]').forEach((el) => (el.hidden = chosen.length === 0));
     const title = document.querySelector('[data-compare-title]');
     if (title) title.textContent = chosen.length ? chosen.map((d) => d.name).join(' vs ') : 'Compare phones and tablets';
-    if (chosen.length) document.title = `${chosen.map((d) => d.name).join(' vs ')} | Specdeck`;
+    if (chosen.length) document.title = `${chosen.map((d) => d.name).join(' vs ')} | SpecAtlas`;
   }
 
   function change(next: string[]) {

@@ -7,6 +7,7 @@
   "markets": "Not sold in the US or Australia",
   "price": { "amount": 599.99, "currency": "GBP", "config": "12 GB / 256 GB" },
   "art": ["#d5d9de", "#646b74"],
+  "image": { "file": "honor-magicpad-4.webp", "alt": "Front of the Honor MagicPad 4", "credit": "Honor", "source": "https://www.honor.com/global/tablets/honor-magicpad-4/" },
   "body": { "weight_g": 450, "thickness_mm": 4.8 },
   "display": { "size_in": 12.3, "type": "OLED", "resolution": "3000 × 1920", "refresh_hz": 165, "refresh": "Up to 165 Hz" },
   "platform": { "chipset": "Snapdragon 8 Gen 5" },

@@ -7,6 +7,7 @@
   "released": "2026-09-18",
   "price": { "amount": 1299, "currency": "USD", "config": "256 GB" },
   "art": ["#d9dee3", "#7e8994"],
+  "image": { "file": "apple-iphone-18-pro-max.webp", "alt": "Front of the Apple iPhone 18 Pro, shown for the Pro Max, which has the same design", "credit": "Apple", "source": "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/" },
   "body": { "dimensions": "163.4 × 78.0 × 8.75 mm", "weight_g": 249, "thickness_mm": 8.75, "colors": ["Black", "Silver", "Glacier", "Burgundy"] },
   "display": { "size_in": 6.9, "type": "Super Retina XDR OLED, ProMotion", "resolution": "1320 × 2868", "ppi": 460, "refresh_hz": 120, "refresh": "Up to 120 Hz" },
   "platform": { "os": "iOS 27", "chipset": "Apple A20 Pro" },

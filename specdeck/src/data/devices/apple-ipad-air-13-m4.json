@@ -7,6 +7,7 @@
   "released": "2026-03-11",
   "price": { "amount": 799, "currency": "USD", "config": "128 GB, Wi-Fi" },
   "art": ["#d8cde6", "#6c5a88"],
+  "image": { "file": "apple-ipad-air-13-m4.webp", "alt": "Front of the Apple iPad Air (M4)", "credit": "Apple", "source": "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-ipad-air-powered-by-m4/" },
   "body": { "weight_g": 616 },
   "display": { "size_in": 13, "resolution": "2732 × 2048", "ppi": 264 },
   "platform": { "chipset": "Apple M4" },

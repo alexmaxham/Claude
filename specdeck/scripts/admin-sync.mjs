@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Moves changes saved on the admin page (Firestore) into the repo. Run by the Specdeck deploy workflow.
+// Moves changes saved on the admin page (Firestore) into the repo. Run by the SpecAtlas deploy workflow.
 //
 //   node scripts/admin-sync.mjs check            prints count=<n> (pending changes) for $GITHUB_OUTPUT
 //   node scripts/admin-sync.mjs import           writes device JSON and photos, records what it took
@@ -77,7 +77,7 @@ if (command === 'check') {
   const pending = [...(await list('devices')), ...(await list('photos'))].filter(isNew);
   output(`count=${pending.length}`);
 } else if (command === 'import') {
-  const sharp = (await import('sharp')).default;
+  const { normalizeRender } = await import('./lib/normalize-render.mjs');
   const devices = (await list('devices')).filter(isNew);
   const photos = (await list('photos')).filter(isNew);
   const taken = [];
@@ -105,11 +105,8 @@ if (command === 'check') {
     try {
       if (!existsSync(dataFile(p.id))) throw new Error('No device with this name has been published yet');
       const file = `${p.id}.webp`;
-      await sharp(Buffer.from(p.fields.data, 'base64'))
-        .rotate()
-        .resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 86 })
-        .toFile(new URL(`../src/assets/devices/${file}`, import.meta.url).pathname);
+      // Cut out and center like every other device image; a photo with a busy background is refused with a reason.
+      writeFileSync(new URL(`../src/assets/devices/${file}`, import.meta.url), await normalizeRender(Buffer.from(p.fields.data, 'base64')));
       const device = JSON.parse(readFileSync(dataFile(p.id), 'utf8'));
       device.image = { file, ...(p.fields.alt ? { alt: p.fields.alt } : {}), credit: p.fields.credit, source: p.fields.source };
       writeDevice(p.id, device);
@@ -131,7 +128,7 @@ if (command === 'check') {
   // The schema error names the file ("devices → <slug> data does not match") and the fields below it.
   const detail = log.match(/does not match collection schema\.[\s\S]*?(?=\n\s*Error reference|\n\s*Hint|$)/)?.[0]
     .replace(/\*\*/g, '').replace(/\s+/g, ' ').replace('does not match collection schema.', '').trim();
-  const message = `The site build rejected this change${detail ? `: ${detail}` : '. See the Specdeck deploy run on GitHub.'}`;
+  const message = `The site build rejected this change${detail ? `: ${detail}` : '. See the SpecAtlas deploy run on GitHub.'}`;
   const blamed = state.taken.filter((t) => log.includes(`devices → ${t.name.split('/').pop()} `));
 
   for (const t of state.taken) {

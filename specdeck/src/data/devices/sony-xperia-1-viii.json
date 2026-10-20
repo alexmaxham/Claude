@@ -6,6 +6,7 @@
   "announced": "2026-05-13",
   "price": { "amount": 1499, "currency": "EUR" },
   "art": ["#3f4a5c", "#141a24"],
+  "image": { "file": "sony-xperia-1-viii.webp", "alt": "Front of the Sony Xperia 1 VIII", "credit": "Sony", "source": "https://www.sony.co.uk/electronics/smartphones/xperia-1m8" },
   "display": { "size_in": 6.5, "type": "LTPO OLED", "resolution": "FHD+", "refresh_hz": 120, "refresh": "Up to 120 Hz" },
   "platform": { "chipset": "Snapdragon 8 Elite Gen 5" },
   "memory": { "ram_gb": [12, 16], "card": "microSD" },

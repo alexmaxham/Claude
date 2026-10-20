@@ -1,4 +1,4 @@
-name: Specdeck build
+name: SpecAtlas build
 
 # Validates every device file against the schema and builds the site, so a bad edit is caught before it ships.
 on:

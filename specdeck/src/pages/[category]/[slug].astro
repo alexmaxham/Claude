@@ -177,7 +177,7 @@ const description = `${name} full specifications: ${[k.display, k.chip, k.batter
   .summary { margin: 0; max-width: 62ch; color: var(--on-surface-var); }
   .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
   .dart { position: relative; margin: 0; min-height: 260px; border-radius: var(--shape-xl); background: var(--primary-container); overflow: hidden; display: grid; place-items: center; }
-  .dart figcaption { position: absolute; right: 16px; bottom: 12px; font-size: 12px; color: var(--on-primary-container); opacity: .75; }
+  .dart figcaption { position: absolute; right: 10px; bottom: 10px; max-width: calc(100% - 20px); padding: 3px 10px; border-radius: var(--shape-full); background: color-mix(in srgb, var(--surface) 82%, transparent); font-size: 12px; color: var(--on-surface-var); }
   .dart figcaption a { color: inherit; }
   .dart :global(.cookie) { color: color-mix(in srgb, var(--primary) 22%, var(--primary-container)); }
 
