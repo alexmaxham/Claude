@@ -2,3 +2,6 @@ node_modules
 dist
 .astro
 .firebase
+.admin-import.json
+firebase-debug.log
+firestore-debug.log

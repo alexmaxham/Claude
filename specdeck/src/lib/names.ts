@@ -12,3 +12,10 @@ export const brandSlug = (brand: string) => brand.toLowerCase().replace(/[^a-z0-
 /** Compare pages use slugs in alphabetical order, so each pair has one canonical URL. */
 export const compareSlug = (a: Pick<Device, 'slug'>, b: Pick<Device, 'slug'>) =>
   [a.slug, b.slug].sort().join('-vs-');
+
+/** The file name and URL slug for a new device, e.g. "Samsung" + "Galaxy S27+" → "samsung-galaxy-s27-plus". */
+export function slugFor(brand: string, name: string): string {
+  const slugify = (s: string) =>
+    s.toLowerCase().replace(/["″]/g, '').replace(/\+/g, '-plus').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return name.toLowerCase().startsWith(brand.toLowerCase()) ? slugify(name) : slugify(`${brand} ${name}`);
+}

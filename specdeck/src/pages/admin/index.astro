@@ -1,0 +1,230 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { FIELD_GROUPS } from '../../lib/admin-fields';
+import { allDevices } from '../../lib/devices';
+
+// The editing page. Everything here runs in the browser after sign-in; see src/scripts/admin.ts.
+const brands = [...new Set((await allDevices()).map((d) => d.brand))].sort((a, b) => a.localeCompare(b));
+---
+<Base title="Admin" description="Add and edit devices." noindex>
+  <div class="admin" data-admin>
+    <section class="panel signin" data-view="signin" hidden>
+      <h1 class="headline">Sign in to edit</h1>
+      <p class="muted">Use the Google account that has editor access.</p>
+      <button type="button" class="btn filled" data-action="signin"><Icon name="login" />Sign in with Google</button>
+      <p class="error" data-signin-error hidden></p>
+    </section>
+
+    <section class="panel" data-view="denied" hidden>
+      <h1 class="headline">No editor access</h1>
+      <p class="muted">The account <strong data-email></strong> can’t edit Specdeck. Sign in with an editor account, or ask the site owner to add this one.</p>
+      <button type="button" class="btn outlined" data-action="signout">Sign out</button>
+    </section>
+
+    <p class="loading muted" data-view="loading">Loading…</p>
+
+    <section data-view="list" hidden>
+      <header class="ahead">
+        <div>
+          <span class="label">Admin</span>
+          <h1 class="headline">Devices</h1>
+        </div>
+        <div class="who">
+          <span class="muted" data-email></span>
+          <button type="button" class="btn outlined small" data-action="signout">Sign out</button>
+        </div>
+      </header>
+      <p class="pubstatus" data-publish-status></p>
+      <div class="listbar">
+        <label class="sr-only" for="admin-filter">Filter devices</label>
+        <input id="admin-filter" class="filter" type="search" placeholder="Filter by name" data-filter />
+        <button type="button" class="btn filled" data-action="new"><Icon name="add" />Add a device</button>
+      </div>
+      <div class="tablewrap">
+        <table class="dtable">
+          <thead><tr><th scope="col">Device</th><th scope="col">Status</th><th scope="col">Photo</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody data-rows></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section data-view="edit" hidden>
+      <button type="button" class="back" data-action="back"><Icon name="arrow_back" />All devices</button>
+      <h1 class="headline" data-edit-title>Add a device</h1>
+      <p class="muted lead">Fill in what you can confirm and leave the rest empty; empty values show as “Not confirmed”. Saved changes go live within about 15 minutes.</p>
+      <div class="errors" data-form-errors hidden role="alert"></div>
+      <form class="dform" data-form novalidate>
+        <datalist id="brand-list">{brands.map((b) => <option value={b} />)}</datalist>
+        {FIELD_GROUPS.map((g) => (
+          <fieldset class="group">
+            <legend class="title">{g.title}</legend>
+            <div class="grid">
+              {g.fields.map((f) => {
+                const id = `f-${f.path.replace(/\./g, '-')}`;
+                const wide = f.type === 'lines' || f.type === 'textarea' || f.type === 'checkbox';
+                return (
+                  <div class:list={['field', { wide }]} data-field={f.path}>
+                    {f.type === 'checkbox' ? (
+                      <label class="check"><input id={id} type="checkbox" data-path={f.path} data-type="checkbox" />{f.label}</label>
+                    ) : (
+                      <label for={id}>{f.label}{f.required && <span class="req" aria-hidden="true"> *</span>}</label>
+                    )}
+                    {f.type === 'select' && (
+                      <select id={id} data-path={f.path} data-type="select" required={f.required}>
+                        {f.options!.map(([v, l]) => <option value={v}>{l}</option>)}
+                      </select>
+                    )}
+                    {f.type === 'bool' && (
+                      <select id={id} data-path={f.path} data-type="bool">
+                        <option value="">Not confirmed</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    )}
+                    {(f.type === 'lines' || f.type === 'textarea') && (
+                      <textarea id={id} data-path={f.path} data-type={f.type} rows={f.type === 'lines' ? 3 : 3} placeholder={f.placeholder}></textarea>
+                    )}
+                    {f.type === 'color' && <input id={id} type="color" data-path={f.path} data-type="color" />}
+                    {(!f.type || f.type === 'text' || f.type === 'number' || f.type === 'numbers' || f.type === 'texts') && (
+                      <input
+                        id={id}
+                        type="text"
+                        inputmode={f.type === 'number' ? 'decimal' : undefined}
+                        data-path={f.path}
+                        data-type={f.type ?? 'text'}
+                        placeholder={f.placeholder}
+                        list={f.path === 'brand' ? 'brand-list' : undefined}
+                        required={f.required}
+                        autocomplete="off"
+                      />
+                    )}
+                    {f.hint && <small class="hint">{f.hint}</small>}
+                    <small class="ferr" data-error-for={f.path} hidden></small>
+                  </div>
+                );
+              })}
+            </div>
+          </fieldset>
+        ))}
+        <div class="formbar">
+          <button type="submit" class="btn filled" data-save><Icon name="check" />Save</button>
+          <button type="button" class="btn outlined" data-action="back">Cancel</button>
+          <span class="muted" data-save-status aria-live="polite"></span>
+        </div>
+      </form>
+    </section>
+
+    <section data-view="photo" hidden>
+      <button type="button" class="back" data-action="back"><Icon name="arrow_back" />All devices</button>
+      <h1 class="headline" data-photo-title>Photo</h1>
+      <p class="muted lead">Use an official press image (from the maker’s newsroom or press kit). A transparent or plain light background looks best. It is resized to at most 1,600 px.</p>
+      <form class="pform" data-photo-form novalidate>
+        <div class="pgrid">
+          <div class="preview" data-preview><span class="muted">No photo chosen</span></div>
+          <div class="pfields">
+            <div class="field">
+              <label for="p-file">Image file <span class="req" aria-hidden="true">*</span></label>
+              <input id="p-file" type="file" accept="image/*" data-photo-file />
+            </div>
+            <div class="field">
+              <label for="p-credit">Credit <span class="req" aria-hidden="true">*</span></label>
+              <input id="p-credit" type="text" placeholder="Samsung" data-photo-credit autocomplete="off" />
+              <small class="hint">Who owns the photo. Shown under it on the device page.</small>
+            </div>
+            <div class="field">
+              <label for="p-source">Source link <span class="req" aria-hidden="true">*</span></label>
+              <input id="p-source" type="url" placeholder="https://news.samsung.com/…" data-photo-source autocomplete="off" />
+              <small class="hint">The press page the photo came from.</small>
+            </div>
+            <div class="field">
+              <label for="p-alt">Alt text</label>
+              <input id="p-alt" type="text" data-photo-alt autocomplete="off" />
+              <small class="hint">Leave empty to use the device name.</small>
+            </div>
+          </div>
+        </div>
+        <p class="error" data-photo-error hidden role="alert"></p>
+        <div class="formbar">
+          <button type="submit" class="btn filled"><Icon name="check" />Save photo</button>
+          <button type="button" class="btn outlined" data-action="back">Cancel</button>
+          <span class="muted" data-photo-status aria-live="polite"></span>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    import '../../scripts/admin';
+  </script>
+</Base>
+
+<style>
+  .admin { max-width: 1100px; }
+  .panel { max-width: 520px; padding: 32px; margin-top: 24px; border-radius: var(--shape-xl); background: var(--surface-c); display: grid; gap: 12px; justify-items: start; }
+  .panel p { margin: 0; }
+  .loading { padding: 32px 0; }
+  .error { color: var(--tertiary); font-weight: 600; margin: 0; }
+  .ahead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; margin-top: 8px; }
+  .ahead .headline { margin-top: 6px; }
+  .who { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14px; }
+  .btn.small { height: 40px; padding: 0 16px; font-size: 14px; }
+  .pubstatus { margin: 16px 0 0; padding: 12px 16px; border-radius: var(--shape-l); background: var(--secondary-container); color: var(--on-secondary-container); font-size: 14px; }
+  .pubstatus:empty { display: none; }
+  .listbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin: 20px 0 12px; }
+  .filter { flex: 1 1 240px; max-width: 420px; height: 48px; padding: 0 20px; border: 0; border-radius: var(--shape-full); background: var(--surface-high); color: var(--on-surface); font: inherit; }
+  .tablewrap { overflow-x: auto; border-radius: var(--shape-l); background: var(--surface-low); }
+  .dtable { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .dtable th { text-align: left; font-size: 12px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; color: var(--on-surface-var); padding: 12px 16px; }
+  .dtable :global(td) { padding: 10px 16px; border-top: 1px solid var(--outline-var); vertical-align: middle; }
+  .dtable :global(.dname) { font-weight: 650; }
+  .dtable :global(.dmeta) { display: block; color: var(--on-surface-var); font-size: 13px; }
+  .dtable :global(.acts) { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+  .dtable :global(.acts button) { height: 36px; padding: 0 14px; border-radius: var(--shape-full); border: 1px solid var(--outline-var); background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .dtable :global(.acts button:hover) { background: var(--surface-high); }
+  .dtable :global(.pill) { display: inline-block; padding: 3px 10px; border-radius: var(--shape-full); font-size: 12px; font-weight: 650; white-space: nowrap; }
+  .dtable :global(.pill.live) { background: var(--win-container); color: var(--on-surface); }
+  .dtable :global(.pill.pending) { background: var(--secondary-container); color: var(--on-secondary-container); }
+  .dtable :global(.pill.failed) { background: var(--tertiary-container); color: var(--on-tertiary-container); }
+  .dtable :global(.pill.none) { background: var(--surface-highest); color: var(--on-surface-var); }
+  .dtable :global(.why) { display: block; margin-top: 4px; font-size: 12px; color: var(--tertiary); max-width: 40ch; }
+
+  .back { display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 12px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--primary); font-weight: 650; }
+  .lead { margin: 8px 0 0; max-width: 70ch; }
+  .errors { margin: 16px 0 0; padding: 14px 18px; border-radius: var(--shape-l); background: var(--tertiary-container); color: var(--on-tertiary-container); font-size: 14px; }
+  .errors :global(ul) { margin: 6px 0 0; padding-left: 20px; }
+  .dform, .pform { display: grid; gap: 16px; margin-top: 20px; }
+  .group { margin: 0; padding: 16px 20px 20px; border: 0; border-radius: var(--shape-l); background: var(--surface-low); min-width: 0; }
+  .group legend { float: left; width: 100%; margin-bottom: 12px; font-size: 18px; }
+  .grid { clear: both; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px 16px; }
+  .field { display: grid; gap: 4px; align-content: start; min-width: 0; }
+  .field.wide { grid-column: 1 / -1; }
+  .field label { font-size: 13px; font-weight: 650; color: var(--on-surface-var); }
+  .req { color: var(--tertiary); }
+  .field input[type='text'], .field input[type='url'], .field select, .field textarea { width: 100%; min-height: 44px; padding: 10px 14px; border: 1px solid var(--outline-var); border-radius: var(--shape-s); background: var(--surface); color: var(--on-surface); font: inherit; font-size: 15px; }
+  .field textarea { resize: vertical; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--primary); outline-offset: 0; border-color: transparent; }
+  .field input[type='color'] { width: 64px; height: 44px; padding: 4px; border: 1px solid var(--outline-var); border-radius: var(--shape-s); background: var(--surface); }
+  .field .check { display: flex; gap: 10px; align-items: center; font-size: 15px; font-weight: 500; color: var(--on-surface); }
+  .field .check input { width: 20px; height: 20px; }
+  .hint { font-size: 12px; color: var(--on-surface-var); }
+  .ferr { font-size: 12px; font-weight: 650; color: var(--tertiary); }
+  .field.invalid input, .field.invalid select, .field.invalid textarea { border-color: var(--tertiary); }
+  .formbar { position: sticky; bottom: 0; z-index: 3; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-block: 12px; background: var(--surface); }
+
+  .pgrid { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 20px; }
+  .preview { aspect-ratio: 3 / 4; border-radius: var(--shape-l); background: var(--surface-low); display: grid; place-items: center; overflow: hidden; }
+  .preview :global(img) { max-width: 88%; max-height: 88%; object-fit: contain; }
+  .pfields { display: grid; gap: 14px; align-content: start; }
+
+  @media (max-width: 840px) {
+    .formbar { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+    .pgrid { grid-template-columns: minmax(0, 1fr); }
+    .preview { max-height: 320px; }
+    .dtable thead { display: none; }
+    .dtable :global(tr) { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 12px 16px; border-top: 1px solid var(--outline-var); }
+    .dtable :global(td) { padding: 0; border: 0; }
+    .dtable :global(td.acts-cell) { grid-column: 1 / -1; }
+    .dtable :global(.acts) { justify-content: flex-start; }
+  }
+</style>
