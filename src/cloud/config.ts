@@ -19,7 +19,7 @@ export interface CloudConfig {
 
 export const cloudConfig: CloudConfig | null =
   import.meta.env.VITE_FIREBASE_EMULATORS === 'true'
-    ? { options: { ...config, apiKey: 'demo-key', authDomain: 'localhost', projectId: 'demo-questlog' }, useEmulators: true }
+    ? { options: { ...config, apiKey: 'demo-key', authDomain: 'localhost', projectId: 'demo-tasko' }, useEmulators: true }
     : config.apiKey
       ? { options: config, useEmulators: false }
       : null;

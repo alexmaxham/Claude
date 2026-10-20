@@ -42,7 +42,7 @@ export function useReminders(tasks: Task[], enabled: boolean, time: string) {
       new Notification(`${due.length} quest${due.length === 1 ? '' : 's'} due today`, {
         body: due.length > 3 ? `${names} and ${due.length - 3} more` : names,
         icon: 'icon.svg',
-        tag: 'questlog-daily',
+        tag: 'tasko-daily',
       });
     };
     check();

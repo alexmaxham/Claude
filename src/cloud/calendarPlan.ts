@@ -25,7 +25,7 @@ export function eventFor(task: Task): CalendarEvent | null {
     task.description,
     task.subtasks?.length ? task.subtasks.map((s) => `${s.done ? '☑' : '☐'} ${s.title}`).join('\n') : '',
     task.repeat ? `Repeats: ${repeatLabel(task.repeat)}` : '',
-    'Added by Questlog',
+    'Added by Tasko',
   ].filter(Boolean);
   return {
     summary: task.title,
@@ -42,7 +42,8 @@ function same(a: CalendarEvent, b: CalendarEvent): boolean {
 
 /**
  * What to change so the calendar matches the task list: one all-day event per open
- * task with a due date. Only events Questlog created (tagged `questlog=1`) are ever
+ * task with a due date. Only events Tasko created (tagged `questlog=1`, the app's
+ * original name, kept so events from earlier syncs are still recognized) are ever
  * touched; duplicates for the same task are removed.
  */
 export function planSync(tasks: Task[], existing: CalendarEvent[]): SyncPlan {
