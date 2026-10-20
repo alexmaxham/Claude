@@ -7,6 +7,7 @@
   "released": "2026-03-10",
   "price": { "amount": 1499, "currency": "EUR", "config": "16 GB / 512 GB" },
   "art": ["#3b3d40", "#121314"],
+  "image": { "file": "xiaomi-17-ultra.webp", "alt": "Xiaomi 17 Ultra in green, back and front", "credit": "Xiaomi", "source": "https://www.mi.com/global/product/xiaomi-17-ultra/" },
   "body": { "dimensions": "162.9 × 77.6 × 8.3 mm", "thickness_mm": 8.3 },
   "display": { "size_in": 6.9, "type": "LTPO OLED", "refresh_hz": 120, "refresh": "Up to 120 Hz" },
   "platform": { "chipset": "Snapdragon 8 Elite Gen 5" },
