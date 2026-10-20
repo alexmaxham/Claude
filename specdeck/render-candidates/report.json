@@ -1,0 +1,188 @@
+[
+  {
+    "slug": "apple-iphone-18-pro",
+    "candidates": 16,
+    "notes": [
+      "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/: 24 image urls",
+      "https://www.apple.com/iphone-18-pro/: 606 image urls"
+    ]
+  },
+  {
+    "slug": "apple-iphone-18-pro-max",
+    "candidates": 16,
+    "notes": [
+      "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/: 24 image urls"
+    ]
+  },
+  {
+    "slug": "apple-iphone-duo",
+    "candidates": 16,
+    "notes": [
+      "https://www.apple.com/iphone-duo/: 660 image urls"
+    ]
+  },
+  {
+    "slug": "apple-ipad-air-11-m4",
+    "candidates": 7,
+    "notes": [
+      "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-ipad-air-powered-by-m4/: 11 image urls"
+    ]
+  },
+  {
+    "slug": "apple-ipad-air-13-m4",
+    "candidates": 7,
+    "notes": [
+      "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-ipad-air-powered-by-m4/: 11 image urls"
+    ]
+  },
+  {
+    "slug": "samsung-galaxy-s26",
+    "candidates": 16,
+    "notes": [
+      "https://news.samsung.com/global/samsung-unveils-galaxy-s26-series-the-most-intuitive-galaxy-ai-phone-yet: 25 image urls"
+    ]
+  },
+  {
+    "slug": "samsung-galaxy-s26-plus",
+    "candidates": 16,
+    "notes": [
+      "https://news.samsung.com/global/samsung-unveils-galaxy-s26-series-the-most-intuitive-galaxy-ai-phone-yet: 25 image urls"
+    ]
+  },
+  {
+    "slug": "samsung-galaxy-s26-ultra",
+    "candidates": 16,
+    "notes": [
+      "https://news.samsung.com/global/samsung-unveils-galaxy-s26-series-the-most-intuitive-galaxy-ai-phone-yet: 25 image urls"
+    ]
+  },
+  {
+    "slug": "samsung-galaxy-z-fold8-ultra",
+    "candidates": 16,
+    "notes": [
+      "https://news.samsung.com/global/samsung-galaxy-z-fold8-ultra-fold8-and-flip8foldables-perfected-for-every-way-of-living: 38 image urls",
+      "https://news.samsung.com/global/galaxy-unpacked-july-2026-a-first-look-at-galaxy-z-fold8-ultra-galaxy-z-fold8-and-galaxy-z-flip8: 41 image urls"
+    ]
+  },
+  {
+    "slug": "samsung-galaxy-z-fold8",
+    "candidates": 16,
+    "notes": [
+      "https://news.samsung.com/global/samsung-galaxy-z-fold8-ultra-fold8-and-flip8foldables-perfected-for-every-way-of-living: 38 image urls"
+    ]
+  },
+  {
+    "slug": "samsung-galaxy-z-flip8",
+    "candidates": 16,
+    "notes": [
+      "https://news.samsung.com/global/samsung-galaxy-z-fold8-ultra-fold8-and-flip8foldables-perfected-for-every-way-of-living: 38 image urls"
+    ]
+  },
+  {
+    "slug": "samsung-galaxy-tab-s12-ultra",
+    "candidates": 0,
+    "notes": []
+  },
+  {
+    "slug": "samsung-galaxy-tab-s12-plus",
+    "candidates": 0,
+    "notes": []
+  },
+  {
+    "slug": "google-pixel-11",
+    "candidates": 16,
+    "notes": [
+      "https://store.google.com/product/pixel_11?hl=en-US: 381 image urls"
+    ]
+  },
+  {
+    "slug": "google-pixel-11-pro",
+    "candidates": 16,
+    "notes": [
+      "https://store.google.com/product/pixel_11_pro?hl=en-US: 445 image urls"
+    ]
+  },
+  {
+    "slug": "google-pixel-11-pro-xl",
+    "candidates": 16,
+    "notes": [
+      "https://store.google.com/product/pixel_11_pro?hl=en-US: 445 image urls"
+    ]
+  },
+  {
+    "slug": "google-pixel-11-pro-fold",
+    "candidates": 16,
+    "notes": [
+      "https://store.google.com/product/pixel_11_pro_fold?hl=en-US: 345 image urls"
+    ]
+  },
+  {
+    "slug": "xiaomi-17-ultra",
+    "candidates": 16,
+    "notes": [
+      "https://www.mi.com/global/product/xiaomi-17-ultra/: 232 image urls"
+    ]
+  },
+  {
+    "slug": "xiaomi-pad-8-pro",
+    "candidates": 16,
+    "notes": [
+      "https://www.mi.com/global/product/xiaomi-pad-8-pro/: 114 image urls"
+    ]
+  },
+  {
+    "slug": "oppo-find-x9-ultra",
+    "candidates": 16,
+    "notes": [
+      "https://www.oppo.com/en/smartphones/series-find-x/find-x9-ultra/: 578 image urls"
+    ]
+  },
+  {
+    "slug": "vivo-x300-ultra",
+    "candidates": 2,
+    "notes": [
+      "https://www.vivo.com/en/products/x300-ultra: 180 image urls",
+      "https://www.vivo.com.cn/vivo/x300ultra/: 176 image urls"
+    ]
+  },
+  {
+    "slug": "sony-xperia-1-viii",
+    "candidates": 4,
+    "notes": [
+      "https://www.sony.co.uk/electronics/smartphones/xperia-1m8: 5 image urls",
+      "https://www.sony.net/Products/smartphones/: 5 image urls"
+    ]
+  },
+  {
+    "slug": "motorola-razr-fold",
+    "candidates": 16,
+    "notes": [
+      "https://www.motorola.com/us/smartphones-razr-fold/p: 145 image urls",
+      "https://motorola-global-portal.custhelp.com/: 401"
+    ]
+  },
+  {
+    "slug": "oneplus-16",
+    "candidates": 16,
+    "notes": [
+      "https://www.oneplus.com/cn/16: 1063 image urls",
+      "https://www.oneplus.com/global/16: 404"
+    ]
+  },
+  {
+    "slug": "oneplus-pad-4",
+    "candidates": 16,
+    "notes": [
+      "https://www.oneplus.com/global/pad-4: 1340 image urls",
+      "https://www.oneplus.com/us/pad-4: 404"
+    ]
+  },
+  {
+    "slug": "honor-magicpad-4",
+    "candidates": 16,
+    "notes": [
+      "https://www.honor.com/uk/tablets/honor-magicpad4/: 404",
+      "https://www.honor.com/global/tablets/honor-magicpad-4/: 422 image urls"
+    ]
+  }
+]
