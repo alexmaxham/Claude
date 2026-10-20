@@ -18,7 +18,16 @@ Run these from the `specdeck/` folder.
 | `npm run preview` | Serve the built site locally |
 | `npm run new-device -- "Brand" "Model" phone` | Create a blank device file to fill in |
 
-Set `SITE_URL` to the production domain when building for release, for example `SITE_URL=https://specdeck.com npm run build`. Canonical links, the sitemap and structured data use it.
+The site is hosted on Firebase Hosting in the `specdeck-db` project, at https://specdeck-db.web.app. Canonical links, the sitemap and structured data use that address; set `SITE_URL` when building to use another one (for example a custom domain).
+
+## Deploying
+
+```sh
+npm run build
+npx firebase-tools deploy --only hosting
+```
+
+`firebase.json` serves `dist/` with clean URLs and long-lived caching for hashed assets. `.firebaserc` points at the `specdeck-db` project.
 
 ## Adding a new phone or tablet
 

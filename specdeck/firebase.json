@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "specdeck-db",
     "public": "dist",
     "cleanUrls": true,
     "headers": [
