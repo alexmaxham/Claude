@@ -3,6 +3,9 @@
 
 export type Priority = 'low' | 'medium' | 'high';
 
+/** The app's accent color, chosen by the user. */
+export type ThemeId = 'blue' | 'orange' | 'red' | 'green' | 'purple';
+
 export interface Category {
   id: string;
   name: string;
@@ -13,6 +16,8 @@ export interface Category {
 export interface Task {
   id: string;
   title: string;
+  /** Optional longer notes. Missing on tasks created before descriptions existed. */
+  description?: string;
   categoryId: string | null;
   priority: Priority;
   dueDate: string | null; // YYYY-MM-DD (local)
@@ -41,6 +46,7 @@ export interface AppState {
   tasks: Task[];
   categories: Category[];
   stats: Stats;
+  theme: ThemeId;
 }
 
 /** Things the UI should celebrate after an action. */

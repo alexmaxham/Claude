@@ -6,11 +6,12 @@ interface Props {
   categories: Category[];
   defaultCategoryId: string | null;
   defaultDue: string | null;
-  onAdd: (task: { title: string; categoryId: string | null; priority: Priority; dueDate: string | null }) => void;
+  onAdd: (task: { title: string; description: string; categoryId: string | null; priority: Priority; dueDate: string | null }) => void;
 }
 
 export function QuickAdd({ categories, defaultCategoryId, defaultDue, onAdd }: Props) {
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState(defaultCategoryId);
   const [priority, setPriority] = useState<Priority>('medium');
   const [dueDate, setDueDate] = useState(defaultDue);
@@ -26,13 +27,13 @@ export function QuickAdd({ categories, defaultCategoryId, defaultDue, onAdd }: P
   // (not pointerdown) so the layout doesn't shift under the tap, and not blur
   // because Safari doesn't move focus to buttons.
   useEffect(() => {
-    if (!expanded || title.trim()) return;
+    if (!expanded || title.trim() || description.trim()) return;
     const onClick = (e: MouseEvent) => {
       if (!formRef.current?.contains(e.target as Node)) setExpanded(false);
     };
     document.addEventListener('click', onClick);
     return () => document.removeEventListener('click', onClick);
-  }, [expanded, title]);
+  }, [expanded, title, description]);
 
   // "n" or "/" focuses the input from anywhere.
   useEffect(() => {
@@ -51,8 +52,9 @@ export function QuickAdd({ categories, defaultCategoryId, defaultDue, onAdd }: P
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onAdd({ title, categoryId, priority, dueDate });
+    onAdd({ title, description, categoryId, priority, dueDate });
     setTitle('');
+    setDescription('');
     inputRef.current?.focus();
   };
 
@@ -88,6 +90,14 @@ export function QuickAdd({ categories, defaultCategoryId, defaultDue, onAdd }: P
       </div>
       {expanded && (
         <div className="quick-options">
+          <textarea
+            className="text-input text-area quick-desc"
+            placeholder="Description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            aria-label="Description"
+            rows={2}
+          />
           <CategoryPicker categories={categories} value={categoryId} onChange={setCategoryId} />
           <PriorityPicker value={priority} onChange={setPriority} />
           <DuePicker value={dueDate} onChange={setDueDate} />

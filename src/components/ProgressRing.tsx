@@ -17,8 +17,8 @@ export function ProgressRing({ progress, size = 56, stroke = 6, color = 'url(#ri
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
         <defs>
           <linearGradient id="ring-gradient" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ffd166" />
-            <stop offset="100%" stopColor="#ff6b8b" />
+            <stop offset="0%" style={{ stopColor: 'var(--accent-2)' }} />
+            <stop offset="100%" style={{ stopColor: 'var(--accent)' }} />
           </linearGradient>
         </defs>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--track)" strokeWidth={stroke} />

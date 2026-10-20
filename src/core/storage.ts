@@ -1,4 +1,4 @@
-import { createInitialState } from './store';
+import { createInitialState, THEMES } from './store';
 import type { AppState } from './types';
 
 /**
@@ -31,6 +31,7 @@ export function parseState(raw: string | null): AppState {
       ...parsed,
       version: 1,
       stats: { ...base.stats, ...parsed.stats },
+      theme: THEMES.some((t) => t.id === parsed.theme) ? parsed.theme! : base.theme,
     };
   } catch {
     return createInitialState();

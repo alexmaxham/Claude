@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useCloudSync } from './cloud/useCloudSync';
 import { AccountSheet, Avatar, SYNC_LABEL } from './components/AccountSheet';
 import { CategoryBar, type Filter } from './components/CategoryBar';
@@ -115,7 +115,12 @@ export default function App() {
 
   const [state, dispatch] = useAppState(handleEvents);
   const cloud = useCloudSync(state, dispatch, (msg) => pushToast({ icon: '☁️', title: 'Signed in', body: msg }, 4500));
-  const { tasks, categories, stats } = state;
+  const { tasks, categories, stats, theme } = state;
+
+  // The stylesheet picks its accent colors from this attribute.
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
   const today = dayKey();
   const categoryById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
 
@@ -342,6 +347,7 @@ export default function App() {
       {sheet === 'trophies' && (
         <Trophies
           stats={stats}
+          theme={theme}
           soundOn={soundOn}
           signedIn={cloud.status === 'signedIn'}
           onToggleSound={() => updatePrefs({ soundOn: !soundOn })}

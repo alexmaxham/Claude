@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { TaskPatch } from '../core/store';
 import type { Category, Task } from '../core/types';
 import { CategoryPicker, DuePicker, PriorityPicker } from './Pickers';
 import { Sheet } from './Sheet';
@@ -6,20 +7,21 @@ import { Sheet } from './Sheet';
 interface Props {
   task: Task;
   categories: Category[];
-  onSave: (patch: Partial<Pick<Task, 'title' | 'categoryId' | 'priority' | 'dueDate'>>) => void;
+  onSave: (patch: TaskPatch) => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
 export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Props) {
   const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description ?? '');
   const [categoryId, setCategoryId] = useState(task.categoryId);
   const [priority, setPriority] = useState(task.priority);
   const [dueDate, setDueDate] = useState(task.dueDate);
 
   const save = () => {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), categoryId, priority, dueDate });
+    onSave({ title: title.trim(), description: description.trim(), categoryId, priority, dueDate });
     onClose();
   };
 
@@ -35,6 +37,16 @@ export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Prop
         <label className="field">
           <span>Title</span>
           <input className="text-input" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
+        </label>
+        <label className="field">
+          <span>Description</span>
+          <textarea
+            className="text-input text-area"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Add details, links or steps…"
+            rows={4}
+          />
         </label>
         <div className="field">
           <span>Category</span>

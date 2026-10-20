@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { addDays, dayKey } from '../core/dates';
 import { ACHIEVEMENTS, levelFromXp } from '../core/gamification';
-import type { Action } from '../core/store';
-import type { Stats } from '../core/types';
+import { THEMES, type Action } from '../core/store';
+import type { Stats, ThemeId } from '../core/types';
 import { Sheet } from './Sheet';
 
 interface Props {
   stats: Stats;
+  theme: ThemeId;
   soundOn: boolean;
   signedIn: boolean;
   onToggleSound: () => void;
@@ -14,7 +15,7 @@ interface Props {
   onClose: () => void;
 }
 
-export function Trophies({ stats, soundOn, signedIn, onToggleSound, dispatch, onClose }: Props) {
+export function Trophies({ stats, theme, soundOn, signedIn, onToggleSound, dispatch, onClose }: Props) {
   const [confirmReset, setConfirmReset] = useState(false);
   const level = levelFromXp(stats.xp);
   const today = dayKey();
@@ -63,6 +64,23 @@ export function Trophies({ stats, soundOn, signedIn, onToggleSound, dispatch, on
 
       <h3>Settings</h3>
       <div className="settings glass-soft">
+        <div className="setting">
+          <span>Color</span>
+          <div className="theme-swatches" role="radiogroup" aria-label="App color">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                role="radio"
+                aria-checked={theme === t.id}
+                aria-label={t.name}
+                title={t.name}
+                className={`swatch theme-swatch ${theme === t.id ? 'active' : ''}`}
+                style={{ background: t.color }}
+                onClick={() => dispatch({ type: 'setTheme', theme: t.id })}
+              />
+            ))}
+          </div>
+        </div>
         <div className="setting">
           <span>Daily goal</span>
           <div className="stepper">
