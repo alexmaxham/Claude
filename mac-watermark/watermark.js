@@ -9,10 +9,8 @@ ObjC.import('AppKit');
 const SUPPORT_DIR = $.NSHomeDirectory().js + '/Library/Application Support/ResizeWatermark';
 
 const DEFAULTS = {
-  width: 1600,              // output size in pixels
-  height: 900,
-  fit: 'crop',              // crop: fill width x height exactly, trimming the edges that overflow
-                            // fit: shrink to fit inside width x height, keeping the whole photo
+  longEdge: 1600,           // longest side in pixels, keeping the photo's shape; 0 keeps the original size
+  upscale: false,           // also enlarge images smaller than longEdge
   watermark: SUPPORT_DIR + '/watermark.png',
   position: 'bottom-right', // bottom-right, bottom-left, top-right, top-left, center
   watermarkSize: 0.25,      // watermark width as a fraction of the image's shorter edge
@@ -88,23 +86,22 @@ function processImage(path, watermark, config) {
   const image = $.NSImage.alloc.initWithContentsOfFile(path);
   if (image.isNil()) throw new Error('not an image');
 
-  // NSImage.size is in points and already accounts for EXIF rotation, so its shape is
-  // what the viewer sees.
+  // NSImage.size is in points and already accounts for EXIF rotation, so it gives the
+  // shape; the largest bitmap rep gives the true pixel count.
   const shape = image.size;
-  let width = config.width;
-  let height = config.height;
-  let scale;
-  if (config.fit === 'fit') {
-    // Shrink to fit inside width x height without cropping; the output keeps the photo's shape.
-    scale = Math.min(width / shape.width, height / shape.height);
-    width = Math.max(1, Math.round(shape.width * scale));
-    height = Math.max(1, Math.round(shape.height * scale));
-  } else {
-    // Fill exactly width x height, cropping evenly from the sides that overflow.
-    scale = Math.max(width / shape.width, height / shape.height);
+  let sourceLong = 0;
+  const reps = image.representations;
+  for (let i = 0; i < reps.count; i++) {
+    const rep = reps.objectAtIndex(i);
+    sourceLong = Math.max(sourceLong, rep.pixelsWide, rep.pixelsHigh);
   }
-  const drawWidth = shape.width * scale;
-  const drawHeight = shape.height * scale;
+  if (!sourceLong) sourceLong = Math.max(shape.width, shape.height);
+
+  let long = sourceLong;
+  if (config.longEdge > 0 && (sourceLong > config.longEdge || config.upscale)) long = config.longEdge;
+  const scale = long / Math.max(shape.width, shape.height);
+  const width = Math.max(1, Math.round(shape.width * scale));
+  const height = Math.max(1, Math.round(shape.height * scale));
 
   const outType = /\.png$/i.test(path) ? PNG : JPEG;
 
@@ -124,9 +121,7 @@ function processImage(path, watermark, config) {
     $.NSColor.whiteColor.setFill;
     $.NSBezierPath.fillRect(full);
   }
-  image.drawInRectFromRectOperationFraction(
-    $.NSMakeRect((width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight),
-    $.NSMakeRect(0, 0, 0, 0), SOURCE_OVER, 1.0);
+  image.drawInRectFromRectOperationFraction(full, $.NSMakeRect(0, 0, 0, 0), SOURCE_OVER, 1.0);
 
   const short = Math.min(width, height);
   const wmShape = watermark.size;

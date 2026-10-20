@@ -1,6 +1,6 @@
 # Resize & Watermark (macOS)
 
-Right-click images in Finder → **Quick Actions → Resize & Watermark**. Each image is resized to 1600×900 (cropped to fill) and stamped with your watermark image, then saved next to the original as `name-watermarked.jpg` (PNGs stay PNG). Originals are never changed. Works on many images at once.
+Right-click images in Finder → **Quick Actions → Resize & Watermark**. Each image is resized so its longest side is 1600 px and stamped with your watermark image, then saved next to the original as `name-watermarked.jpg` (PNGs stay PNG). Originals are never changed. Works on many images at once.
 
 Nothing to install beyond this folder: it's a Finder Quick Action that runs a JavaScript for Automation script built into macOS.
 
@@ -29,8 +29,8 @@ Edit `~/Library/Application Support/ResizeWatermark/config.json`:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `width`, `height` | `1600`, `900` | Output size in pixels. |
-| `fit` | `"crop"` | `crop` fills the size exactly, trimming evenly from the edges that don't fit. `fit` shrinks the whole photo to fit inside the size instead, so it may come out narrower or shorter. |
+| `longEdge` | `1600` | Longest side in pixels; the photo keeps its shape and nothing is cropped. `0` keeps the original size. |
+| `upscale` | `false` | Also enlarge images smaller than `longEdge`. |
 | `position` | `"bottom-right"` | `bottom-right`, `bottom-left`, `top-right`, `top-left` or `center`. |
 | `watermarkSize` | `0.25` | Watermark width as a fraction of the image's shorter edge. |
 | `margin` | `0.03` | Gap from the edges, as a fraction of the shorter edge. |
