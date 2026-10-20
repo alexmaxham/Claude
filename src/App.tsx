@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCloudSync } from './cloud/useCloudSync';
+import { AccountSheet, Avatar, SYNC_LABEL } from './components/AccountSheet';
 import { CategoryBar, type Filter } from './components/CategoryBar';
 import { CategoryManager } from './components/CategoryManager';
 import { Header } from './components/Header';
@@ -55,7 +57,7 @@ export default function App() {
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [pulse, setPulse] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<'categories' | 'trophies' | null>(null);
+  const [sheet, setSheet] = useState<'categories' | 'trophies' | 'account' | null>(null);
   const [showDone, setShowDone] = useState(false);
   const originRef = useRef<{ x: number; y: number } | null>(null);
   const soundOn = prefs.soundOn;
@@ -112,6 +114,7 @@ export default function App() {
   );
 
   const [state, dispatch] = useAppState(handleEvents);
+  const cloud = useCloudSync(state, dispatch, (msg) => pushToast({ icon: '☁️', title: 'Signed in', body: msg }, 4500));
   const { tasks, categories, stats } = state;
   const today = dayKey();
   const categoryById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
@@ -175,9 +178,26 @@ export default function App() {
           <h1>
             Quest<span>log</span>
           </h1>
-          <button className="icon-btn glass-soft" onClick={() => setSheet('trophies')} aria-label="Trophies and settings">
-            ⚙︎
-          </button>
+          <div className="topbar-actions">
+            {cloud.status === 'signedIn' && cloud.user ? (
+              <button
+                className={`account-btn sync-${cloud.sync}`}
+                onClick={() => setSheet('account')}
+                aria-label={`Account: ${cloud.user.email ?? ''}. ${SYNC_LABEL[cloud.sync]}`}
+                title={SYNC_LABEL[cloud.sync]}
+              >
+                <Avatar user={cloud.user} size={38} />
+                <span className="sync-dot" />
+              </button>
+            ) : cloud.status === 'signedOut' ? (
+              <button className="signin-btn glass-soft" onClick={() => setSheet('account')}>
+                Sign in
+              </button>
+            ) : null}
+            <button className="icon-btn glass-soft" onClick={() => setSheet('trophies')} aria-label="Trophies and settings">
+              ⚙︎
+            </button>
+          </div>
         </div>
 
         <Header stats={stats} pulse={pulse} onOpenTrophies={() => setSheet('trophies')} />
@@ -310,10 +330,20 @@ export default function App() {
       {sheet === 'categories' && (
         <CategoryManager categories={categories} tasks={tasks} dispatch={dispatch} onClose={() => setSheet(null)} />
       )}
+      {sheet === 'account' && (
+        <AccountSheet
+          api={cloud.api}
+          user={cloud.user}
+          sync={cloud.sync}
+          onSignOut={cloud.signOut}
+          onClose={() => setSheet(null)}
+        />
+      )}
       {sheet === 'trophies' && (
         <Trophies
           stats={stats}
           soundOn={soundOn}
+          signedIn={cloud.status === 'signedIn'}
           onToggleSound={() => updatePrefs({ soundOn: !soundOn })}
           dispatch={dispatch}
           onClose={() => setSheet(null)}

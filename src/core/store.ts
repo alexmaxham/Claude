@@ -14,7 +14,9 @@ export type Action =
   | { type: 'deleteCategory'; id: string }
   | { type: 'moveCategory'; id: string; delta: -1 | 1 }
   | { type: 'setDailyGoal'; goal: number }
-  | { type: 'reset' };
+  | { type: 'reset' }
+  /** Replace everything, e.g. with data loaded from the cloud. */
+  | { type: 'load'; state: AppState };
 
 export const CATEGORY_COLORS = [
   '#ff6b8b', '#ff9f43', '#ffd166', '#4cd97b', '#2ec4b6', '#5ac8fa', '#6c8cff', '#a78bfa', '#f472b6',
@@ -194,6 +196,9 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
 
     case 'reset':
       return { state: createInitialState(), events };
+
+    case 'load':
+      return { state: action.state, events };
   }
 
   // Award any newly earned achievements.

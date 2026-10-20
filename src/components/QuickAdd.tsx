@@ -22,15 +22,16 @@ export function QuickAdd({ categories, defaultCategoryId, defaultDue, onAdd }: P
   useEffect(() => setCategoryId(defaultCategoryId), [defaultCategoryId]);
   useEffect(() => setDueDate(defaultDue), [defaultDue]);
 
-  // Tuck the options away when tapping elsewhere with nothing typed. (Pointer-based
-  // because Safari doesn't move focus to buttons, so blur can't be trusted.)
+  // Tuck the options away when tapping elsewhere with nothing typed. Uses click
+  // (not pointerdown) so the layout doesn't shift under the tap, and not blur
+  // because Safari doesn't move focus to buttons.
   useEffect(() => {
     if (!expanded || title.trim()) return;
-    const onDown = (e: PointerEvent) => {
+    const onClick = (e: MouseEvent) => {
       if (!formRef.current?.contains(e.target as Node)) setExpanded(false);
     };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
   }, [expanded, title]);
 
   // "n" or "/" focuses the input from anywhere.

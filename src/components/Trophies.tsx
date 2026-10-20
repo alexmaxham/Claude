@@ -8,12 +8,13 @@ import { Sheet } from './Sheet';
 interface Props {
   stats: Stats;
   soundOn: boolean;
+  signedIn: boolean;
   onToggleSound: () => void;
   dispatch: (a: Action) => void;
   onClose: () => void;
 }
 
-export function Trophies({ stats, soundOn, onToggleSound, dispatch, onClose }: Props) {
+export function Trophies({ stats, soundOn, signedIn, onToggleSound, dispatch, onClose }: Props) {
   const [confirmReset, setConfirmReset] = useState(false);
   const level = levelFromXp(stats.xp);
   const today = dayKey();
@@ -77,7 +78,10 @@ export function Trophies({ stats, soundOn, onToggleSound, dispatch, onClose }: P
           </button>
         </div>
         <div className="setting">
-          <span>Reset all data</span>
+          <span>
+            Reset all data
+            {signedIn && <span className="muted small" style={{ display: 'block' }}>Also erases it from your account</span>}
+          </span>
           {confirmReset ? (
             <span className="confirm-inline">
               <button className="btn" onClick={() => setConfirmReset(false)}>Cancel</button>

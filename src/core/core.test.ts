@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { addDays, dayKey, daysBetween } from './dates';
 import { effectiveStreak, levelFromXp, streakMultiplier, xpToNext } from './gamification';
+import { mergeStates } from './merge';
 import { parseState } from './storage';
 import { createInitialState, reduce, type Action } from './store';
 import type { AppState } from './types';
@@ -126,5 +127,41 @@ describe('storage', () => {
     const s = parseState(JSON.stringify({ tasks: [], stats: { xp: 42 } }));
     expect(s.stats.xp).toBe(42);
     expect(s.stats.dailyGoal).toBe(3);
+  });
+});
+
+describe('mergeStates', () => {
+  const complete = (s: AppState, title: string, now = NOON) => {
+    s = run(s, [{ type: 'addTask', title, categoryId: null, priority: 'medium', dueDate: null }], now);
+    return run(s, [{ type: 'toggleTask', id: s.tasks[0].id }], now);
+  };
+
+  it('returns the other side when one is pristine', () => {
+    const used = complete(createInitialState(), 'x');
+    expect(mergeStates(used, createInitialState())).toBe(used);
+    expect(mergeStates(createInitialState(), used)).toBe(used);
+  });
+
+  it('unions tasks and adds up progress', () => {
+    const account = complete(createInitialState(), 'account task', NOON - DAY);
+    let guest = complete(createInitialState(), 'guest task');
+    guest = run(guest, [{ type: 'addCategory', name: 'work', emoji: '💼', color: '#000' }]);
+    guest = run(guest, [{ type: 'addCategory', name: 'Garden', emoji: '🌻', color: '#0f0' }]);
+
+    const m = mergeStates(account, guest);
+    expect(m.tasks.map((t) => t.title).sort()).toEqual(['account task', 'guest task']);
+    expect(m.stats.xp).toBe(account.stats.xp + guest.stats.xp);
+    expect(m.stats.totalCompleted).toBe(2);
+    expect(m.stats.lastActiveDay).toBe('2026-10-20');
+    expect(m.stats.completionsByDay).toEqual({ '2026-10-19': 1, '2026-10-20': 1 });
+    // "work" matches the default "Work" category; "Garden" is new.
+    expect(m.categories.filter((c) => c.name.toLowerCase() === 'work')).toHaveLength(1);
+    expect(m.categories.some((c) => c.name === 'Garden')).toBe(true);
+  });
+
+  it('is idempotent for tasks already in the account', () => {
+    const s = complete(createInitialState(), 'same');
+    const m = mergeStates(s, { ...s, stats: { ...s.stats } });
+    expect(m.tasks).toHaveLength(1);
   });
 });
