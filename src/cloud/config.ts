@@ -11,6 +11,15 @@ const config = {
   appId: '1:304688994859:web:0615aa39d895a41e67286e',
 };
 
+/**
+ * Google sign-in (and Calendar sync) in the iPhone app goes through the native
+ * Google SDK, which needs GoogleService-Info.plist in ios/App/App and the URL scheme
+ * from it in Info.plist (see README → iPhone app). Turn this on once that's done;
+ * until then the app offers email sign-in only, since Google blocks sign-in pages
+ * inside embedded web views.
+ */
+export const IOS_GOOGLE_SIGN_IN = false;
+
 export interface CloudConfig {
   options: typeof config;
   /** Talk to local Firebase emulators instead of the real project (for development/testing). */

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { setStatusBar } from './native';
 
 export type Appearance = 'system' | 'light' | 'dark';
 
@@ -9,6 +10,7 @@ function apply(appearance: Appearance) {
   const light = appearance === 'light' || (appearance === 'system' && !!media()?.matches);
   document.documentElement.dataset.scheme = light ? 'light' : 'dark';
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', light ? '#e8ecf5' : '#04070f');
+  setStatusBar(light);
 }
 
 /** Keeps the page in the chosen appearance; "system" follows the OS setting as it changes. */

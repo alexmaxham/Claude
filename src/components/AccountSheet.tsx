@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import type { CloudApi, CloudUser } from '../cloud/api';
+import { IOS_GOOGLE_SIGN_IN } from '../cloud/config';
 import { authErrorMessage } from '../cloud/errors';
+import { isNative } from '../native';
 import type { SyncStatus } from '../cloud/useCloudSync';
 import { LogoMark } from './Logo';
 import { Sheet } from './Sheet';
@@ -113,7 +115,7 @@ function SignInForm({ api }: { api: CloudApi | null }) {
         already comes with you.
       </p>
 
-      {mode !== 'reset' && (
+      {mode !== 'reset' && (!isNative || IOS_GOOGLE_SIGN_IN) && (
         <>
           <button className="btn google-btn" disabled={busy} onClick={() => run(() => api.signInWithGoogle())}>
             <GoogleLogo /> Continue with Google

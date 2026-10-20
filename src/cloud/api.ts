@@ -6,10 +6,13 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   GoogleAuthProvider,
+  indexedDBLocalPersistence,
+  initializeAuth,
   linkWithPopup,
   onAuthStateChanged,
   reauthenticateWithPopup,
   sendPasswordResetEmail,
+  signInWithCredential,
   signInWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
@@ -26,8 +29,9 @@ import {
   setDoc,
 } from 'firebase/firestore';
 import type { Task } from '../core/types';
+import { isNative } from '../native';
 import { syncCalendar } from './calendar';
-import type { CloudConfig } from './config';
+import { IOS_GOOGLE_SIGN_IN, type CloudConfig } from './config';
 
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 
@@ -54,7 +58,8 @@ export type CloudApi = ReturnType<typeof createCloud>;
 
 export function createCloud({ options, useEmulators }: CloudConfig) {
   const app = initializeApp(options);
-  const auth = getAuth(app);
+  // getAuth() waits on a popup/redirect helper that never loads in the iPhone app's web view.
+  const auth = isNative ? initializeAuth(app, { persistence: indexedDBLocalPersistence }) : getAuth(app);
   const db = initializeFirestore(app, {
     // Keeps working offline and syncs when the connection comes back.
     localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
@@ -67,6 +72,15 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
   const userDoc = (uid: string) => doc(db, 'users', uid);
   let calendarToken: { value: string; expires: number } | null = null;
 
+  /** Google sign-in through the native SDK (iPhone app), which returns Google's own tokens. */
+  async function nativeGoogle(scopes?: string[]) {
+    if (!IOS_GOOGLE_SIGN_IN) throw new Error('Google sign-in isn’t set up in the iPhone app yet.');
+    const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+    const { credential } = await FirebaseAuthentication.signInWithGoogle({ scopes });
+    if (!credential?.idToken) throw new Error('Google sign-in was cancelled.');
+    return credential;
+  }
+
   /**
    * An OAuth access token allowed to edit the user's calendar events. Asks Google
    * once (a popup); the token is kept in memory for most of its one-hour life.
@@ -76,6 +90,12 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
     if (calendarToken && calendarToken.expires > Date.now()) return calendarToken.value;
     const user = auth.currentUser;
     if (!user) throw new Error('Sign in first to connect Google Calendar.');
+    if (isNative) {
+      const token = (await nativeGoogle([CALENDAR_SCOPE])).accessToken;
+      if (!token) throw new Error('Google didn’t grant calendar access.');
+      calendarToken = { value: token, expires: Date.now() + 50 * 60_000 };
+      return token;
+    }
     const provider = new GoogleAuthProvider();
     provider.addScope(CALENDAR_SCOPE);
     const hasGoogle = user.providerData.some((p) => p.providerId === 'google.com');
@@ -95,6 +115,11 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
     },
 
     async signInWithGoogle() {
+      if (isNative) {
+        const { idToken, accessToken } = await nativeGoogle();
+        await signInWithCredential(auth, GoogleAuthProvider.credential(idToken, accessToken));
+        return;
+      }
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       try {
@@ -118,8 +143,13 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
       return sendPasswordResetEmail(auth, email);
     },
 
-    signOut() {
+    async signOut() {
       calendarToken = null;
+      if (isNative && IOS_GOOGLE_SIGN_IN) {
+        // Also forget the Google account, so the next sign-in offers the account picker.
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        await FirebaseAuthentication.signOut().catch(() => {});
+      }
       return signOut(auth);
     },
 
