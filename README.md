@@ -2,6 +2,8 @@
 
 A gamified to-do list with a liquid glass look. Built as a web app first, structured so it can become iOS and Android apps later.
 
+**Live app:** https://alexmaxham.github.io/Claude/
+
 ## Run it
 
 ```bash
@@ -10,6 +12,8 @@ npm run dev       # http://localhost:5173
 npm test          # core logic tests
 npm run build     # production build in dist/
 ```
+
+Every push to the default branch runs the tests, builds, and deploys to GitHub Pages (`.github/workflows/deploy.yml`).
 
 ## Features
 
