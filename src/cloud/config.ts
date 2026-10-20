@@ -13,12 +13,11 @@ const config = {
 
 /**
  * Google sign-in (and Calendar sync) in the iPhone app goes through the native
- * Google SDK, which needs GoogleService-Info.plist in ios/App/App and the URL scheme
- * from it in Info.plist (see README → iPhone app). Turn this on once that's done;
- * until then the app offers email sign-in only, since Google blocks sign-in pages
- * inside embedded web views.
+ * Google SDK, since Google blocks sign-in pages inside embedded web views. It uses
+ * ios/App/App/GoogleService-Info.plist and the URL scheme from it in Info.plist
+ * (see README → iPhone app). Turning this off leaves email sign-in only.
  */
-export const IOS_GOOGLE_SIGN_IN = false;
+export const IOS_GOOGLE_SIGN_IN = true;
 
 export interface CloudConfig {
   options: typeof config;

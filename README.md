@@ -105,7 +105,7 @@ src/styles.css   Liquid glass design system
 | Daily reminder | Only while a tab is open | Real iOS notifications for the next 7 days, even when Tasko is closed |
 | Export | File download | Share sheet (Save to Files, AirDrop, Mail…) |
 | Saved data | localStorage | localStorage mirrored to native storage, so iOS clearing web data can't lose it |
-| Google sign-in | Popup | Native Google sign-in (after the setup below) |
+| Google sign-in | Popup | Native Google sign-in |
 | Status bar, launch screen, icon | — | Follows light/dark; launch screen and icon from the Tasko logo |
 
 All native calls live in `src/native.ts`; on the web each one is a no-op or falls back to the browser API.
@@ -125,11 +125,10 @@ The bundle ID is `com.alexmaxham.tasko` (in `capacitor.config.ts` and Xcode). To
 
 ### Sign-in in the iPhone app
 
-Email/password sign-in and sync work out of the box. Google blocks its sign-in page inside apps' web views, so Google sign-in (and Google Calendar sync) uses the native Google SDK and needs a one-time setup:
+Email/password and Google sign-in both work, and sync with the web app. Google blocks its sign-in page inside apps' web views, so the iPhone app signs in with the native Google SDK, using the Firebase iOS app `com.alexmaxham.tasko`:
 
-1. Firebase console → Project settings → Your apps → **Add app → iOS**, bundle ID `com.alexmaxham.tasko`. Download **GoogleService-Info.plist**.
-2. In Xcode, drag it into `App/App` (tick "Copy items if needed" and the App target).
-3. Open `GoogleService-Info.plist`, copy the `REVERSED_CLIENT_ID` value. App target → **Info** → URL Types → **+** → paste it into *URL Schemes*.
-4. Set `IOS_GOOGLE_SIGN_IN = true` in `src/cloud/config.ts`, then `npm run ios`.
+- `ios/App/App/GoogleService-Info.plist` is that app's config, from Firebase console → Project settings → Your apps. Like the web config, its values aren't secrets.
+- Its `REVERSED_CLIENT_ID` is registered as a URL scheme in `ios/App/App/Info.plist`, so Google can hand control back to Tasko after sign-in. Update both if the Firebase iOS app is ever recreated.
+- `IOS_GOOGLE_SIGN_IN` in `src/cloud/config.ts` turns the native flow on; set it to `false` to offer email sign-in only.
 
-Until then the app hides the Google button and offers email sign-in only.
+Google Calendar sync uses the same native sign-in to ask for calendar access.
