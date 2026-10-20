@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { addDays, dayKey } from '../core/dates';
 import { BASE_XP } from '../core/gamification';
 import { DAY_NAMES, repeatLabel, repeatPreset, WEEKDAYS, WEEKENDS, type RepeatPreset } from '../core/recurrence';
@@ -29,6 +29,13 @@ export function PriorityPicker({ value, onChange }: { value: Priority; onChange:
   );
 }
 
+function formatDay(key: string): string {
+  const [y, m, d] = key.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const sameYear = y === new Date().getFullYear();
+  return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', ...(sameYear ? {} : { year: 'numeric' }) });
+}
+
 export function DuePicker({ value, onChange }: { value: string | null; onChange: (d: string | null) => void }) {
   const today = dayKey();
   const tomorrow = addDays(today, 1);
@@ -45,7 +52,7 @@ export function DuePicker({ value, onChange }: { value: string | null; onChange:
         Tomorrow
       </button>
       <label className={`chip date-chip ${custom ? 'active' : ''}`}>
-        📅 {custom ? value : 'Pick…'}
+        📅 {custom ? formatDay(value) : 'Pick…'}
         <input
           type="date"
           value={value ?? ''}
@@ -78,10 +85,9 @@ export function CategoryPicker({
           role="radio"
           aria-checked={value === c.id}
           className={`chip ${value === c.id ? 'active' : ''}`}
-          style={value === c.id ? { background: c.color, borderColor: c.color, color: '#10131c' } : undefined}
           onClick={() => onChange(c.id)}
         >
-          {c.emoji} {c.name}
+          <span className="cat-dot" style={{ '--cat': c.color } as CSSProperties} aria-hidden="true" /> {c.name}
         </button>
       ))}
     </div>
