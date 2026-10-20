@@ -1,0 +1,174 @@
+[
+  {
+    "slug": "apple-ipad-air-11-m4",
+    "name": "Apple iPad Air 11\" (M4)",
+    "candidates": 3,
+    "notes": []
+  },
+  {
+    "slug": "apple-ipad-air-13-m4",
+    "name": "Apple iPad Air 13\" (M4)",
+    "candidates": 2,
+    "notes": []
+  },
+  {
+    "slug": "apple-iphone-18-pro-max",
+    "name": "Apple iPhone 18 Pro Max",
+    "candidates": 4,
+    "notes": []
+  },
+  {
+    "slug": "apple-iphone-18-pro",
+    "name": "Apple iPhone 18 Pro",
+    "candidates": 5,
+    "notes": []
+  },
+  {
+    "slug": "apple-iphone-duo",
+    "name": "Apple iPhone Duo",
+    "candidates": 4,
+    "notes": []
+  },
+  {
+    "slug": "google-pixel-11-pro-fold",
+    "name": "Google Pixel 11 Pro Fold",
+    "candidates": 4,
+    "notes": []
+  },
+  {
+    "slug": "google-pixel-11-pro-xl",
+    "name": "Google Pixel 11 Pro XL",
+    "candidates": 2,
+    "notes": []
+  },
+  {
+    "slug": "google-pixel-11-pro",
+    "name": "Google Pixel 11 Pro",
+    "candidates": 2,
+    "notes": []
+  },
+  {
+    "slug": "google-pixel-11",
+    "name": "Google Pixel 11",
+    "candidates": 2,
+    "notes": []
+  },
+  {
+    "slug": "honor-magicpad-4",
+    "name": "Honor MagicPad 4",
+    "candidates": 3,
+    "notes": [
+      "404 https://www.honor.com/global/tablets/honor-magicpad4/"
+    ]
+  },
+  {
+    "slug": "motorola-razr-fold",
+    "name": "Motorola Razr Fold",
+    "candidates": 3,
+    "notes": [
+      "no og:image on https://www.motorola.com/us/smartphones-razr-fold/p"
+    ]
+  },
+  {
+    "slug": "oneplus-16",
+    "name": "OnePlus 16",
+    "candidates": 2,
+    "notes": [
+      "no og:image on https://www.oneplus.com/cn/16"
+    ]
+  },
+  {
+    "slug": "oneplus-pad-4",
+    "name": "OnePlus Pad 4",
+    "candidates": 0,
+    "notes": [
+      "no og:image on https://www.oneplus.com/global/pad-4"
+    ]
+  },
+  {
+    "slug": "oppo-find-x9-ultra",
+    "name": "OPPO Find X9 Ultra",
+    "candidates": 4,
+    "notes": []
+  },
+  {
+    "slug": "samsung-galaxy-s26-plus",
+    "name": "Samsung Galaxy S26+",
+    "candidates": 1,
+    "notes": [
+      "404 https://www.samsung.com/us/smartphones/galaxy-s26-plus/"
+    ]
+  },
+  {
+    "slug": "samsung-galaxy-s26-ultra",
+    "name": "Samsung Galaxy S26 Ultra",
+    "candidates": 4,
+    "notes": []
+  },
+  {
+    "slug": "samsung-galaxy-s26",
+    "name": "Samsung Galaxy S26",
+    "candidates": 5,
+    "notes": []
+  },
+  {
+    "slug": "samsung-galaxy-tab-s12-plus",
+    "name": "Samsung Galaxy Tab S12+",
+    "candidates": 2,
+    "notes": []
+  },
+  {
+    "slug": "samsung-galaxy-tab-s12-ultra",
+    "name": "Samsung Galaxy Tab S12 Ultra",
+    "candidates": 1,
+    "notes": [
+      "404 https://www.samsung.com/us/tablets/galaxy-tab-s12-ultra/"
+    ]
+  },
+  {
+    "slug": "samsung-galaxy-z-flip8",
+    "name": "Samsung Galaxy Z Flip8",
+    "candidates": 3,
+    "notes": []
+  },
+  {
+    "slug": "samsung-galaxy-z-fold8-ultra",
+    "name": "Samsung Galaxy Z Fold8 Ultra",
+    "candidates": 4,
+    "notes": []
+  },
+  {
+    "slug": "samsung-galaxy-z-fold8",
+    "name": "Samsung Galaxy Z Fold8",
+    "candidates": 4,
+    "notes": []
+  },
+  {
+    "slug": "sony-xperia-1-viii",
+    "name": "Sony Xperia 1 VIII",
+    "candidates": 3,
+    "notes": [
+      "404 https://www.sony.com/electronics/smartphones/xperia-1m8"
+    ]
+  },
+  {
+    "slug": "vivo-x300-ultra",
+    "name": "vivo X300 Ultra",
+    "candidates": 2,
+    "notes": [
+      "no og:image on https://www.vivo.com/en/products/x300-ultra"
+    ]
+  },
+  {
+    "slug": "xiaomi-17-ultra",
+    "name": "Xiaomi 17 Ultra",
+    "candidates": 4,
+    "notes": []
+  },
+  {
+    "slug": "xiaomi-pad-8-pro",
+    "name": "Xiaomi Pad 8 Pro",
+    "candidates": 4,
+    "notes": []
+  }
+]
