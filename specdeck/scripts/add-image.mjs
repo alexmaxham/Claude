@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Adds a product photo to a device: resizes it, saves it as WebP in src/assets/devices/,
+// Adds a product render to a device: cuts it out and centers it (scripts/lib/normalize-render.mjs), saves it in src/assets/devices/,
 // and records the file, credit and source in the device's JSON file.
 // Usage: npm run add-image -- <device-slug> <file-or-url> --credit "Samsung" --source <url> [--alt "..."]
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import sharp from 'sharp';
+import { normalizeRender, RenderError } from './lib/normalize-render.mjs';
 
 const args = process.argv.slice(2);
 const flag = (name) => {
@@ -41,14 +41,14 @@ if (/^https?:\/\//.test(input)) {
   buffer = readFileSync(input);
 }
 
-// Keep transparency, cap the longest side at 1600px; the site makes smaller copies as needed.
+// Every device image is cut out, trimmed and centered on the same square canvas, so they all match.
 const file = `${slug}.webp`;
 const out = new URL(`../src/assets/devices/${file}`, import.meta.url);
-const info = await sharp(buffer)
-  .rotate()
-  .resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true })
-  .webp({ quality: 86 })
-  .toFile(out.pathname);
+try {
+  writeFileSync(out, await normalizeRender(buffer));
+} catch (e) {
+  fail(e instanceof RenderError ? e.message : `Could not read the image: ${e.message}`);
+}
 
 const image = { file, ...(alt ? { alt } : {}), credit, source };
 const line = `  "image": ${JSON.stringify(image).replace(/":/g, '": ').replace(/,"/g, ', "').replace(/^\{/, '{ ').replace(/\}$/, ' }')},`;
@@ -60,5 +60,5 @@ else fail(`Could not find the "art" line in ${slug}.json to add the image after.
 JSON.parse(next);
 writeFileSync(dataFile, next);
 
-console.log(`Saved src/assets/devices/${file} (${info.width} × ${info.height}) and updated ${slug}.json.`);
+console.log(`Saved src/assets/devices/${file} and updated ${slug}.json.`);
 console.log('Run npm run build to check it.');

@@ -98,11 +98,11 @@ npm run add-image -- samsung-galaxy-s26-ultra ~/Downloads/s26-ultra.png \
   --credit "Samsung" --source "https://news.samsung.com/global/..."
 ```
 
-The script accepts a local file or an image URL. It caps the longest side at 1,600 px, saves the result as `src/assets/devices/<slug>.webp`, and adds an `image` entry (file, credit, source) to the device's JSON file. Pass `--alt` to override the default alt text, which is the device name.
+The script accepts a local file or an image URL. Every device image is processed the same way (`scripts/lib/normalize-render.mjs`), so they all match: a plain background is removed, the device is trimmed and centered on a 1,200 px transparent square at the same size, and the result is saved as `src/assets/devices/<slug>.webp`. An image whose background isn't plain is refused. The script then adds an `image` entry (file, credit, source) to the device's JSON file. Pass `--alt` to override the default alt text, which is the device name.
 
 At build time the photo is resized for each place it appears (cards, device page, compare table, 1× and 2× screens). It also becomes the link-preview image (`og:image`) and the `image` in the device's structured data. The device page shows the credit under the photo, linked to the source.
 
-Use official press images: manufacturers publish them in their newsroom or press kit for editorial use. A transparent or plain light background looks best on the shaped backdrop. Don't use photos from retailers or review sites unless you have permission.
+Use the maker's official press render of the **front** of the device, on a transparent or plain background. Manufacturers publish these in their newsroom or press kit for editorial use. Front renders keep the site uniform. Don't use photos from retailers or review sites unless you have permission.
 
 ### Field notes
 

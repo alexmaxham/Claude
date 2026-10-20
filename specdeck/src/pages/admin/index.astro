@@ -118,7 +118,7 @@ const brands = [...new Set((await allDevices()).map((d) => d.brand))].sort((a, b
     <section data-view="photo" hidden>
       <button type="button" class="back" data-action="back"><Icon name="arrow_back" />All devices</button>
       <h1 class="headline" data-photo-title>Photo</h1>
-      <p class="muted lead">Use an official press image (from the maker’s newsroom or press kit). A transparent or plain light background looks best. It is resized to at most 1,600 px.</p>
+      <p class="muted lead">Use the maker’s official press render of the <strong>front</strong> of the device, on a transparent or plain background. The background is removed and the device is centered and sized like every other device on the site. Photos with a busy background (a store, a hand, a scene) are refused.</p>
       <form class="pform" data-photo-form novalidate>
         <div class="pgrid">
           <div class="preview" data-preview><span class="muted">No photo chosen</span></div>

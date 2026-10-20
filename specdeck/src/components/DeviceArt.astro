@@ -2,7 +2,7 @@
 // The device's product photo when it has one, otherwise the generated illustration.
 import { Image } from 'astro:assets';
 import type { Device } from '../lib/schema';
-import { artHtml } from '../lib/art';
+import { artHtml, cookiePath, seed } from '../lib/art';
 import { fullName } from '../lib/names';
 import { photoFor, photoAlt } from '../lib/images';
 
@@ -17,12 +17,18 @@ interface Props {
 }
 const { device, height, shape = true, class: className = '', loading = 'lazy' } = Astro.props;
 const photo = photoFor(device);
-const imgHeight = Math.round(height * 0.86);
+const points = device.formFactor === 'tablet' ? 4 : device.formFactor === 'book-fold' ? 6 : 9;
+const shapeSize = Math.round(height * 0.92);
+// Renders are square canvases with the device centered, so one size fits every device.
+const imgHeight = Math.round(height * 0.84);
 ---
 {photo ? (
-  <div class={`art has-photo ${className}`} style={`height:${height}px`}>
-    {/* A blurred copy fills the box, so photos of any shape sit on matching color without cropping. */}
-    <Image class="backdrop" src={photo} alt="" width={48} format="webp" loading={loading} />
+  <div class={`art ${className}`} style={`height:${height}px`}>
+    {shape && (
+      <svg class="cookie" width={shapeSize} height={shapeSize} viewBox="0 0 100 100" aria-hidden="true">
+        <path d={cookiePath(points, 0.12, (seed(device.slug) % 10) / 10)} fill="currentColor" />
+      </svg>
+    )}
     <Image
       class="photo"
       src={photo}

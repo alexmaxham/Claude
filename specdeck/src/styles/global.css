@@ -103,7 +103,5 @@ img, svg { max-width: 100%; }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
-/* Product photos keep their own aspect ratio, on a blurred copy of themselves that fills the box. */
-.art.has-photo { background: var(--surface-high); }
-.art .backdrop { position: absolute; inset: -12%; width: 124%; height: 124%; max-width: none; object-fit: cover; filter: blur(22px) saturate(1.15); opacity: .7; }
-.art .photo { position: relative; width: auto; height: auto; max-width: 92%; max-height: 88%; object-fit: contain; border-radius: 10px; box-shadow: 0 10px 24px -10px rgba(0,0,0,.4); }
+/* Product renders are cut-outs on a square canvas: they sit on the same shape as the illustrations. */
+.art .photo { position: relative; width: auto; height: auto; max-width: 100%; max-height: 84%; object-fit: contain; filter: drop-shadow(0 14px 16px rgba(0,0,0,.24)); }
