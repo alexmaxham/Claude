@@ -128,22 +128,15 @@ The bundle ID is `com.alexmaxham.tasko` (in `capacitor.config.ts` and Xcode). Th
 
 ### Sign-in in the iPhone app
 
-Email/password sign-in and sync work out of the box. Google blocks its sign-in page inside apps' web views, so Google sign-in (and Google Calendar sync) uses the native Google SDK and needs a one-time setup:
+Email/password and Google sign-in both work, and sync with the web app. Google blocks its sign-in page inside apps' web views, so the iPhone app signs in with the native Google SDK, using the Firebase iOS app `com.alexmaxham.tasko`:
 
-1. Firebase console → **Authentication → Sign-in method**: make sure **Google** is enabled (it already is if Google sign-in works on the web).
-2. Firebase console → **Project settings → General → Your apps → Add app → iOS**. Bundle ID `com.alexmaxham.tasko`, nickname *Tasko iPhone*; skip the remaining steps of the wizard. Download **GoogleService-Info.plist**.
-3. Run:
+- `ios/App/App/GoogleService-Info.plist` is that app's config, from Firebase console → Project settings → Your apps. Like the web config, its values aren't secrets.
+- Its `REVERSED_CLIENT_ID` is registered as a URL scheme in `ios/App/App/Info.plist`, so Google can hand control back to Tasko after sign-in.
+- `IOS_GOOGLE_SIGN_IN` in `src/cloud/config.ts` turns the native flow on; set it to `false` to offer email sign-in only.
 
-   ```bash
-   npm run ios:google -- ~/Downloads/GoogleService-Info.plist
-   ```
+If the Firebase iOS app is ever recreated, download its new **GoogleService-Info.plist** and run `npm run ios:google -- ~/Downloads/GoogleService-Info.plist`. It checks the file is for this app and Firebase project, then updates all three of the above.
 
-   This checks the file is for this app and Firebase project, copies it into `ios/App/App` and the Xcode project, adds Google's URL scheme (`REVERSED_CLIENT_ID`) to `Info.plist`, and sets `IOS_GOOGLE_SIGN_IN = true` in `src/cloud/config.ts`.
-4. `npm run ios` and run it on your iPhone. Commit the changed files so the setup sticks (the plist only identifies the app, like the web config; it isn't a secret).
-
-Calendar sync in the app asks for calendar access on the native Google screen the first time, using the same consent-screen scope as the web (see [Accounts and sync](#accounts-and-sync-firebase)).
-
-Until then the app hides the Google and Apple buttons and offers email sign-in only.
+Google Calendar sync uses the same native sign-in to ask for calendar access, with the same consent-screen scope as the web (see [Accounts and sync](#accounts-and-sync-firebase)).
 
 **Sign in with Apple** (App Store guideline 4.8 requires it in apps that offer Google sign-in) uses the same native setup, plus:
 
