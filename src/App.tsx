@@ -7,7 +7,7 @@ import { Header } from './components/Header';
 import { QuickAdd } from './components/QuickAdd';
 import { TaskEditor } from './components/TaskEditor';
 import { TaskItem } from './components/TaskItem';
-import { Trophies } from './components/Trophies';
+import { Trophies, type TrophiesTab } from './components/Trophies';
 import { dayKey } from './core/dates';
 import { ACHIEVEMENTS, levelTitle } from './core/gamification';
 import type { GameEvent, Task } from './core/types';
@@ -57,7 +57,7 @@ export default function App() {
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [pulse, setPulse] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<'categories' | 'trophies' | 'account' | null>(null);
+  const [sheet, setSheet] = useState<'categories' | 'account' | TrophiesTab | null>(null);
   const [showDone, setShowDone] = useState(false);
   const originRef = useRef<{ x: number; y: number } | null>(null);
   const soundOn = prefs.soundOn;
@@ -199,84 +199,94 @@ export default function App() {
                 Sign in
               </button>
             ) : null}
-            <button className="icon-btn glass-soft" onClick={() => setSheet('trophies')} aria-label="Trophies and settings">
+            <button className="icon-btn glass-soft" onClick={() => setSheet('settings')} aria-label="Settings">
               ⚙︎
             </button>
           </div>
         </div>
 
-        <Header stats={stats} pulse={pulse} onOpenTrophies={() => setSheet('trophies')} />
+        {/* On phones these two wrappers vanish (display: contents) and their children
+            stack in one column; on wide screens they become a sidebar and a main column. */}
+        <aside className="sidebar">
+          <Header stats={stats} pulse={pulse} onOpenTrophies={() => setSheet('trophies')} />
 
-        <QuickAdd
-          categories={categories}
-          defaultCategoryId={activeCategory?.id ?? null}
-          defaultDue={filter === 'today' ? today : null}
-          onAdd={(t) => dispatch({ type: 'addTask', ...t })}
-        />
+          <CategoryBar
+            categories={categories}
+            tasks={tasks}
+            filter={filter}
+            todayCount={todayCount}
+            onChange={(f) => updatePrefs({ filter: f })}
+            onEdit={() => setSheet('categories')}
+          />
 
-        <CategoryBar
-          categories={categories}
-          tasks={tasks}
-          filter={filter}
-          todayCount={todayCount}
-          onChange={(f) => updatePrefs({ filter: f })}
-          onEdit={() => setSheet('categories')}
-        />
+          <p className="footer-hint muted small">
+            Tip: press <kbd>N</kbd> to add a quest. Higher priority and on-time tasks earn more XP; streaks multiply it.
+          </p>
+        </aside>
 
-        <section aria-label="Tasks">
-          {open.length === 0 ? (
-            <div className="empty glass-soft">
-              <span className="empty-icon">{done.length ? '🎉' : emptyMessage.icon}</span>
-              <p>{done.length ? 'All clear! Every quest here is done.' : emptyMessage.text}</p>
-            </div>
-          ) : (
-            <ul className="task-list">
-              {open.map((t) => (
-                <TaskItem
-                  key={t.id}
-                  task={t}
-                  category={categoryById.get(t.categoryId ?? '')}
-                  stats={stats}
-                  onToggle={toggle}
-                  onOpen={(task) => setEditingId(task.id)}
-                />
-              ))}
-            </ul>
-          )}
+        <div className="main-col">
+          <QuickAdd
+            categories={categories}
+            defaultCategoryId={activeCategory?.id ?? null}
+            defaultDue={filter === 'today' ? today : null}
+            onAdd={(t) => dispatch({ type: 'addTask', ...t })}
+          />
 
-          {done.length > 0 && (
-            <div className="done-section">
-              <div className="done-header">
-                <button className="link-btn" onClick={() => setShowDone((v) => !v)} aria-expanded={showDone}>
-                  {showDone ? '▾' : '▸'} Completed ({done.length})
-                </button>
-                {showDone && (
-                  <button className="link-btn muted" onClick={() => dispatch({ type: 'clearCompleted' })}>
-                    Clear completed
+          <section className="tasks" aria-label="Tasks">
+            <h2 className="list-title">
+              {filter === 'all' ? 'All quests' : filter === 'today' ? 'Today' : `${activeCategory!.emoji} ${activeCategory!.name}`}
+              <span className="muted"> · {open.length} open</span>
+            </h2>
+            {open.length === 0 ? (
+              <div className="empty glass-soft">
+                <span className="empty-icon">{done.length ? '🎉' : emptyMessage.icon}</span>
+                <p>{done.length ? 'All clear! Every quest here is done.' : emptyMessage.text}</p>
+              </div>
+            ) : (
+              <ul className="task-list">
+                {open.map((t) => (
+                  <TaskItem
+                    key={t.id}
+                    task={t}
+                    category={categoryById.get(t.categoryId ?? '')}
+                    stats={stats}
+                    onToggle={toggle}
+                    onOpen={(task) => setEditingId(task.id)}
+                  />
+                ))}
+              </ul>
+            )}
+
+            {done.length > 0 && (
+              <div className="done-section">
+                <div className="done-header">
+                  <button className="link-btn" onClick={() => setShowDone((v) => !v)} aria-expanded={showDone}>
+                    {showDone ? '▾' : '▸'} Completed ({done.length})
                   </button>
+                  {showDone && (
+                    <button className="link-btn muted" onClick={() => dispatch({ type: 'clearCompleted' })}>
+                      Clear completed
+                    </button>
+                  )}
+                </div>
+                {showDone && (
+                  <ul className="task-list">
+                    {done.map((t) => (
+                      <TaskItem
+                        key={t.id}
+                        task={t}
+                        category={categoryById.get(t.categoryId ?? '')}
+                        stats={stats}
+                        onToggle={toggle}
+                        onOpen={(task) => setEditingId(task.id)}
+                      />
+                    ))}
+                  </ul>
                 )}
               </div>
-              {showDone && (
-                <ul className="task-list">
-                  {done.map((t) => (
-                    <TaskItem
-                      key={t.id}
-                      task={t}
-                      category={categoryById.get(t.categoryId ?? '')}
-                      stats={stats}
-                      onToggle={toggle}
-                      onOpen={(task) => setEditingId(task.id)}
-                    />
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </section>
-
-        <p className="footer-hint muted small">
-          Tip: press <kbd>N</kbd> to add a quest. Higher priority and on-time tasks earn more XP; streaks multiply it.
-        </p>
+            )}
+          </section>
+        </div>
       </main>
 
       {floats.map((f) => (
@@ -344,8 +354,9 @@ export default function App() {
           onClose={() => setSheet(null)}
         />
       )}
-      {sheet === 'trophies' && (
+      {(sheet === 'trophies' || sheet === 'settings') && (
         <Trophies
+          initialTab={sheet}
           stats={stats}
           theme={theme}
           soundOn={soundOn}
