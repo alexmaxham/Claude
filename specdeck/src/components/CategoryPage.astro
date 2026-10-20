@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import DeviceListing from './DeviceListing.astro';
+import { allDevices, deviceUrl, fullName, CATEGORY_LABEL } from '../lib/devices';
+import { breadcrumbLd } from '../lib/seo';
+
+interface Props {
+  category: 'phone' | 'tablet';
+}
+const { category } = Astro.props;
+const devices = (await allDevices()).filter((d) => d.category === category);
+const label = CATEGORY_LABEL[category];
+const crumbs = [{ label: 'Home', href: '/' }, { label }];
+const brands = [...new Set(devices.map((d) => d.brand))];
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: `${label} specifications`,
+  itemListElement: devices.map((d, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: fullName(d),
+    url: new URL(deviceUrl(d), Astro.site).href,
+  })),
+};
+const lower = label.toLowerCase();
+---
+<Base
+  title={`${label}: Full Specs and Comparisons`}
+  description={`Full specifications for ${devices.length} ${lower} from ${brands.join(', ')}. Filter by brand, sort by battery or screen size, and compare up to four side by side.`}
+  nav={category === 'phone' ? 'phones' : 'tablets'}
+  jsonLd={[itemList, breadcrumbLd(crumbs, Astro.site!)]}
+>
+  <Breadcrumbs items={crumbs} />
+  <header class="phead">
+    <h1 class="headline">{label}</h1>
+    <p class="muted">Full spec sheets for {devices.length} {lower}, newest first. Tap + on any card to add it to a side-by-side comparison.</p>
+  </header>
+  <DeviceListing devices={devices} foldFilter={category === 'phone'} />
+</Base>
+
+<style>
+  .phead { display: grid; gap: 8px; }
+  .phead p { margin: 0; max-width: 62ch; }
+</style>

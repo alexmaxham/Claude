@@ -1,0 +1,21 @@
+{
+  "name": "iPad Air 13\" (M4)",
+  "brand": "Apple",
+  "category": "tablet",
+  "formFactor": "tablet",
+  "announced": "2026-03-02",
+  "released": "2026-03-11",
+  "price": { "amount": 799, "currency": "USD", "config": "128 GB, Wi-Fi" },
+  "art": ["#d8cde6", "#6c5a88"],
+  "body": { "weight_g": 616 },
+  "display": { "size_in": 13, "resolution": "2732 × 2048", "ppi": 264 },
+  "platform": { "chipset": "Apple M4" },
+  "memory": { "ram_gb": [12] },
+  "connectivity": { "wifi": "Wi-Fi 7" },
+  "sources": [
+    "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-ipad-air-powered-by-m4/",
+    "https://en.wikipedia.org/wiki/IPad_Air_(M4)",
+    "https://theapplewiki.com/wiki/IPad_Air_13-inch_(M4)"
+  ],
+  "checked": "2026-10-20"
+}

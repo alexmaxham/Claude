@@ -1,0 +1,23 @@
+{
+  "name": "Galaxy Z Fold8",
+  "brand": "Samsung",
+  "category": "phone",
+  "formFactor": "book-fold",
+  "announced": "2026-07-22",
+  "released": "2026-08-07",
+  "price": { "amount": 1899.99, "currency": "USD", "config": "12 GB / 256 GB" },
+  "art": ["#c9d3cf", "#55665f"],
+  "body": { "dimensions": "161.4 × 123.9 × 4.5 mm (unfolded)", "folded": "123.9 × 81.9 × 9.7 mm", "weight_g": 201, "thickness_mm": 4.5, "ip": "IP48" },
+  "display": { "size_in": 7.6, "type": "Dynamic AMOLED 2X (4:3)", "resolution": "1848 × 2448", "refresh_hz": 120, "refresh": "1–120 Hz", "cover": "5.5\", 1248 × 1972" },
+  "platform": { "os": "Android 17, One UI 9", "chipset": "Snapdragon 8 Elite Gen 5 for Galaxy" },
+  "memory": { "ram_gb": [12], "storage_gb": [256, 512] },
+  "camera": { "main": "50 MP", "ultrawide": "50 MP", "telephoto": "None" },
+  "selfie": { "main": "10 MP (cover and inner screens)" },
+  "battery": { "mah": 4800, "wired_w": 45 },
+  "sources": [
+    "https://news.samsung.com/global/samsung-galaxy-z-fold8-ultra-fold8-and-flip8foldables-perfected-for-every-way-of-living",
+    "https://www.digitaltrends.com/phones/samsung-galaxy-z-fold-8-everything-you-need-to-know-about-samsungs-palm-friendly-foldable-phone/",
+    "https://www.engadget.com/2220316/everything-announced-at-samsung-unpacked-2026-check-out-the-company-s-latest-galaxy-foldables-and-watches/"
+  ],
+  "checked": "2026-10-20"
+}

@@ -1,0 +1,227 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import DeviceArt from '../../components/DeviceArt.astro';
+import DeviceCard from '../../components/DeviceCard.astro';
+import CompareButton from '../../components/CompareButton.astro';
+import Icon from '../../components/Icon.astro';
+import {
+  allDevices, rivals, deviceUrl, fullName, brandSlug, compareSlug, CATEGORY_PATH, CATEGORY_LABEL,
+} from '../../lib/devices';
+import { SECTIONS, visibleRows, keySpecs, describe, completeness, formatDate, ppi, NOT_CONFIRMED } from '../../lib/specs';
+import { breadcrumbLd } from '../../lib/seo';
+import type { Device } from '../../lib/schema';
+
+export async function getStaticPaths() {
+  const devices = await allDevices();
+  return devices.map((device) => ({
+    params: { category: CATEGORY_PATH[device.category], slug: device.slug },
+    props: { device, others: rivals(device, devices, 4) },
+  }));
+}
+
+interface Props {
+  device: Device;
+  others: Device[];
+}
+const { device: d, others } = Astro.props;
+const name = fullName(d);
+const k = keySpecs(d);
+const summary = describe(d);
+const { filled, total } = completeness(d);
+const crumbs = [
+  { label: 'Home', href: '/' },
+  { label: CATEGORY_LABEL[d.category], href: `/${CATEGORY_PATH[d.category]}/` },
+  { label: d.brand, href: `/brands/${brandSlug(d.brand)}/` },
+  { label: d.name },
+];
+const sections = SECTIONS.map((s) => ({ ...s, rows: visibleRows(s, [d]) }));
+
+const product = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name,
+  brand: { '@type': 'Brand', name: d.brand },
+  category: d.category === 'phone' ? 'Mobile phone' : 'Tablet computer',
+  description: summary,
+  url: new URL(deviceUrl(d), Astro.site).href,
+  releaseDate: d.released ?? d.announced,
+  additionalProperty: sections.flatMap((s) =>
+    s.rows
+      .map((r) => ({ r, v: r.value(d) }))
+      .filter(({ v }) => v !== null)
+      .map(({ r, v }) => ({ '@type': 'PropertyValue', name: r.label, value: v })),
+  ),
+};
+const tiles = [
+  { icon: 'mobile', label: 'Display', big: d.display.size_in ? `${d.display.size_in}"` : NOT_CONFIRMED, small: [d.display.resolution, d.display.refresh].filter(Boolean).join(' · ') },
+  { icon: 'memory', label: 'Chipset', big: k.chip ?? NOT_CONFIRMED, small: d.memory.ram_gb.length ? `${d.memory.ram_gb.join(' / ')} GB RAM` : '' },
+  { icon: 'photo_camera', label: 'Main camera', big: k.camera ?? NOT_CONFIRMED, small: d.camera.telephoto && d.camera.telephoto !== 'None' ? `Telephoto ${d.camera.telephoto}` : '' },
+  { icon: 'battery_charging_full', label: 'Battery', big: k.battery ?? NOT_CONFIRMED, small: d.battery.wired_w ? `${d.battery.wired_w} W wired` : '' },
+];
+const top = others[0];
+const ppiValue = ppi(d);
+const title = `${name} Specs`;
+const description = `${name} full specifications: ${[k.display, k.chip, k.battery, k.camera && `${k.camera} camera`].filter(Boolean).join(', ')}. ${summary.split('. ')[0]}.`;
+---
+<Base title={title} description={description} nav={CATEGORY_PATH[d.category] as 'phones' | 'tablets'} jsonLd={[product, breadcrumbLd(crumbs, Astro.site!)]}>
+  <Breadcrumbs items={crumbs} />
+
+  <div class="dhero">
+    <div class="dhead">
+      <span class="label">{d.brand} · {CATEGORY_LABEL[d.category].slice(0, -1)}{d.formFactor === 'book-fold' ? ' · Book-style foldable' : d.formFactor === 'flip' ? ' · Flip foldable' : ''}</span>
+      <h1 class="headline">{name} <span class="h1-sub">specifications</span></h1>
+      <p class="summary">{summary}</p>
+      <div class="actions">
+        <CompareButton device={d} variant="full" />
+        {top && (
+          <a class="btn filled" href={`/compare/${compareSlug(d, top)}/`}>
+            <Icon name="compare_arrows" />Compare with {top.name}
+          </a>
+        )}
+      </div>
+    </div>
+    <div class="dart">
+      <DeviceArt device={d} height={260} />
+    </div>
+  </div>
+
+  <div class="tiles">
+    {tiles.map((t) => (
+      <div class="tile">
+        <Icon name={t.icon} />
+        <span class="label">{t.label}</span>
+        <b class:list={['num', { missing: t.big === NOT_CONFIRMED }]}>{t.big}</b>
+        {t.small && <small>{t.small}</small>}
+      </div>
+    ))}
+  </div>
+
+  {!d.verified && (
+    <p class="notice">
+      <Icon name="info" size={20} />
+      <span>
+        These specs were compiled from launch coverage and checked on {formatDate(d.checked)}. {filled} of {total} values are filled in; anything
+        marked “{NOT_CONFIRMED}” has not been reliably published yet. <a href="#sources">See sources</a>.
+      </span>
+    </p>
+  )}
+
+  <nav class="secnav" aria-label="Spec sections">
+    {sections.map((s) => <a class="chip" href={`#${s.id}`}><Icon name={s.icon} />{s.label}</a>)}
+  </nav>
+
+  <div class="specs">
+    {sections.map((s) => (
+      <section class="specsec" id={s.id} aria-labelledby={`h-${s.id}`}>
+        <h2 id={`h-${s.id}`}><Icon name={s.icon} size={22} />{s.label}</h2>
+        <dl>
+          {s.rows.map((r) => {
+            const v = r.key === 'ppi' ? (ppiValue ? `${ppiValue} ppi${d.display.ppi ? '' : ' (calculated)'}` : null) : r.value(d);
+            return (
+              <div class="r">
+                <dt>{r.label}</dt>
+                <dd class:list={{ missing: v === null }}>{v ?? NOT_CONFIRMED}</dd>
+              </div>
+            );
+          })}
+        </dl>
+      </section>
+    ))}
+  </div>
+
+  {d.notes && (
+    <section class="notes" aria-labelledby="h-notes">
+      <h2 id="h-notes" class="title">Notes</h2>
+      <p>{d.notes}</p>
+    </section>
+  )}
+
+  <section class="sources" id="sources" aria-labelledby="h-sources">
+    <h2 id="h-sources" class="title">Sources</h2>
+    <ul>
+      {d.sources.map((s) => (
+        <li><a href={s} rel="nofollow noopener" target="_blank">{new URL(s).hostname.replace(/^www\./, '')}<Icon name="open_in_new" size={16} /></a></li>
+      ))}
+    </ul>
+    <p class="muted">Last checked {formatDate(d.checked)}.</p>
+  </section>
+
+  {others.length > 0 && (
+    <section aria-labelledby="h-related">
+      <h2 id="h-related" class="title related-title">Compare the {d.name} with</h2>
+      <ul class="pairs">
+        {others.map((o) => (
+          <li><a class="chip" href={`/compare/${compareSlug(d, o)}/`}>{d.name} vs {o.name}</a></li>
+        ))}
+      </ul>
+      <div class="related">
+        {others.map((o) => <DeviceCard device={o} headingLevel="h3" />)}
+      </div>
+    </section>
+  )}
+</Base>
+
+<style>
+  .dhero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 380px); gap: 16px; }
+  .dhead { padding: 28px; border-radius: var(--shape-xl); background: var(--surface-c); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .h1-sub { display: block; font-size: .5em; font-weight: 600; letter-spacing: 0; color: var(--on-surface-var); margin-top: 6px; }
+  .summary { margin: 0; max-width: 62ch; color: var(--on-surface-var); }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+  .dart { min-height: 260px; border-radius: var(--shape-xl); background: var(--primary-container); overflow: hidden; display: grid; place-items: center; }
+  .dart :global(.cookie) { color: color-mix(in srgb, var(--primary) 22%, var(--primary-container)); }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+  .tile { padding: 18px; background: var(--surface-c); display: flex; flex-direction: column; gap: 6px; min-width: 0; border-radius: var(--shape-m); }
+  .tile:nth-child(1) { border-radius: var(--shape-xl) var(--shape-m) var(--shape-m) var(--shape-m); }
+  .tile:nth-child(3) { background: var(--tertiary-container); color: var(--on-tertiary-container); }
+  .tile:nth-child(4) { border-radius: var(--shape-m) var(--shape-xl) var(--shape-m) var(--shape-m); }
+  .tile :global(.icon) { color: var(--primary); }
+  .tile:nth-child(3) :global(.icon), .tile:nth-child(3) .label { color: inherit; }
+  .tile b { font-size: 24px; font-weight: 800; font-variation-settings: 'wdth' 115; line-height: 1.1; overflow-wrap: anywhere; }
+  .tile b.missing { font-size: 16px; font-weight: 600; opacity: .7; }
+  .tile small { font-size: 13px; color: var(--on-surface-var); }
+  .tile:nth-child(3) small { color: inherit; opacity: .85; }
+
+  .notice { display: flex; gap: 12px; align-items: flex-start; margin: 16px 0 0; padding: 14px 18px; border-radius: var(--shape-l); background: var(--secondary-container); color: var(--on-secondary-container); font-size: 14px; }
+  .notice :global(.icon) { margin-top: 1px; }
+
+  .secnav { position: sticky; top: 80px; z-index: 4; display: flex; gap: 8px; overflow-x: auto; padding-block: 12px; margin-top: 12px; background: var(--surface); scrollbar-width: none; }
+  .secnav::-webkit-scrollbar { display: none; }
+  .secnav .chip { flex: none; }
+
+  .specs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+  .specsec { border-radius: var(--shape-l); background: var(--surface-low); padding: 8px 20px 12px; min-width: 0; }
+  .specsec h2 { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; font-variation-settings: 'wdth' 110; margin: 12px 0 4px; }
+  .specsec h2 :global(.icon) { color: var(--primary); }
+  .specsec dl { margin: 0; }
+  .r { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--outline-var); }
+  .r:first-child { border-top: 0; }
+  dt { font-size: 14px; color: var(--on-surface-var); }
+  dd { margin: 0; font-size: 15px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  dd.missing { color: var(--on-surface-var); font-style: italic; font-size: 14px; }
+
+  .notes, .sources { margin-top: 32px; max-width: 75ch; }
+  .notes p { margin: 8px 0 0; }
+  .sources ul { margin: 12px 0 8px; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+  .sources a { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: var(--shape-full); background: var(--surface-c); text-decoration: none; font-size: 14px; }
+  .sources a:hover { background: var(--surface-high); }
+  .sources .muted { font-size: 14px; margin: 0; }
+
+  .related-title { margin: 40px 0 12px; }
+  .pairs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; padding: 0; list-style: none; }
+  .related { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+
+  @media (max-width: 840px) {
+    .dhero { grid-template-columns: minmax(0, 1fr); }
+    .dart { order: -1; }
+    .dhead { padding: 20px; }
+    .actions :global(.btn) { flex: 1 1 auto; }
+    .tiles { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .secnav { top: 112px; margin-inline: calc(-1 * var(--gutter-l)) calc(-1 * var(--gutter-r)); padding-inline: var(--gutter-l) var(--gutter-r); }
+    .specs { grid-template-columns: minmax(0, 1fr); }
+    .specsec { padding: 4px 16px 8px; }
+    .r { grid-template-columns: 112px minmax(0, 1fr); }
+    .related { grid-template-columns: 1fr 1fr; gap: 8px; }
+  }
+</style>

@@ -1,0 +1,103 @@
+---
+import DeviceCard from './DeviceCard.astro';
+import Icon from './Icon.astro';
+import type { Device } from '../lib/schema';
+
+interface Props {
+  devices: Device[];
+  /** Show the Phones / Tablets / Foldables chips (home page only). */
+  typeFilter?: boolean;
+  /** Show the Foldables chip on its own (phones page). */
+  foldFilter?: boolean;
+  brandFilter?: boolean;
+}
+const { devices, typeFilter = false, foldFilter = false, brandFilter = true } = Astro.props;
+const brands = [...new Set(devices.map((d) => d.brand))].sort((a, b) => a.localeCompare(b));
+const types = typeFilter
+  ? [
+      { id: 'all', label: 'All' },
+      { id: 'phone', label: 'Phones' },
+      { id: 'tablet', label: 'Tablets' },
+      { id: 'fold', label: 'Foldables' },
+    ]
+  : foldFilter
+    ? [
+        { id: 'all', label: 'All' },
+        { id: 'bar', label: 'Bar' },
+        { id: 'fold', label: 'Foldables' },
+      ]
+    : [];
+const sorts = [
+  { id: 'newest', label: 'Newest' },
+  { id: 'name', label: 'A–Z' },
+  { id: 'battery', label: 'Battery' },
+  { id: 'screen', label: 'Screen' },
+];
+---
+<section class="listing" data-listing>
+  <div class="toolbar">
+    <div class="filters">
+      {types.length > 0 && (
+        <div class="chips" role="group" aria-label="Device type">
+          {types.map((t, i) => (
+            <button type="button" class="chip" data-type={t.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+              <Icon name="check" class="check" />{t.label}
+            </button>
+          ))}
+        </div>
+      )}
+      {brandFilter && brands.length > 1 && (
+        <div class="chips" role="group" aria-label="Brand">
+          {brands.map((b) => (
+            <button type="button" class="chip" data-brand={b} aria-pressed="false"><Icon name="check" class="check" />{b}</button>
+          ))}
+        </div>
+      )}
+    </div>
+    <div class="btngroup" role="group" aria-label="Sort by">
+      {sorts.map((s, i) => (
+        <button type="button" data-sort={s.id} aria-pressed={i === 0 ? 'true' : 'false'}>{s.label}</button>
+      ))}
+    </div>
+  </div>
+  <p class="count muted" aria-live="polite" data-count>{devices.length} devices</p>
+  <div class="grid" data-grid>
+    {devices.map((d) => <DeviceCard device={d} />)}
+  </div>
+  <div class="empty" data-empty hidden>
+    <p class="title">No devices match</p>
+    <p class="muted">Try a shorter search or clear the filters.</p>
+    <button type="button" class="btn outlined" data-clear>Clear filters</button>
+  </div>
+</section>
+
+<script>
+  import '../scripts/listing';
+</script>
+
+<style>
+  .toolbar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; justify-content: space-between; margin: 28px 0 8px; }
+  .filters { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btngroup { display: inline-flex; gap: 2px; flex: none; }
+  .btngroup button { height: 40px; padding: 0 16px; border: 0; background: var(--surface-high); font-size: 14px; font-weight: 600; cursor: pointer; color: var(--on-surface-var); border-radius: var(--shape-xs); transition: border-radius .4s var(--spring), background .2s; }
+  .btngroup button:first-child { border-radius: var(--shape-full) var(--shape-xs) var(--shape-xs) var(--shape-full); }
+  .btngroup button:last-child { border-radius: var(--shape-xs) var(--shape-full) var(--shape-full) var(--shape-xs); }
+  .btngroup button[aria-pressed='true'] { background: var(--primary); color: var(--on-primary); border-radius: var(--shape-full); }
+  .count { font-size: 14px; margin: 8px 0 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .empty { padding: 48px 24px; text-align: center; border-radius: var(--shape-xl); background: var(--surface-low); display: grid; justify-items: center; gap: 4px; }
+  .empty p { margin: 0; }
+  .empty .btn { margin-top: 12px; }
+  @media (max-width: 840px) {
+    .toolbar { margin-top: 20px; }
+    .filters { width: 100%; }
+    .chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--gutter-l)) calc(-1 * var(--gutter-r)); padding-inline: var(--gutter-l) var(--gutter-r); }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip { flex: none; }
+    .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  }
+  @media (max-width: 420px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>

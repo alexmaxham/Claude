@@ -1,0 +1,21 @@
+{
+  "name": "Razr Fold",
+  "brand": "Motorola",
+  "category": "phone",
+  "formFactor": "book-fold",
+  "announced": "2026-01",
+  "released": "2026-05-21",
+  "price": { "amount": 1899.99, "currency": "USD", "config": "16 GB / 512 GB" },
+  "art": ["#5c6f86", "#1f2c3d"],
+  "body": { "folded": "160.1 × 73.6 × 10.1 mm", "weight_g": 243 },
+  "display": { "size_in": 8.1, "type": "LTPO pOLED", "resolution": "2484 × 2232", "refresh_hz": 120, "refresh": "Up to 120 Hz", "cover": "6.6\"" },
+  "platform": { "chipset": "Snapdragon 8 Gen 5" },
+  "memory": { "ram_gb": [16], "storage_gb": [512] },
+  "battery": { "mah": 6000, "wired_w": 80 },
+  "sources": [
+    "https://www.gsmarena.com/motorola_razr_fold_5g-14402.php",
+    "https://www.makeuseof.com/motorola-razr-fold-hands-on-price-release-date/",
+    "https://www.t-mobile.com/cell-phone/motorola-razr-fold-2026"
+  ],
+  "checked": "2026-10-20"
+}

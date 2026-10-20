@@ -1,0 +1,24 @@
+{
+  "name": "iPhone 18 Pro Max",
+  "brand": "Apple",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-09-09",
+  "released": "2026-09-18",
+  "price": { "amount": 1299, "currency": "USD", "config": "256 GB" },
+  "art": ["#d9dee3", "#7e8994"],
+  "body": { "dimensions": "163.4 × 78.0 × 8.75 mm", "weight_g": 249, "thickness_mm": 8.75, "colors": ["Black", "Silver", "Glacier", "Burgundy"] },
+  "display": { "size_in": 6.9, "type": "Super Retina XDR OLED, ProMotion", "resolution": "1320 × 2868", "ppi": 460, "refresh_hz": 120, "refresh": "Up to 120 Hz" },
+  "platform": { "os": "iOS 27", "chipset": "Apple A20 Pro" },
+  "memory": { "storage_gb": [256, 512, 1024, 2048] },
+  "camera": { "main": "48 MP Fusion, variable aperture" },
+  "selfie": { "main": "18 MP Center Stage" },
+  "battery": { "life": "Up to 45 h video (Apple)" },
+  "sources": [
+    "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
+    "https://www.macrumors.com/roundup/iphone-18-pro/",
+    "https://www.gsmarena.com/apple_iphone_18_pro_max-14716.php"
+  ],
+  "checked": "2026-10-20",
+  "notes": "Battery capacity is reported as both 5,391 mAh and 5,567 mAh; Apple does not publish it."
+}

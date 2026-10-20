@@ -1,0 +1,23 @@
+{
+  "name": "Galaxy S26 Ultra",
+  "brand": "Samsung",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-02",
+  "price": { "amount": 1299.99, "currency": "USD", "config": "12 GB / 256 GB" },
+  "art": ["#c3c9d4", "#5e6878"],
+  "body": { "dimensions": "163.6 × 78.1 × 7.9 mm", "weight_g": 214, "thickness_mm": 7.9 },
+  "display": { "size_in": 6.9, "type": "Dynamic AMOLED 2X", "resolution": "1440 × 3120", "refresh_hz": 120, "refresh": "Up to 120 Hz", "peak_nits": 2600 },
+  "platform": { "chipset": "Snapdragon 8 Elite Gen 5 for Galaxy (3 nm)" },
+  "memory": { "ram_gb": [12, 16], "storage_gb": [256, 512, 1024] },
+  "camera": { "main": "200 MP, f/1.4", "ultrawide": "50 MP", "telephoto": "50 MP + 10 MP" },
+  "selfie": { "main": "12 MP" },
+  "battery": { "mah": 5000 },
+  "sources": [
+    "https://www.gsmarena.com/samsung_galaxy_s26_ultra_5g-14320.php",
+    "https://www.phonearena.com/phones/Samsung-Galaxy-S26-Ultra_id12802",
+    "https://news.samsung.com/global/samsung-unveils-galaxy-s26-series-the-most-intuitive-galaxy-ai-phone-yet"
+  ],
+  "checked": "2026-10-20",
+  "notes": "Reported wired (60 W vs 65 W) and wireless (15 W vs 25 W) charging speeds conflict between sources, so they are left blank until Samsung's spec sheet is checked."
+}

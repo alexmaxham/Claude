@@ -1,0 +1,21 @@
+{
+  "name": "Pad 8 Pro",
+  "brand": "Xiaomi",
+  "category": "tablet",
+  "formFactor": "tablet",
+  "announced": "2026-02-28",
+  "price": { "amount": 649.99, "currency": "EUR", "config": "8 GB / 256 GB" },
+  "art": ["#b9c4b7", "#4b5a48"],
+  "body": { "weight_g": 485 },
+  "display": { "size_in": 11.2, "type": "LCD, 3:2, Dolby Vision", "resolution": "3200 × 2136", "refresh_hz": 144, "refresh": "Up to 144 Hz", "peak_nits": 800 },
+  "platform": { "chipset": "Snapdragon 8 Elite (3 nm)", "gpu": "Adreno 830" },
+  "memory": { "ram_gb": [8, 12], "storage_gb": [256, 512] },
+  "battery": { "mah": 9200, "wired_w": 67 },
+  "sources": [
+    "https://www.mi.com/global/product/xiaomi-pad-8-pro/specs/",
+    "https://www.gizmochina.com/2026/02/28/xiaomi-pad-8-and-pad-8-pro-launched-globally-specs-price/",
+    "https://www.gsmarena.com/xiaomi_pad_8_pro-14183.php"
+  ],
+  "checked": "2026-10-20",
+  "notes": "The matte glass version weighs 494 g."
+}

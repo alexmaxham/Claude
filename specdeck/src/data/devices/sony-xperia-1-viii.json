@@ -1,0 +1,22 @@
+{
+  "name": "Xperia 1 VIII",
+  "brand": "Sony",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-05-13",
+  "price": { "amount": 1499, "currency": "EUR" },
+  "art": ["#3f4a5c", "#141a24"],
+  "display": { "size_in": 6.5, "type": "LTPO OLED", "resolution": "FHD+", "refresh_hz": 120, "refresh": "Up to 120 Hz" },
+  "platform": { "chipset": "Snapdragon 8 Elite Gen 5" },
+  "memory": { "ram_gb": [12, 16], "card": "microSD" },
+  "camera": { "main": "48 MP, f/1.9, 24 mm, 1/1.35\", OIS", "ultrawide": "48 MP", "telephoto": "48 MP, f/2.8, 70 mm (2.9×)" },
+  "selfie": { "main": "12 MP, f/2.0" },
+  "battery": { "mah": 5000, "wired_w": 30, "wireless_w": 15, "reverse": "Wireless" },
+  "features": { "jack": true },
+  "sources": [
+    "https://9to5google.com/2026/05/13/sony-xperia-1-viii-specs-price/",
+    "https://www.gsmarena.com/sony_xperia_1_viii-review-2963.php",
+    "https://www.phonearena.com/phones/Sony-Xperia-1-VIII_id12975"
+  ],
+  "checked": "2026-10-20"
+}

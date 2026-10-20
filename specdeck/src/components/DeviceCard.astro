@@ -1,0 +1,69 @@
+---
+import DeviceArt from './DeviceArt.astro';
+import CompareButton from './CompareButton.astro';
+import Icon from './Icon.astro';
+import type { Device } from '../lib/schema';
+import { deviceUrl, fullName } from '../lib/names';
+import { keySpecs } from '../lib/specs';
+
+interface Props {
+  device: Device;
+  headingLevel?: 'h2' | 'h3';
+}
+const { device: d, headingLevel = 'h2' } = Astro.props;
+const k = keySpecs(d);
+const H = headingLevel;
+const typeLabel = d.formFactor === 'book-fold' || d.formFactor === 'flip' ? 'Foldable' : d.category === 'phone' ? 'Phone' : 'Tablet';
+---
+<article
+  class="card"
+  data-name={fullName(d).toLowerCase()}
+  data-brand={d.brand}
+  data-category={d.category}
+  data-form={d.formFactor}
+  data-announced={d.announced}
+  data-battery={d.battery.mah ?? ''}
+  data-screen={d.display.size_in ?? ''}
+>
+  <DeviceArt device={d} height={168} class="card-art" />
+  <div class="meta">
+    <div>
+      <span class="label">{d.brand} · {typeLabel}{d.markets === 'China only' ? ' · China' : ''}</span>
+      <H class="card-title"><a href={deviceUrl(d)}>{d.name}</a></H>
+    </div>
+    <CompareButton device={d} />
+  </div>
+  <ul class="keyspecs">
+    <li><Icon name="mobile" size={18} /><span>{k.display ?? '—'}</span></li>
+    <li><Icon name="memory" size={18} /><span>{k.chip ?? '—'}</span></li>
+    <li><Icon name="photo_camera" size={18} /><span>{k.camera ?? '—'}</span></li>
+    <li><Icon name="battery_full" size={18} /><span>{k.battery ?? '—'}</span></li>
+  </ul>
+</article>
+
+<style>
+  .card { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--shape-l); background: var(--surface-c); transition: border-radius .45s var(--spring), background .2s, transform .45s var(--spring); }
+  .card:hover { border-radius: var(--shape-xl); background: var(--surface-high); }
+  .card:active { transform: scale(.985); }
+  .card:has(:focus-visible) { outline: 3px solid var(--primary); outline-offset: 2px; }
+  .card :global(.card-art) { border-radius: var(--shape-m); background: var(--surface-low); }
+  .meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card-title { margin: 2px 0 0; font-size: 20px; font-weight: 700; font-variation-settings: 'wdth' 110; line-height: 1.15; }
+  .card-title a { text-decoration: none; outline: none; }
+  /* The whole card is clickable through the title link. */
+  .card-title a::after { content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 1; }
+  .keyspecs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--on-surface-var); }
+  .keyspecs li { display: flex; gap: 6px; align-items: center; min-width: 0; }
+  .keyspecs li span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .keyspecs :global(.icon) { color: var(--primary); }
+  @media (max-width: 840px) {
+    .card { padding: 10px; gap: 8px; border-radius: var(--shape-m); }
+    .card-title { font-size: 16px; }
+    .keyspecs { grid-template-columns: 1fr; font-size: 12px; gap: 4px; }
+    .keyspecs li:nth-child(n + 3) { display: none; }
+    .card :global(.card-art) { height: 132px !important; }
+  }
+  @media (max-width: 420px) {
+    .keyspecs li:nth-child(n + 3) { display: flex; }
+  }
+</style>

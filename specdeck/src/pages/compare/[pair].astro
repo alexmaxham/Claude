@@ -1,0 +1,58 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CompareView from '../../components/CompareView.astro';
+import { allDevices, comparePairs, compareSlug, deviceUrl, fullName } from '../../lib/devices';
+import { SECTIONS, visibleRows, bestIndex } from '../../lib/specs';
+import { breadcrumbLd } from '../../lib/seo';
+import type { Device } from '../../lib/schema';
+
+export async function getStaticPaths() {
+  const all = await allDevices();
+  return comparePairs(all).map(([a, b]) => ({ params: { pair: compareSlug(a, b) }, props: { a, b, all } }));
+}
+interface Props {
+  a: Device;
+  b: Device;
+  all: Device[];
+}
+const { a, b, all } = Astro.props;
+const devices = [a, b];
+const crumbs = [{ label: 'Home', href: '/' }, { label: 'Compare', href: '/compare/' }, { label: `${a.name} vs ${b.name}` }];
+
+// A short plain-language summary of where each device comes out ahead.
+const wins: Record<string, string[]> = { [a.slug]: [], [b.slug]: [] };
+for (const s of SECTIONS) {
+  for (const r of visibleRows(s, devices)) {
+    const i = bestIndex(r, devices);
+    if (i >= 0) wins[devices[i].slug].push(r.label.toLowerCase());
+  }
+}
+const sentence = (d: Device) =>
+  wins[d.slug].length ? `The ${d.name} comes out ahead on ${wins[d.slug].join(', ').replace(/, ([^,]*)$/, ' and $1')}.` : '';
+const summary = [sentence(a), sentence(b)].filter(Boolean).join(' ');
+const title = `${fullName(a)} vs ${fullName(b)}: Specs Compared`;
+---
+<Base
+  title={title}
+  description={`${fullName(a)} vs ${fullName(b)} side by side: display, chipset, cameras, battery, charging and every other spec. ${summary}`.slice(0, 300)}
+  nav="compare"
+  jsonLd={[breadcrumbLd(crumbs, Astro.site!)]}
+>
+  <Breadcrumbs items={crumbs} />
+  <header class="chead">
+    <span class="label">Compare</span>
+    <h1 class="headline">{fullName(a)} vs {fullName(b)}</h1>
+    {summary && <p class="muted">{summary} Values not yet published by a maker are left out of the ranking.</p>}
+  </header>
+  <CompareView devices={devices} all={all} />
+  <p class="more muted">
+    Full spec sheets: <a href={deviceUrl(a)}>{fullName(a)}</a> · <a href={deviceUrl(b)}>{fullName(b)}</a>
+  </p>
+</Base>
+
+<style>
+  .chead { display: grid; gap: 8px; margin-bottom: 20px; }
+  .chead p { margin: 0; max-width: 75ch; }
+  .more { margin-top: 24px; font-size: 14px; }
+</style>

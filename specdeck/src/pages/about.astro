@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { NOT_CONFIRMED } from '../lib/specs';
+
+const crumbs = [{ label: 'Home', href: '/' }, { label: 'About the data' }];
+---
+<Base title="About the Data" description="Where the specifications come from, how they are checked, and what “Not confirmed” means.">
+  <Breadcrumbs items={crumbs} />
+  <article class="prose">
+    <h1 class="headline">About the data</h1>
+    <p>Every device page lists the sources its specs came from and the date they were last checked. Values come from manufacturer announcements and spec pages first, then from launch coverage by established tech publications.</p>
+    <h2 class="title">What “{NOT_CONFIRMED}” means</h2>
+    <p>When a maker has not published a value, or sources disagree, the value is left blank and shown as “{NOT_CONFIRMED}”. Some makers never publish certain specs; Apple, for example, does not list RAM or battery capacity in mAh. A blank value is better than a guessed one.</p>
+    <h2 class="title">How “Best” is picked in comparisons</h2>
+    <p>Rows with a clear better direction are ranked: higher pixel density, brightness, refresh rate, RAM, storage, battery capacity and charging speed, and lower weight and thickness. A row is only ranked when every device in the comparison has a value and one device is strictly ahead.</p>
+    <h2 class="title">Spotted a mistake?</h2>
+    <p>Specs change after launch as makers publish full sheets. Corrections with a source link are welcome.</p>
+  </article>
+</Base>
+
+<style>
+  .prose { max-width: 68ch; }
+  .prose h2 { margin-top: 32px; }
+  .prose p { margin: 12px 0 0; }
+</style>

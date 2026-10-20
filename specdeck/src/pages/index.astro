@@ -1,0 +1,97 @@
+---
+import Base from '../layouts/Base.astro';
+import DeviceListing from '../components/DeviceListing.astro';
+import DeviceArt from '../components/DeviceArt.astro';
+import Icon from '../components/Icon.astro';
+import { allDevices, comparePairs, compareSlug, fullName } from '../lib/devices';
+import { SECTIONS } from '../lib/specs';
+import { cookiePath } from '../lib/art';
+import { SITE_NAME } from '../lib/site';
+
+const devices = await allDevices();
+const brands = new Set(devices.map((d) => d.brand)).size;
+const specCount = SECTIONS.reduce((n, s) => n + s.rows.length, 0);
+const phones = devices.filter((d) => d.category === 'phone');
+const tablets = devices.filter((d) => d.category === 'tablet');
+const heroPhone = phones.find((d) => d.formFactor === 'bar') ?? phones[0];
+const heroTablet = tablets[0];
+// Popular comparisons: pairs of devices from different brands, newest first.
+const popular = comparePairs(devices)
+  .filter(([a, b]) => a.brand !== b.brand)
+  .sort((x, y) => Math.max(...y.map((d) => Date.parse(d.announced))) - Math.max(...x.map((d) => Date.parse(d.announced))))
+  .slice(0, 8);
+---
+<Base
+  title={SITE_NAME}
+  description={`Full specifications for ${devices.length} phones and tablets, from launch price to Bluetooth version. Compare up to four devices side by side.`}
+  nav="home"
+>
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="label eyebrow">Phones and tablets, spec by spec</span>
+      <h1 class="display">Every spec.<br />Side by side.</h1>
+      <p>Full spec sheets for the newest phones and tablets, from launch price to Bluetooth version. Pick up to four devices and compare them row by row.</p>
+      <dl class="stats">
+        <div><dt>devices</dt><dd class="num">{devices.length}</dd></div>
+        <div><dt>specs per device</dt><dd class="num">{specCount}</dd></div>
+        <div><dt>brands</dt><dd class="num">{brands}</dd></div>
+      </dl>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg class="blob b1" viewBox="0 0 100 100"><path d={cookiePath(9, 0.14, 0.2)} fill="currentColor" /></svg>
+      <svg class="blob b2" viewBox="0 0 100 100"><path d={cookiePath(4, 0.16, 0.4)} fill="currentColor" /></svg>
+      {heroPhone && <div class="h-phone"><DeviceArt device={heroPhone} height={240} shape={false} /></div>}
+      {heroTablet && <div class="h-tablet"><DeviceArt device={heroTablet} height={220} shape={false} /></div>}
+    </div>
+  </section>
+
+  <h2 class="sr-only">All devices</h2>
+  <DeviceListing devices={devices} typeFilter />
+
+  {popular.length > 0 && (
+    <section class="popular" aria-labelledby="h-popular">
+      <h2 id="h-popular" class="title">Popular comparisons</h2>
+      <ul>
+        {popular.map(([a, b]) => (
+          <li>
+            <a href={`/compare/${compareSlug(a, b)}/`}>
+              <span>{fullName(a)}</span><Icon name="compare_arrows" size={18} /><span>{fullName(b)}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</Base>
+
+<style>
+  .hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px; align-items: center; padding: 36px 36px 40px; border-radius: var(--shape-xl); background: var(--primary-container); color: var(--on-primary-container); margin-top: 8px; overflow: hidden; }
+  .eyebrow { color: inherit; opacity: .8; }
+  .hero .display { margin-top: 12px; }
+  .hero p { max-width: 46ch; margin: 16px 0 0; font-size: 18px; opacity: .88; }
+  .stats { display: flex; gap: 32px; margin: 24px 0 0; flex-wrap: wrap; }
+  .stats div { display: flex; flex-direction: column-reverse; }
+  .stats dd { margin: 0; font-size: 34px; font-weight: 800; font-variation-settings: 'wdth' 120; line-height: 1; }
+  .stats dt { font-size: 13px; opacity: .8; }
+  .hero-art { position: relative; height: 280px; }
+  .blob { position: absolute; }
+  .b1 { width: 170px; right: 46%; top: 0; color: var(--tertiary-container); }
+  .b2 { width: 220px; right: 0; top: 50px; color: var(--secondary-container); }
+  .h-phone { position: absolute; right: 44%; top: 30px; transform: rotate(-8deg); }
+  .h-tablet { position: absolute; right: 6%; top: 40px; transform: rotate(6deg); }
+  .hero-art :global(.art) { overflow: visible; }
+
+  .popular { margin-top: 48px; }
+  .popular ul { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+  .popular a { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-radius: var(--shape-m); background: var(--surface-c); text-decoration: none; font-weight: 600; font-size: 15px; transition: border-radius .4s var(--spring), background .2s; }
+  .popular a:hover { border-radius: var(--shape-l); background: var(--surface-high); }
+  .popular a :global(.icon) { color: var(--tertiary); }
+
+  @media (max-width: 840px) {
+    .hero { grid-template-columns: minmax(0, 1fr); padding: 24px 20px 28px; }
+    .hero-art { display: none; }
+    .hero p { font-size: 16px; }
+    .stats { gap: 24px; }
+    .stats dd { font-size: 28px; }
+  }
+</style>

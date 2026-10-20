@@ -1,0 +1,21 @@
+{
+  "name": "OnePlus 16",
+  "brand": "OnePlus",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-10-12",
+  "markets": "China only",
+  "price": { "amount": 5999, "currency": "CNY", "config": "12 GB / 256 GB" },
+  "art": ["#d7c3a8", "#6e5638"],
+  "display": { "size_in": 6.78, "type": "LTPO AMOLED", "refresh_hz": 185, "refresh": "Up to 185 Hz" },
+  "platform": { "chipset": "Snapdragon 8 Elite Extreme Gen 6" },
+  "memory": { "ram_gb": [12, 16], "storage_gb": [256, 512, 1024] },
+  "camera": { "main": "200 MP" },
+  "battery": { "mah": 9000, "wired_w": 100 },
+  "sources": [
+    "https://www.androidauthority.com/oneplus-16-launched-3721856/",
+    "https://www.gsmarena.com/oneplus_16_5g-14974.php"
+  ],
+  "checked": "2026-10-20",
+  "notes": "OnePlus says it will not launch in Europe or North America."
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Galaxy Tab S12+",
+  "brand": "Samsung",
+  "category": "tablet",
+  "formFactor": "tablet",
+  "announced": "2026-09-30",
+  "released": "2026-10-07",
+  "price": { "amount": 1199.99, "currency": "USD" },
+  "art": ["#cfd6dc", "#5b6672"],
+  "body": { "weight_g": 553, "thickness_mm": 5.3 },
+  "display": { "size_in": 12.6, "type": "Dynamic AMOLED 2X", "resolution": "2800 × 1752", "refresh_hz": 120, "refresh": "Up to 120 Hz", "peak_nits": 1600 },
+  "platform": { "os": "Android 17, One UI 9", "chipset": "MediaTek Dimensity 9500 (3 nm)", "updates": "7 OS upgrades" },
+  "memory": { "ram_gb": [12], "storage_gb": [256, 512], "card": "microSD, up to 2 TB" },
+  "battery": { "mah": 10600, "wired_w": 45 },
+  "features": { "stylus": "S Pen included" },
+  "sources": [
+    "https://www.gsmarena.com/samsung_galaxy_tab_s12+_5g-14981.php",
+    "https://www.ubergizmo.com/2026/09/samsung-galaxy-tab-s12-series-debuts-dimensity-9500-ultra-thin-design-and-7-years-of-updates/"
+  ],
+  "checked": "2026-10-20"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Find X9 Ultra",
+  "brand": "OPPO",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-04-21",
+  "released": "2026-05",
+  "art": ["#e9e4da", "#8f8572"],
+  "body": { "weight_g": 235 },
+  "display": { "size_in": 6.82, "type": "LTPO AMOLED", "resolution": "1440 × 3216" },
+  "platform": { "chipset": "Snapdragon 8 Elite Gen 5" },
+  "memory": { "ram_gb": [12], "storage_gb": [512] },
+  "camera": { "main": "200 MP", "telephoto": "50 MP, 10× optical" },
+  "battery": { "mah": 7050, "wired_w": 100, "wireless_w": 50 },
+  "sources": [
+    "https://www.gsmarena.com/oppo_find_x9_ultra_5g-14548.php",
+    "https://www.notebookcheck.net/Oppo-Find-X9-Ultra-Global-models-already-available-to-purchase-with-up-to-16-GB-RAM.1276396.0.html",
+    "https://www.androidheadlines.com/oppo-find-x9-ultra"
+  ],
+  "checked": "2026-10-20",
+  "notes": "Global configuration is 12 GB / 512 GB. Refresh rate is reported as both 120 Hz and 144 Hz."
+}

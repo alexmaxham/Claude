@@ -1,0 +1,18 @@
+{
+  "name": "Galaxy S26+",
+  "brand": "Samsung",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-02",
+  "price": { "amount": 1099.99, "currency": "USD" },
+  "art": ["#d6d0e4", "#6f6688"],
+  "display": { "size_in": 6.7, "type": "Dynamic AMOLED 2X", "resolution": "1440 × 3120", "refresh_hz": 120, "refresh": "Up to 120 Hz", "peak_nits": 2600 },
+  "memory": { "ram_gb": [12] },
+  "battery": { "mah": 4900, "wired_w": 45, "wireless_w": 20 },
+  "sources": [
+    "https://news.samsung.com/global/samsung-unveils-galaxy-s26-series-the-most-intuitive-galaxy-ai-phone-yet",
+    "https://www.samsung.com/us/support/answer/ANS10010342/",
+    "https://www.gsmarena.com/samsung_galaxy_s26+_5g-14457.php"
+  ],
+  "checked": "2026-10-20"
+}

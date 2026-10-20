@@ -1,0 +1,21 @@
+{
+  "name": "Pixel 11 Pro Fold",
+  "brand": "Google",
+  "category": "phone",
+  "formFactor": "book-fold",
+  "announced": "2026-08-12",
+  "price": { "amount": 1899, "currency": "USD" },
+  "art": ["#dfe3e6", "#6d757c"],
+  "body": { "folded": "155.2 × 76 × 10.1 mm", "weight_g": 239 },
+  "display": { "size_in": 8.0, "type": "Super Actua Flex (foldable OLED)", "cover": "6.5\" Super Actua" },
+  "platform": { "chipset": "Google Tensor G6" },
+  "memory": { "ram_gb": [16] },
+  "camera": { "main": "48 MP", "ultrawide": "10.5 MP, macro focus", "telephoto": "10.8 MP, 5×" },
+  "battery": { "mah": 4806 },
+  "sources": [
+    "https://store.google.com/product/pixel_11_pro_fold_specs?hl=en-US",
+    "https://www.phonescoop.com/phones/phone.php?p=7482",
+    "https://www.droid-life.com/2026/08/11/pixel-11-series-everything-we-know-about-googles-new-phones/"
+  ],
+  "checked": "2026-10-20"
+}

@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import DeviceListing from '../../components/DeviceListing.astro';
+import { allDevices, brands, brandSlug } from '../../lib/devices';
+import { breadcrumbLd } from '../../lib/seo';
+import type { Device } from '../../lib/schema';
+
+export async function getStaticPaths() {
+  return brands(await allDevices()).map(([brand, devices]) => ({
+    params: { brand: brandSlug(brand) },
+    props: { brand, devices },
+  }));
+}
+interface Props {
+  brand: string;
+  devices: Device[];
+}
+const { brand, devices } = Astro.props;
+const crumbs = [{ label: 'Home', href: '/' }, { label: 'Brands', href: '/brands/' }, { label: brand }];
+const kinds = [...new Set(devices.map((d) => (d.category === 'phone' ? 'phones' : 'tablets')))].join(' and ');
+---
+<Base
+  title={`${brand} Phones and Tablets: Specs`}
+  description={`Full specifications for ${devices.length} ${brand} ${kinds}: ${devices.map((d) => d.name).join(', ')}.`}
+  jsonLd={[breadcrumbLd(crumbs, Astro.site!)]}
+>
+  <Breadcrumbs items={crumbs} />
+  <h1 class="headline">{brand}</h1>
+  <p class="muted lead">{devices.length} {kinds}, newest first.</p>
+  <DeviceListing devices={devices} typeFilter={kinds.includes(' and ')} brandFilter={false} />
+</Base>
+
+<style>
+  .lead { margin: 8px 0 0; }
+</style>

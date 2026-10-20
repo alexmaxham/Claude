@@ -1,0 +1,24 @@
+{
+  "name": "Pixel 11 Pro",
+  "brand": "Google",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-08-12",
+  "released": "2026-08-20",
+  "price": { "amount": 1099, "currency": "USD", "config": "256 GB" },
+  "art": ["#d2b48f", "#7c5a36"],
+  "body": { "dimensions": "152.7 × 71.9 × 8.4 mm", "weight_g": 204, "thickness_mm": 8.4, "colors": ["Canyon", "Olive", "Fog", "Obsidian"] },
+  "display": { "size_in": 6.3, "type": "LTPO OLED (Super Actua)", "resolution": "1280 × 2856", "refresh_hz": 120, "refresh": "1–120 Hz" },
+  "platform": { "chipset": "Google Tensor G6" },
+  "memory": { "ram_gb": [12, 16], "storage_gb": [256, 512, 1024] },
+  "camera": { "main": "50 MP, 1/1.3\"", "ultrawide": "48 MP, autofocus", "telephoto": "48 MP, 5×" },
+  "battery": { "mah": 4850, "wired_w": 30, "wireless_w": 25 },
+  "connectivity": { "wifi": "Wi-Fi 7", "bluetooth": "Bluetooth 6" },
+  "sources": [
+    "https://www.t-mobile.com/dialed-in/devices/google-pixel-11-series-specs-sizes-features",
+    "https://www.notebookcheck.net/Google-Pixel-11-Pro-series-debuts-with-Tensor-G6-new-cameras-and-Qi2-2-charging.1366782.0.html",
+    "https://www.gsmarena.com/google_pixel_11_pro_5g-14801.php"
+  ],
+  "checked": "2026-10-20",
+  "notes": "Wireless charging is Qi2.2. 12 GB RAM with 256 GB storage; 16 GB with 512 GB and 1 TB."
+}

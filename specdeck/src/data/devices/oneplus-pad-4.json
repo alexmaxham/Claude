@@ -1,0 +1,19 @@
+{
+  "name": "Pad 4",
+  "brand": "OnePlus",
+  "category": "tablet",
+  "formFactor": "tablet",
+  "announced": "2026-04",
+  "released": "2026-04-30",
+  "art": ["#a9b8c9", "#3d4c5e"],
+  "body": { "weight_g": 672 },
+  "display": { "size_in": 13.2, "type": "IPS LCD, Dolby Vision", "resolution": "3392 × 2400", "refresh_hz": 144, "refresh": "Up to 144 Hz" },
+  "platform": { "chipset": "Snapdragon 8 Elite Gen 5" },
+  "memory": { "ram_gb": [8, 12], "storage_gb": [256, 512] },
+  "battery": { "mah": 13380, "wired_w": 80 },
+  "sources": [
+    "https://www.gsmarena.com/oneplus_pad_4-14630.php",
+    "https://www.phonearena.com/phones/OnePlus-Pad-4_id12988"
+  ],
+  "checked": "2026-10-20"
+}

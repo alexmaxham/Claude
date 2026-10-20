@@ -1,0 +1,20 @@
+{
+  "name": "Pixel 11",
+  "brand": "Google",
+  "category": "phone",
+  "formFactor": "bar",
+  "announced": "2026-08-12",
+  "released": "2026-08-20",
+  "price": { "amount": 899, "currency": "USD", "config": "256 GB" },
+  "art": ["#c7d4e8", "#52627c"],
+  "display": { "size_in": 6.3, "type": "OLED (Actua)", "resolution": "1080 × 2424", "refresh_hz": 120, "refresh": "60–120 Hz", "peak_nits": 3000 },
+  "platform": { "chipset": "Google Tensor G6" },
+  "camera": { "main": "48 MP, f/1.7", "ultrawide": "13 MP, f/2.2", "telephoto": "10.8 MP" },
+  "battery": { "mah": 4985 },
+  "sources": [
+    "https://store.google.com/product/pixel_11_specs?hl=en-US",
+    "https://www.androidcentral.com/phones/google-pixel-11",
+    "https://www.droid-life.com/2026/07/13/pixel-11-series-specs-storage-ram-displays-battery/"
+  ],
+  "checked": "2026-10-20"
+}

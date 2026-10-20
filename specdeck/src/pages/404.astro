@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Page not found" description="This page does not exist." noindex>
+  <section class="nf">
+    <h1 class="headline">Page not found</h1>
+    <p class="muted">The device or page you were looking for is not here. It may have been renamed.</p>
+    <div class="row">
+      <a class="btn filled" href="/">Browse all devices</a>
+      <a class="btn outlined" href="/compare/">Compare devices</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf { padding: 48px 0; display: grid; gap: 12px; justify-items: start; }
+  .nf p { margin: 0; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+</style>

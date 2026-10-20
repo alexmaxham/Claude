@@ -1,0 +1,34 @@
+---
+import Icon from './Icon.astro';
+import { fullName } from '../lib/names';
+import type { Device } from '../lib/schema';
+
+interface Props {
+  device: Device;
+  /** "icon" for cards, "full" for the device page header. */
+  variant?: 'icon' | 'full';
+}
+const { device, variant = 'icon' } = Astro.props;
+const label = `Add ${fullName(device)} to compare`;
+---
+{variant === 'icon' ? (
+  <button type="button" class="cmpbtn" data-compare-toggle={device.slug} aria-pressed="false" aria-label={label}>
+    <Icon name="add" class="off" />
+    <Icon name="check" class="on" />
+  </button>
+) : (
+  <button type="button" class="btn tonal cmpfull" data-compare-toggle={device.slug} data-labelled aria-pressed="false">
+    <Icon name="add" class="off" />
+    <Icon name="check" class="on" />
+    <span class="off">Add to compare</span>
+    <span class="on">In compare</span>
+  </button>
+)}
+
+<style>
+  .cmpbtn { flex: none; position: relative; z-index: 2; width: 40px; height: 40px; border-radius: var(--shape-full); border: 1px solid var(--outline-var); background: var(--surface); display: grid; place-items: center; cursor: pointer; color: var(--on-surface-var); transition: border-radius .35s var(--spring), background .2s, transform .35s var(--spring); }
+  .cmpbtn:hover { transform: scale(1.06); }
+  .cmpbtn[aria-pressed='true'] { background: var(--tertiary-container); color: var(--on-tertiary-container); border-color: transparent; border-radius: var(--shape-s); }
+  .cmpbtn > :global(.icon) { grid-area: 1 / 1; }
+  [aria-pressed='true'] > :global(.off), [aria-pressed='false'] > :global(.on) { display: none; }
+</style>
