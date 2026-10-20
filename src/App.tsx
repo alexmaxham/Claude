@@ -539,10 +539,6 @@ export default function App() {
   const todayMinutes = tasks.filter((t) => !t.completedAt && t.dueDate && t.dueDate <= today).reduce((sum, t) => sum + (t.estimate ?? 0), 0);
   const listMinutes = open.reduce((sum, t) => sum + (t.estimate ?? 0), 0);
   const surpriseTask = tasks.find((t) => !t.completedAt && isSurprise(stats, t));
-  const loadEvents = useMemo(
-    () => (cloud.status === 'signedIn' && cloud.api ? (from: string, to: string) => cloud.api!.googleEvents(from, to) : null),
-    [cloud.status, cloud.api],
-  );
 
   const commands: Command[] = [
     { id: 'add', icon: '➕', label: 'New quest', shortcut: 'N', keywords: 'add create task', run: () => { changeTab('tasks'); setTimeout(() => document.querySelector<HTMLInputElement>('.main-col .quick-input')?.focus(), 50); } },
@@ -644,7 +640,6 @@ export default function App() {
             onToggle={toggle}
             onOpen={(t) => setEditingId(t.id)}
             renderTask={(t) => renderTask(t, false)}
-            loadEvents={loadEvents}
           />
         )}
         {tab === 'profile' && (
@@ -925,7 +920,6 @@ export default function App() {
           stats={stats}
           appearance={prefs.appearance}
           onAppearance={(appearance) => updatePrefs({ appearance })}
-          syncCalendar={cloud.status === 'signedIn' && cloud.api ? () => cloud.api!.syncGoogleCalendar(tasks) : null}
           categories={categories}
           theme={theme}
           soundOn={soundOn}

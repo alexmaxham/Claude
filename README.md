@@ -27,13 +27,6 @@ One-time setup:
 4. **Firestore Database** → Create database (production mode, any region). Open the **Rules** tab, paste the contents of `firestore.rules`, and publish.
 5. **Project settings** → General → Your apps → add a **Web** app. Copy the `firebaseConfig` values into `src/cloud/config.ts` and push.
 
-Google Calendar sync (one-time setup, needed before **Sync now** works):
-
-1. Enable the **Google Calendar API** for the project: https://console.cloud.google.com/apis/library/calendar-json.googleapis.com?project=questlog2-e03f9
-2. Google Cloud console → **APIs & Services → OAuth consent screen** (Google Auth Platform → Data access): add the scope `https://www.googleapis.com/auth/calendar.events`. Until Google verifies the app, people see an "unverified app" warning and can continue via *Advanced*; that's fine for personal use (up to 100 users).
-
-The app asks for calendar access with a Google popup the first time you sync. Accounts created with email get Google linked to them. Only events Tasko created are ever changed.
-
 How it works:
 
 - Each user has one Firestore document, `users/{uid}`, holding their whole app state. The rules allow only that user to read or write it.
@@ -65,7 +58,6 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 - **Profile:** tap your profile picture (or the person icon as a guest) for XP, tasks done, streaks, a 15-week activity heatmap, tasks by category and your latest trophies.
 - **Level milestones:** the Trophies tab shows how much XP is left to the next big levels and what each unlocks.
 - **Export:** Settings → Export gives a Todoist import template, a spreadsheet CSV, a Markdown checklist (Things, Notion, Obsidian, Apple Notes) or a full JSON backup.
-- **Google Calendar sync:** Settings → Connected apps → Sync now puts every open quest with a due date on your Google Calendar as an all-day event, updates changed ones and removes finished ones. Needs sign-in; see setup below.
 - **Navigation:** Tasks, Trophies, Calendar and Profile. A floating glass bar at the bottom on phones; a side menu on wide screens that folds to icons (`[`).
 - **Quick-add shorthand:** type `Call mom tomorrow #personal !high ~15m`. Dates (`today`, `fri`, `next week`, `in 3 days`, `oct 31`, `11/5`), repeats (`every day`, `every mon, wed`, `weekly`), `#category`, `!high`/`!low`, `~30m`/`~1h` estimates and `!boss` are pulled out and shown as chips; tap a chip to keep that word in the title.
 - **Command menu:** `⌘K` / `Ctrl+K` (or the ⌘ button) runs any action or jumps to a quest.
@@ -74,7 +66,7 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 - **Templates** (`T`): reusable quests with steps (weekly review, packing list, morning routine, big project). Save any quest as a template from its editor.
 - **Time estimates:** shown on quests and added up per list and per day; Today warns when you've planned more than your hours.
 - **Board view** (`B`): To do / Doing / Done columns. Drag a card to start it or drop it on Done to complete it.
-- **Calendar week view:** drag quests between days; signed-in users can show their Google Calendar events alongside.
+- **Calendar week view:** drag quests between days.
 - **Focus timer:** 🎧 on a quest (or `F`) starts a 15/25/50-minute session. It survives reloads, shows in the tab title, and pays XP when it ends (stopping after 5+ minutes pays for the time done).
 - **Import:** Settings → Import reads Todoist CSV exports, spreadsheets (CSV), lists pasted from Apple Reminders, Notes, Things or Notion, Markdown checklists and Tasko backups (which can also be restored in full).
 - **Year in review:** Profile → Your year in review, with a summary to share.
@@ -153,8 +145,6 @@ Email/password and Google sign-in both work, and sync with the web app. Google b
 - `IOS_GOOGLE_SIGN_IN` in `src/cloud/config.ts` turns the native flow on; set it to `false` to offer email sign-in only.
 
 If the Firebase iOS app is ever recreated, download its new **GoogleService-Info.plist** and run `npm run ios:google -- ~/Downloads/GoogleService-Info.plist`. It checks the file is for this app and Firebase project, then updates all three of the above.
-
-Google Calendar sync uses the same native sign-in to ask for calendar access, with the same consent-screen scope as the web (see [Accounts and sync](#accounts-and-sync-firebase)).
 
 **Sign in with Apple** (App Store guideline 4.8 requires it in apps that offer Google sign-in) uses the same native setup, plus:
 

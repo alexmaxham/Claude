@@ -124,8 +124,7 @@ function DeleteAccount({
         it: tasks, categories, XP, levels and trophies, on every device. It can’t be undone.
       </p>
       <p className="muted small">
-        {CONFIRM_HINT[user.confirmWith]} Events Tasko added to your Google Calendar stay there; delete them in Google
-        Calendar if you don’t want them.
+        {CONFIRM_HINT[user.confirmWith]}
       </p>
       {needsPassword && (
         <label className="field">
