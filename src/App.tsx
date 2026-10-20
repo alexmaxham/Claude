@@ -6,7 +6,14 @@ import { CategoryBar, type Filter } from './components/CategoryBar';
 import { CategoryManager } from './components/CategoryManager';
 import { Header } from './components/Header';
 import { LogoMark, Wordmark } from './components/Logo';
-import { CalendarView } from './components/CalendarView';
+import { Board, type Column } from './components/Board';
+import { CalendarView, type CalendarMode } from './components/CalendarView';
+import { CommandPalette, type Command } from './components/CommandPalette';
+import { FocusTimer, useFocusTimer } from './components/FocusTimer';
+import { ImportSheet } from './components/ImportSheet';
+import { PlanDay } from './components/PlanDay';
+import { Templates } from './components/Templates';
+import { YearReview } from './components/YearReview';
 import { ProfileView } from './components/ProfileView';
 import { QuickAdd } from './components/QuickAdd';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
@@ -17,14 +24,16 @@ import { Trophies, TrophiesPanel, type TrophiesTab } from './components/Trophies
 import { WeeklyChallenges } from './components/WeeklyChallenges';
 import { WeekStrip } from './components/WeekStrip';
 import { describeChallenge } from './core/challenges';
-import { dayKey } from './core/dates';
-import { ACHIEVEMENTS, levelTitle } from './core/gamification';
-import { taskOrder, THEMES } from './core/store';
-import type { GameEvent, Task } from './core/types';
+import { addDays, dayKey } from './core/dates';
+import { ACHIEVEMENTS, isSurprise, levelTitle } from './core/gamification';
+import { formatEstimate } from './core/parse';
+import { taskOrder, THEMES, uid, type NewTask } from './core/store';
+import type { GameEvent, Task, Template } from './core/types';
 import { chime, confetti, haptic } from './effects';
 import { isNative } from './native';
 import { useAppState } from './useAppState';
 import { useDragReorder } from './useDragReorder';
+import { useDropDrag } from './useDropDrag';
 import { useReminders } from './useReminders';
 
 interface Toast {
@@ -61,11 +70,15 @@ interface Prefs {
   appearance: Appearance;
   /** Wide screens: the side menu is folded down to icons. */
   railCollapsed: boolean;
+  view: 'list' | 'board';
+  calendarMode: CalendarMode;
+  /** Hours you have for quests in a day, for Plan my day and the over-planned warning. */
+  hoursPerDay: number;
 }
 
 // Storage keys keep the app's original name so existing data and settings carry over.
 const PREFS_KEY = 'questlog:prefs';
-const DEFAULT_PREFS: Prefs = { soundOn: true, filter: 'all', sort: 'smart', remindersOn: false, reminderTime: '09:00', appearance: 'system', railCollapsed: false };
+const DEFAULT_PREFS: Prefs = { soundOn: true, filter: 'all', sort: 'smart', remindersOn: false, reminderTime: '09:00', appearance: 'system', railCollapsed: false, view: 'list', calendarMode: 'month', hoursPerDay: 6 };
 
 function readPrefs(): Prefs {
   try {
@@ -115,7 +128,9 @@ export default function App() {
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [pulse, setPulse] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<'categories' | 'account' | 'shortcuts' | TrophiesTab | null>(null);
+  const [sheet, setSheet] = useState<
+    'categories' | 'account' | 'shortcuts' | 'plan' | 'templates' | 'import' | 'review' | 'palette' | TrophiesTab | null
+  >(null);
   const [tab, setTab] = useState<Tab>('tasks');
   const [showDone, setShowDone] = useState(false);
   const [query, setQuery] = useState('');
@@ -191,6 +206,39 @@ export default function App() {
             if (a) pushToast({ icon: a.icon, title: `Trophy unlocked: ${a.name}`, body: a.description }, 4200);
             break;
           }
+          case 'bossHit': {
+            const id = nextId++;
+            setFloats((f) => [...f, { id, x: origin.x, y: origin.y, text: '⚔️ −1 HP' }]);
+            setTimeout(() => setFloats((f) => f.filter((x) => x.id !== id)), 1100);
+            confetti(origin.x, origin.y, 14);
+            haptic([10, 30, 10]);
+            if (soundOn) chime([392, 330]);
+            if (e.hp === 0) pushToast({ icon: '🐉', title: 'The boss is out of HP!', body: 'Complete the quest to claim the bounty.' }, 4500);
+            break;
+          }
+          case 'bossDefeated':
+            pushToast({ icon: '⚔️', title: 'Boss defeated!', body: `+${e.bounty} XP bounty` }, 4500);
+            setTimeout(() => confetti(innerWidth / 2, innerHeight / 3, 160), 120);
+            haptic([30, 50, 30, 50, 80]);
+            break;
+          case 'freezeEarned':
+            pushToast({ icon: '🧊', title: 'Streak freeze earned', body: `It covers a missed day. You have ${e.total}.` }, 4500);
+            break;
+          case 'freezeUsed':
+            pushToast({ icon: '🧊', title: 'Your streak survived', body: `${e.days === 1 ? 'A streak freeze' : `${e.days} streak freezes`} covered the missed day${e.days === 1 ? '' : 's'}.` }, 4500);
+            break;
+          case 'surprise':
+            pushToast({ icon: '🍀', title: 'Surprise! Double XP', body: `+${e.bonus} bonus XP` });
+            break;
+          case 'focusDone':
+            pushToast({ icon: '🎧', title: `Focus session done: ${formatEstimate(e.minutes)}`, body: `+${e.xp} XP` }, 4500);
+            confetti(innerWidth / 2, innerHeight / 3, 60);
+            setPulse((p) => p + 1);
+            if (soundOn) chime([523, 784, 1047]);
+            if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+              new Notification('Focus session done', { body: `${formatEstimate(e.minutes)} · +${e.xp} XP`, icon: './icon-192.png' });
+            }
+            break;
         }
       }
       originRef.current = null;
@@ -205,6 +253,23 @@ export default function App() {
   const { tasks, categories, stats, theme } = state;
   useReminders(tasks, prefs.remindersOn, prefs.reminderTime);
   useAppearance(prefs.appearance);
+
+  const focus = useFocusTimer((taskId, minutes) => dispatch({ type: 'focusComplete', taskId, minutes }));
+  const startFocus = (task: Task | null) => {
+    if (focus.session?.started) return pushToast({ icon: '🎧', title: 'A focus session is already running' });
+    focus.open(task?.id ?? null, task?.title ?? 'Focus');
+  };
+
+  // Pick today's surprise when the day changes or the surprise quest goes away.
+  const surpriseKey = `${dayKey()}:${tasks.length}:${state.stats.surprise?.taskId ?? ''}`;
+  useEffect(() => {
+    dispatch({ type: 'rollSurprise' });
+  }, [surpriseKey, dispatch]);
+  useEffect(() => {
+    const onVisible = () => document.visibilityState === 'visible' && dispatch({ type: 'rollSurprise' });
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [dispatch]);
 
   // The stylesheet sizes the page around the side menu from these classes.
   useLayoutEffect(() => {
@@ -277,6 +342,65 @@ export default function App() {
     },
   );
 
+  const boardDrag = useDropDrag((id, zone, at) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    const column = zone as Column;
+    const wasDone = !!task.completedAt;
+    if (column === 'done') {
+      if (wasDone) return;
+      originRef.current = at;
+      return dispatch({ type: 'toggleTask', id });
+    }
+    if (wasDone) dispatch({ type: 'toggleTask', id });
+    if (!!task.doing !== (column === 'doing')) dispatch({ type: 'updateTask', id, patch: { doing: column === 'doing' } });
+  });
+
+  const toggleStep = (task: Task, subtaskId: string, el: HTMLElement) => {
+    const r = el.getBoundingClientRect();
+    originRef.current = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    dispatch({ type: 'toggleSubtask', taskId: task.id, subtaskId });
+  };
+
+  const snooze = (task: Task, day = addDays(today, 1), label = 'tomorrow') => {
+    const before = task.dueDate;
+    dispatch({ type: 'updateTask', id: task.id, patch: { dueDate: day } });
+    haptic(8);
+    pushToast(
+      {
+        icon: '💤',
+        title: `Snoozed to ${label}`,
+        body: task.title,
+        action: { label: 'Undo', run: () => dispatch({ type: 'updateTask', id: task.id, patch: { dueDate: before } }) },
+      },
+      5000,
+    );
+  };
+
+  const addFromTemplate = (t: Template) => {
+    const due = filter === 'today' ? today : activeDay;
+    dispatch({
+      type: 'addTask',
+      title: t.name,
+      description: t.description,
+      categoryId: t.categoryId && categoryById.has(t.categoryId) ? t.categoryId : (activeCategory?.id ?? null),
+      priority: t.priority,
+      dueDate: due,
+      estimate: t.estimate,
+      boss: t.boss,
+      subtasks: t.steps.map((title) => ({ id: uid(), title, done: false })),
+    });
+    pushToast({ icon: t.emoji, title: 'Added from template', body: t.name });
+  };
+
+  const plan = (ids: string[], moveRest: string[]) => {
+    dispatch({ type: 'planDay', ids, day: today });
+    for (const id of moveRest) dispatch({ type: 'updateTask', id, patch: { dueDate: addDays(today, 1) } });
+    updatePrefs({ filter: 'today', sort: 'manual', view: 'list' });
+    changeTab('tasks');
+    pushToast({ icon: '☀️', title: 'Your day is planned', body: `${ids.length} quest${ids.length === 1 ? '' : 's'} for today, in your order` });
+  };
+
   const toggle = (task: Task, el: HTMLElement) => {
     const r = el.getBoundingClientRect();
     originRef.current = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
@@ -299,12 +423,29 @@ export default function App() {
   };
 
   // Keyboard shortcuts. Ignored while typing or while a sheet or dialog is open.
-  const keyState = useRef({ navigable, selectedId, toggle, blocked: false, onTasks: true, changeTab, toggleRail });
-  keyState.current = { navigable, selectedId, toggle, blocked: !!(sheet || editing || levelUp !== null), onTasks: tab === 'tasks', changeTab, toggleRail };
+  const keyState = useRef({ navigable, selectedId, toggle, blocked: false, onTasks: true, changeTab, toggleRail, startFocus, snooze, updatePrefs, prefs });
+  keyState.current = {
+    navigable,
+    selectedId,
+    toggle,
+    blocked: !!(sheet || editing || levelUp !== null),
+    onTasks: tab === 'tasks',
+    changeTab,
+    toggleRail,
+    startFocus,
+    snooze,
+    updatePrefs,
+    prefs,
+  };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const k = keyState.current;
       const target = e.target as HTMLElement;
+      // ⌘K / Ctrl+K opens the command menu from anywhere, even a text field.
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        return setSheet((s) => (s === 'palette' ? null : s ?? 'palette'));
+      }
       if (e.metaKey || e.ctrlKey || e.altKey || k.blocked) return;
       if (target.closest('input, textarea, select, [contenteditable]')) {
         if (e.key === 'Escape' && target === searchRef.current) {
@@ -321,7 +462,10 @@ export default function App() {
         e.preventDefault();
         return setSheet('shortcuts');
       }
+      if (e.key === 'p') return setSheet('plan');
+      if (e.key === 't') return setSheet('templates');
       if (!k.onTasks) return;
+      if (e.key === 'b') return k.updatePrefs({ view: k.prefs.view === 'board' ? 'list' : 'board' });
 
       const list = k.navigable;
       const index = list.findIndex((t) => t.id === k.selectedId);
@@ -345,6 +489,11 @@ export default function App() {
         // Completing hides the row (unless completed ones are shown), so move to its neighbor.
         if (!selected.completedAt && !list.slice(index + 1).length) setSelectedId(list[index - 1]?.id ?? null);
         else if (!selected.completedAt) setSelectedId(list[index + 1].id);
+      } else if (e.key === 'f' && selected) {
+        k.startFocus(selected);
+      } else if (e.key === 's' && selected && !selected.completedAt) {
+        k.snooze(selected);
+        setSelectedId(list[index + 1]?.id ?? list[index - 1]?.id ?? null);
       } else if ((e.key === 'e' || e.key === 'Enter') && selected) {
         e.preventDefault();
         setEditingId(selected.id);
@@ -385,6 +534,33 @@ export default function App() {
           ? { icon: activeCategory.emoji, text: `No open quests in ${activeCategory.name}.` }
           : { icon: 'logo', text: 'Your quest log is empty. Add your first task above to start earning XP!' };
 
+  const onBoard = tab === 'tasks' && prefs.view === 'board';
+  // Time planned for today, to warn when it's more than the day holds.
+  const todayMinutes = tasks.filter((t) => !t.completedAt && t.dueDate && t.dueDate <= today).reduce((sum, t) => sum + (t.estimate ?? 0), 0);
+  const listMinutes = open.reduce((sum, t) => sum + (t.estimate ?? 0), 0);
+  const surpriseTask = tasks.find((t) => !t.completedAt && isSurprise(stats, t));
+  const loadEvents = useMemo(
+    () => (cloud.status === 'signedIn' && cloud.api ? (from: string, to: string) => cloud.api!.googleEvents(from, to) : null),
+    [cloud.status, cloud.api],
+  );
+
+  const commands: Command[] = [
+    { id: 'add', icon: '➕', label: 'New quest', shortcut: 'N', keywords: 'add create task', run: () => { changeTab('tasks'); setTimeout(() => document.querySelector<HTMLInputElement>('.main-col .quick-input')?.focus(), 50); } },
+    { id: 'plan', icon: '☀️', label: 'Plan my day', shortcut: 'P', keywords: 'today schedule', run: () => setSheet('plan') },
+    { id: 'templates', icon: '📋', label: 'Add from a template', shortcut: 'T', keywords: 'checklist', run: () => setSheet('templates') },
+    { id: 'focus', icon: '🎧', label: 'Start a focus session', shortcut: 'F', keywords: 'timer pomodoro', run: () => startFocus(tasks.find((t) => t.id === selectedId && !t.completedAt) ?? null) },
+    { id: 'board', icon: '🗂️', label: prefs.view === 'board' ? 'Show as a list' : 'Show as a board', shortcut: 'B', keywords: 'kanban columns view', run: () => { changeTab('tasks'); updatePrefs({ view: prefs.view === 'board' ? 'list' : 'board' }); } },
+    { id: 'today', icon: '🌤', label: 'Show today', keywords: 'filter', run: () => { changeTab('tasks'); updatePrefs({ filter: 'today' }); } },
+    { id: 'all', icon: '✨', label: 'Show all quests', keywords: 'filter', run: () => { changeTab('tasks'); updatePrefs({ filter: 'all' }); } },
+    ...TABS.map((t, i) => ({ id: `tab-${t}`, icon: ['✅', '🏆', '📅', '👤'][i], label: `Go to ${TAB_TITLES[t]}`, shortcut: String(i + 1), run: () => changeTab(t) })),
+    { id: 'week', icon: '🗓️', label: 'Calendar: week view', keywords: 'drag schedule', run: () => { updatePrefs({ calendarMode: 'week' }); changeTab('calendar'); } },
+    { id: 'review', icon: '✨', label: 'Year in review', keywords: 'stats summary share', run: () => setSheet('review') },
+    { id: 'import', icon: '📥', label: 'Import quests', keywords: 'todoist csv reminders backup', run: () => setSheet('import') },
+    { id: 'settings', icon: '⚙︎', label: 'Settings', keywords: 'preferences export theme', run: () => setSheet('settings') },
+    { id: 'appearance', icon: '🌓', label: 'Switch light / dark', keywords: 'theme appearance mode', run: () => updatePrefs({ appearance: document.documentElement.dataset.scheme === 'light' ? 'dark' : 'light' }) },
+    { id: 'categories', icon: '🏷️', label: 'Edit categories', run: () => setSheet('categories') },
+    { id: 'shortcuts', icon: '⌨️', label: 'Keyboard shortcuts', shortcut: '?', run: () => setSheet('shortcuts') },
+  ];
   const renderTask = (t: Task, draggable: boolean) => (
     <TaskItem
       key={t.id}
@@ -392,10 +568,13 @@ export default function App() {
       category={categoryById.get(t.categoryId ?? '')}
       stats={stats}
       selected={selectedId === t.id}
-      onDragStart={draggable ? drag.start : undefined}
-      dragStyle={draggable ? drag.styleFor(t.id) : undefined}
-      dragging={drag.draggingId === t.id}
+      onDragStart={onBoard ? boardDrag.start : draggable ? drag.start : undefined}
+      dragStyle={onBoard ? boardDrag.styleFor(t.id) : draggable ? drag.styleFor(t.id) : undefined}
+      dragging={(onBoard ? boardDrag.draggingId : drag.draggingId) === t.id}
       onToggle={toggle}
+      onSnooze={(task) => snooze(task)}
+      onFocus={startFocus}
+      onStep={toggleStep}
       onOpen={(task) => {
         setSelectedId(task.id);
         setEditingId(task.id);
@@ -412,7 +591,7 @@ export default function App() {
         <div className="blob b4" />
       </div>
 
-      <main className={`app has-tabbar ${drag.draggingId ? 'is-dragging' : ''}`}>
+      <main className={`app has-tabbar ${drag.draggingId || boardDrag.draggingId ? 'is-dragging' : ''} ${onBoard ? 'board-view' : ''}`}>
         <div className="topbar">
           {tab !== 'tasks' ? (
             <h1 className="page-title">{TAB_TITLES[tab]}</h1>
@@ -439,6 +618,9 @@ export default function App() {
                 Sign in
               </button>
             ) : null}
+            <button className="icon-btn glass-soft" onClick={() => setSheet('palette')} aria-label="Commands and search" title="Commands (⌘K)">
+              ⌘
+            </button>
             <button className="icon-btn glass-soft" onClick={() => setSheet('settings')} aria-label="Settings">
               ⚙︎
             </button>
@@ -455,8 +637,14 @@ export default function App() {
             tasks={tasks}
             stats={stats}
             categories={categories}
-            onAdd={(t) => dispatch({ type: 'addTask', ...t })}
+            mode={prefs.calendarMode}
+            onMode={(calendarMode) => updatePrefs({ calendarMode })}
+            onAdd={(t: NewTask) => dispatch({ type: 'addTask', ...t })}
+            onMove={(id, day) => dispatch({ type: 'updateTask', id, patch: { dueDate: day } })}
+            onToggle={toggle}
+            onOpen={(t) => setEditingId(t.id)}
             renderTask={(t) => renderTask(t, false)}
+            loadEvents={loadEvents}
           />
         )}
         {tab === 'profile' && (
@@ -468,6 +656,7 @@ export default function App() {
               onOpenAccount={() => setSheet('account')}
               onSignOut={cloud.signOut}
               onOpenTrophies={openTrophies}
+              onYearReview={() => setSheet('review')}
             />
           </div>
         )}
@@ -477,7 +666,16 @@ export default function App() {
             {/* On phones these two wrappers vanish (display: contents) and their children
                 stack in one column; on wide screens they become a sidebar and a main column. */}
             <aside className="sidebar">
-              <Header stats={stats} pulse={pulse} onOpenTrophies={openTrophies} />
+              <Header
+                stats={stats}
+                pulse={pulse}
+                onOpenTrophies={openTrophies}
+                surprise={surpriseTask}
+                onSurprise={(t) => {
+                  setSelectedId(t.id);
+                  setEditingId(t.id);
+                }}
+              />
 
               <CategoryBar
                 categories={categories}
@@ -507,13 +705,48 @@ export default function App() {
                 defaultCategoryId={activeCategory?.id ?? null}
                 defaultDue={filter === 'today' ? today : activeDay}
                 onAdd={(t) => dispatch({ type: 'addTask', ...t })}
+                onTemplates={() => setSheet('templates')}
               />
+
+              <div className="tools-row">
+                <button className="chip tool-chip" onClick={() => setSheet('plan')}>
+                  ☀️ Plan my day
+                </button>
+                <button className="chip tool-chip" onClick={() => setSheet('templates')}>
+                  📋 Templates
+                </button>
+                <button className="chip tool-chip" onClick={() => startFocus(null)}>
+                  🎧 Focus
+                </button>
+                <div className="segmented view-toggle" role="radiogroup" aria-label="View">
+                  {(['list', 'board'] as const).map((v) => (
+                    <button key={v} role="radio" aria-checked={prefs.view === v} className={`seg ${prefs.view === v ? 'active' : ''}`} onClick={() => updatePrefs({ view: v })}>
+                      {v === 'list' ? '☰ List' : '▦ Board'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(filter === 'today' || activeDay === today) && !q && todayMinutes > prefs.hoursPerDay * 60 && (
+                <div className="overplan glass-soft" role="status">
+                  <span aria-hidden="true">⏳</span>
+                  <span>
+                    About <strong>{formatEstimate(todayMinutes)}</strong> planned for today, more than your {prefs.hoursPerDay} h.{' '}
+                    <button className="link-btn inline" onClick={() => setSheet('plan')}>
+                      Re-plan
+                    </button>{' '}
+                    or snooze something (swipe left, or 💤).
+                  </span>
+                </div>
+              )}
 
               <section className="tasks" aria-label="Tasks">
                 <div className="list-toolbar">
                   <h2 className="list-title">
                     {listTitle}
-                    <span className="muted"> · {open.length} open</span>
+                    <span className="muted">
+                      {' '}· {open.length} open{listMinutes > 0 ? ` · ~${formatEstimate(listMinutes)}` : ''}
+                    </span>
                   </h2>
                   <div className="list-tools">
                     <label className="search glass-soft">
@@ -544,7 +777,9 @@ export default function App() {
                   </div>
                 </div>
 
-                {open.length === 0 ? (
+                {onBoard ? (
+                  <Board open={open} done={done} over={boardDrag.over} renderTask={(t) => renderTask(t, false)} />
+                ) : open.length === 0 ? (
                   <div className="empty glass-soft">
                     <span className="empty-icon">
                       {done.length && !q ? '🎉' : emptyMessage.icon === 'logo' ? <LogoMark size={56} /> : emptyMessage.icon}
@@ -555,7 +790,7 @@ export default function App() {
                   <ul className="task-list">{open.map((t) => renderTask(t, true))}</ul>
                 )}
 
-                {done.length > 0 && (
+                {!onBoard && done.length > 0 && (
                   <div className="done-section">
                     <div className="done-header">
                       <button className="link-btn" onClick={() => setShowDone((v) => !v)} aria-expanded={showDone}>
@@ -575,6 +810,8 @@ export default function App() {
           </>
         )}
       </main>
+
+      <FocusTimer timer={focus} />
 
       <TabBar tab={tab} onChange={changeTab} dueCount={todayCount} collapsed={prefs.railCollapsed} onToggleCollapsed={toggleRail} />
 
@@ -629,6 +866,11 @@ export default function App() {
           categories={categories}
           onSave={(patch) => dispatch({ type: 'updateTask', id: editing.id, patch })}
           onDelete={() => remove(editing)}
+          onFocus={() => startFocus(editing)}
+          onSaveTemplate={(template) => {
+            dispatch({ type: 'saveTemplate', template });
+            pushToast({ icon: '📋', title: 'Saved as a template', body: template.name });
+          }}
           onClose={() => setEditingId(null)}
         />
       )}
@@ -646,6 +888,35 @@ export default function App() {
         />
       )}
       {sheet === 'shortcuts' && <ShortcutsHelp onClose={() => setSheet(null)} />}
+      {sheet === 'plan' && (
+        <PlanDay
+          tasks={tasks}
+          categories={categories}
+          hoursPerDay={prefs.hoursPerDay}
+          onHoursPerDay={(hoursPerDay) => updatePrefs({ hoursPerDay })}
+          onPlan={plan}
+          onClose={() => setSheet(null)}
+        />
+      )}
+      {sheet === 'templates' && (
+        <Templates templates={state.templates} categories={categories} onUse={addFromTemplate} dispatch={dispatch} onClose={() => setSheet(null)} />
+      )}
+      {sheet === 'import' && (
+        <ImportSheet dispatch={dispatch} onDone={(title) => pushToast({ icon: '📥', title })} onClose={() => setSheet(null)} />
+      )}
+      {sheet === 'review' && <YearReview state={state} onClose={() => setSheet(null)} />}
+      {sheet === 'palette' && (
+        <CommandPalette
+          commands={commands}
+          tasks={tasks}
+          onOpenTask={(t) => {
+            changeTab('tasks');
+            setSelectedId(t.id);
+            setEditingId(t.id);
+          }}
+          onClose={() => setSheet(null)}
+        />
+      )}
       {(sheet === 'trophies' || sheet === 'settings') && (
         <Trophies
           key={sheet}
@@ -662,6 +933,7 @@ export default function App() {
           onReminders={(r) => updatePrefs({ remindersOn: r.on, reminderTime: r.time })}
           signedIn={cloud.status === 'signedIn'}
           onToggleSound={() => updatePrefs({ soundOn: !soundOn })}
+          onImport={() => setSheet('import')}
           dispatch={dispatch}
           onClose={() => setSheet(null)}
         />

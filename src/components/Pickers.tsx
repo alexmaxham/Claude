@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import { addDays, dayKey } from '../core/dates';
 import { BASE_XP } from '../core/gamification';
 import { DAY_NAMES, repeatLabel, repeatPreset, WEEKDAYS, WEEKENDS, type RepeatPreset } from '../core/recurrence';
+import { formatEstimate } from '../core/parse';
 import type { Category, Priority, Repeat } from '../core/types';
 
 const PRIORITIES: { value: Priority; label: string }[] = [
@@ -213,6 +214,40 @@ export function RepeatPicker({
         </div>
       )}
       {value && <span className="muted small">🔁 {repeatLabel(value)}</span>}
+    </div>
+  );
+}
+
+const ESTIMATES = [15, 30, 60, 120];
+
+/** Rough time a quest will take: a few common lengths, or any number of minutes. */
+export function EstimatePicker({ value, onChange }: { value: number | undefined; onChange: (m: number | undefined) => void }) {
+  const custom = value !== undefined && !ESTIMATES.includes(value);
+  return (
+    <div className="chip-row" role="group" aria-label="Time estimate">
+      <button type="button" className={`chip ${value === undefined ? 'active' : ''}`} onClick={() => onChange(undefined)}>
+        None
+      </button>
+      {ESTIMATES.map((m) => (
+        <button key={m} type="button" className={`chip ${value === m ? 'active' : ''}`} onClick={() => onChange(m)}>
+          {formatEstimate(m)}
+        </button>
+      ))}
+      <label className={`chip estimate-chip ${custom ? 'active' : ''}`}>
+        <input
+          type="number"
+          min={1}
+          max={1440}
+          placeholder="Other"
+          value={custom ? value : ''}
+          onChange={(e) => {
+            const n = Math.round(Number(e.target.value));
+            onChange(n > 0 ? Math.min(n, 1440) : undefined);
+          }}
+          aria-label="Minutes"
+        />
+        min
+      </label>
     </div>
   );
 }

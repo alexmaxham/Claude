@@ -3,6 +3,7 @@ import type { SyncStatus } from '../cloud/useCloudSync';
 import { currentWeek } from '../core/challenges';
 import { addDays, dayKey } from '../core/dates';
 import { ACHIEVEMENTS, effectiveStreak, levelFromXp } from '../core/gamification';
+import { formatEstimate } from '../core/parse';
 import type { AppState } from '../core/types';
 import { Avatar, SYNC_LABEL } from './AccountSheet';
 
@@ -14,12 +15,13 @@ interface Props {
   onOpenAccount: () => void;
   onSignOut: () => Promise<void>;
   onOpenTrophies: () => void;
+  onYearReview: () => void;
 }
 
 const WEEKS = 15;
 
 /** Level, XP, tasks done, streaks, activity and trophies. */
-export function ProfileView({ state, user, sync, onOpenAccount, onSignOut, onOpenTrophies }: Props) {
+export function ProfileView({ state, user, sync, onOpenAccount, onSignOut, onOpenTrophies, onYearReview }: Props) {
   const { stats, tasks, categories } = state;
   const level = levelFromXp(stats.xp);
   const today = dayKey();
@@ -82,6 +84,10 @@ export function ProfileView({ state, user, sync, onOpenAccount, onSignOut, onOpe
           [stats.bestStreak, 'Best streak'],
           [stats.onTimeCompleted.toLocaleString(), 'Done on time'],
           [open.length, 'Open now'],
+          [`${stats.streakFreezes} 🧊`, 'Streak freezes'],
+          [stats.bossesDefeated, 'Bosses defeated'],
+          [formatEstimate(stats.focusMinutes), 'Focus time'],
+          [stats.focusSessions, 'Focus sessions'],
         ].map(([value, label]) => (
           <div key={label} className="stat-card glass-soft">
             <strong>{value}</strong>
@@ -139,6 +145,15 @@ export function ProfileView({ state, user, sync, onOpenAccount, onSignOut, onOpe
           See all trophies
         </button>
       </div>
+
+      <button className="year-card glass-soft" onClick={onYearReview}>
+        <span className="year-card-emoji" aria-hidden="true">✨</span>
+        <span>
+          <strong>Your {new Date().getFullYear()} in review</strong>
+          <span className="muted small" style={{ display: 'block' }}>Streaks, best days and trophies, ready to share</span>
+        </span>
+        <span aria-hidden="true">›</span>
+      </button>
 
       <div className="profile-actions">
         {user ? (

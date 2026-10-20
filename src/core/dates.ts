@@ -18,3 +18,14 @@ export function addDays(key: string, n: number): string {
   const [y, m, d] = key.split('-').map(Number);
   return dayKey(new Date(y, m - 1, d + n));
 }
+
+/** Quick snooze targets: tomorrow, the coming Saturday and next Monday. */
+export function snoozeOptions(today = dayKey()): { label: string; day: string }[] {
+  const [y, m, d] = today.split('-').map(Number);
+  const dow = new Date(y, m - 1, d).getDay();
+  return [
+    { label: 'Tomorrow', day: addDays(today, 1) },
+    { label: dow === 6 || dow === 0 ? 'Next weekend' : 'This weekend', day: addDays(today, (6 - dow + 7) % 7 || 7) },
+    { label: 'Next week', day: addDays(today, (8 - dow) % 7 || 7) },
+  ];
+}

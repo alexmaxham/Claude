@@ -12,6 +12,11 @@ if (isNative) {
   watchKeyboard();
 }
 
+// Offline support for the web app (the iPhone app ships its files already).
+if (!isNative && import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => void navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
+
 // In the iPhone app, saved data is restored from native storage before the first read.
 setUpDurableStorage().then(() => {
   createRoot(document.getElementById('root')!).render(
