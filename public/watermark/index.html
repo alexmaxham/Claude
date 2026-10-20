@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Batch resize photos and stamp your watermark on them, right on your phone." />
+    <meta name="theme-color" content="#f5f6f8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111317" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Watermark" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icon-180.png" />
+    <title>Resize & Watermark</title>
+    <style>
+      :root {
+        --bg: #f5f6f8;
+        --card: #ffffff;
+        --text: #15171c;
+        --muted: #6a6f7a;
+        --line: #e3e5ea;
+        --accent: #2563eb;
+        --accent-text: #ffffff;
+        --check: #e9ebef;
+        color-scheme: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #111317;
+          --card: #1b1e24;
+          --text: #eef0f3;
+          --muted: #9aa0ab;
+          --line: #2c3038;
+          --accent: #4b82f5;
+          --check: #262a31;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      main {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 110px);
+      }
+      h1 { font-size: 26px; margin: 0; letter-spacing: -0.01em; }
+      h2 { font-size: 17px; margin: 0; }
+      .sub { color: var(--muted); margin: 4px 0 20px; font-size: 15px; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      .wm-row { display: flex; align-items: center; gap: 14px; }
+      .wm-row > div:nth-child(2) { flex: 1; min-width: 0; }
+      .wm-row p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+      .wm-thumb {
+        width: 64px; height: 64px; flex: none;
+        border-radius: 12px;
+        display: grid; place-items: center;
+        background: repeating-conic-gradient(var(--check) 0 25%, transparent 0 50%) 0 0 / 14px 14px;
+        border: 1px solid var(--line);
+        overflow: hidden;
+        color: var(--muted); font-size: 12px;
+      }
+      .wm-thumb img { max-width: 100%; max-height: 100%; }
+      button {
+        font: inherit;
+        border: 0;
+        border-radius: 12px;
+        padding: 10px 16px;
+        cursor: pointer;
+        background: var(--check);
+        color: var(--text);
+        font-weight: 600;
+      }
+      button.primary { background: var(--accent); color: var(--accent-text); }
+      button.big { width: 100%; padding: 16px; font-size: 17px; border-radius: 14px; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .link { background: none; color: var(--accent); padding: 6px 4px; font-weight: 500; }
+      details summary {
+        list-style: none;
+        display: flex; justify-content: space-between; align-items: center; gap: 12px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      details summary::-webkit-details-marker { display: none; }
+      details summary::after { content: "›"; color: var(--muted); font-size: 22px; line-height: 1; transition: transform .2s; }
+      details[open] summary::after { transform: rotate(90deg); }
+      #summary { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: auto; text-align: right; }
+      .field { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+      .field:first-of-type { margin-top: 12px; }
+      .field label { font-size: 15px; }
+      .field output, .field .hint { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+      .field input[type=range], .field select { grid-column: 1 / -1; width: 100%; }
+      .field input[type=range] { accent-color: var(--accent); }
+      .field input[type=number], .field select {
+        font: inherit; color: var(--text); background: var(--bg);
+        border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+      }
+      .field input[type=number] { width: 100px; text-align: right; }
+      .field input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent); }
+      .positions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-width: 220px; }
+      .positions button { padding: 10px 0; font-weight: 500; font-size: 13px; }
+      .positions button[aria-pressed=true] { background: var(--accent); color: var(--accent-text); }
+      .positions .gap { visibility: hidden; }
+      .reset { margin-top: 4px; }
+      #status { text-align: center; color: var(--muted); font-size: 14px; min-height: 20px; margin: 10px 0; }
+      .results-head { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 10px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+      .grid a { display: block; border-radius: 10px; overflow: hidden; background: var(--check); aspect-ratio: 1; }
+      .grid img { width: 100%; height: 100%; object-fit: contain; display: block; }
+      .savebar {
+        position: fixed; left: 0; right: 0; bottom: 0;
+        padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
+        background: color-mix(in srgb, var(--bg) 85%, transparent);
+        -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+        border-top: 1px solid var(--line);
+      }
+      .savebar > div { max-width: 640px; margin: 0 auto; }
+      .savebar p { margin: 6px 0 0; text-align: center; color: var(--muted); font-size: 13px; }
+      .visually-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Resize & Watermark</h1>
+      <p class="sub">Your photos are processed on this device and never uploaded.</p>
+
+      <section class="card">
+        <div class="wm-row">
+          <div class="wm-thumb" id="wmThumb">None</div>
+          <div>
+            <h2>Watermark</h2>
+            <p id="wmHint">Choose your logo. A PNG with a transparent background looks best.</p>
+          </div>
+          <button type="button" id="wmButton">Choose</button>
+        </div>
+        <input type="file" accept="image/*" id="wmInput" class="visually-hidden" tabindex="-1" />
+      </section>
+
+      <details class="card" id="settings">
+        <summary>Settings <span id="summary"></span></summary>
+        <div class="field">
+          <label for="longEdge">Longest side</label>
+          <span><input type="number" id="longEdge" min="0" step="100" inputmode="numeric" /> <span class="hint">px</span></span>
+        </div>
+        <div class="field">
+          <label for="upscale">Enlarge smaller photos</label>
+          <input type="checkbox" id="upscale" />
+        </div>
+        <div class="field">
+          <label for="size">Watermark size</label>
+          <output id="sizeOut"></output>
+          <input type="range" id="size" min="5" max="60" step="1" />
+        </div>
+        <div class="field">
+          <label>Position</label>
+          <span></span>
+          <div class="positions" id="positions">
+            <button type="button" data-pos="top-left">↖</button>
+            <button type="button" class="gap"></button>
+            <button type="button" data-pos="top-right">↗</button>
+            <button type="button" class="gap"></button>
+            <button type="button" data-pos="center">●</button>
+            <button type="button" class="gap"></button>
+            <button type="button" data-pos="bottom-left">↙</button>
+            <button type="button" class="gap"></button>
+            <button type="button" data-pos="bottom-right">↘</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="opacity">Opacity</label>
+          <output id="opacityOut"></output>
+          <input type="range" id="opacity" min="10" max="100" step="5" />
+        </div>
+        <div class="field">
+          <label for="margin">Distance from edge</label>
+          <output id="marginOut"></output>
+          <input type="range" id="margin" min="0" max="10" step="0.5" />
+        </div>
+        <div class="field">
+          <label for="quality">JPEG quality</label>
+          <output id="qualityOut"></output>
+          <input type="range" id="quality" min="50" max="100" step="5" />
+        </div>
+        <button type="button" class="link reset" id="reset">Reset to defaults</button>
+      </details>
+
+      <button type="button" class="primary big" id="pickButton">Choose photos</button>
+      <input type="file" accept="image/*" multiple id="photoInput" class="visually-hidden" tabindex="-1" />
+      <p id="status" role="status"></p>
+
+      <section id="results" hidden>
+        <div class="results-head">
+          <h2 id="count"></h2>
+          <button type="button" class="link" id="clear">Clear</button>
+        </div>
+        <div class="grid" id="grid"></div>
+      </section>
+    </main>
+
+    <div class="savebar" id="savebar" hidden>
+      <div>
+        <button type="button" class="primary big" id="saveButton">Save</button>
+        <p id="saveHint"></p>
+      </div>
+    </div>
+
+    <script>
+      const DEFAULTS = { longEdge: 1600, upscale: false, size: 22, position: 'bottom-right', opacity: 100, margin: 3, quality: 90 };
+      const POSITION_NAMES = { 'top-left': 'top left', 'top-right': 'top right', center: 'center', 'bottom-left': 'bottom left', 'bottom-right': 'bottom right' };
+
+      // Browser storage can be unavailable (private browsing); the app still works, it just forgets.
+      const store = {
+        get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+        set(key, value) { try { localStorage.setItem(key, value); return true; } catch { return false; } },
+      };
+
+      let settings = { ...DEFAULTS };
+      try { Object.assign(settings, JSON.parse(store.get('rw:settings') || '{}')); } catch {}
+
+      let watermark = null; // decoded watermark image
+      let photos = [];      // { file, blob, url, name } in the order picked
+      let run = 0;          // bumps on every reprocess so a stale run stops
+
+      const $ = (id) => document.getElementById(id);
+
+      async function loadImage(blob) {
+        // Both paths honour EXIF rotation in current Safari and Chrome.
+        if (window.createImageBitmap) {
+          try { return await createImageBitmap(blob, { imageOrientation: 'from-image' }); } catch {}
+        }
+        const url = URL.createObjectURL(blob);
+        try {
+          const img = new Image();
+          img.src = url;
+          await img.decode();
+          return img;
+        } finally {
+          URL.revokeObjectURL(url);
+        }
+      }
+
+      function canvasOf(width, height) {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
+      }
+
+      // Halve in steps before the final draw; one big jump down looks jagged in some browsers.
+      function scaled(source, width, height) {
+        let current = source;
+        let w = source.width;
+        let h = source.height;
+        while (w / 2 >= width && h / 2 >= height) {
+          w = Math.round(w / 2);
+          h = Math.round(h / 2);
+          const step = canvasOf(w, h);
+          const ctx = step.getContext('2d');
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(current, 0, 0, w, h);
+          current = step;
+        }
+        return current;
+      }
+
+      function place(position, width, height, w, h, margin) {
+        const right = width - w - margin;
+        const bottom = height - h - margin;
+        switch (position) {
+          case 'top-left': return [margin, margin];
+          case 'top-right': return [right, margin];
+          case 'bottom-left': return [margin, bottom];
+          case 'center': return [(width - w) / 2, (height - h) / 2];
+          default: return [right, bottom];
+        }
+      }
+
+      function toBlob(canvas, type, quality) {
+        return new Promise((resolve, reject) =>
+          canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not encode image'))), type, quality));
+      }
+
+      async function processPhoto(file) {
+        const source = await loadImage(file);
+        const long = Math.max(source.width, source.height);
+        let target = long;
+        if (settings.longEdge > 0 && (long > settings.longEdge || settings.upscale)) target = settings.longEdge;
+        const scale = target / long;
+        const width = Math.max(1, Math.round(source.width * scale));
+        const height = Math.max(1, Math.round(source.height * scale));
+
+        const png = file.type === 'image/png';
+        const canvas = canvasOf(width, height);
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingQuality = 'high';
+        if (!png) {
+          // JPEG has no transparency; keep transparent areas white rather than black.
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, width, height);
+        }
+        ctx.drawImage(scale < 1 ? scaled(source, width, height) : source, 0, 0, width, height);
+        if (source.close) source.close();
+
+        if (watermark) {
+          const short = Math.min(width, height);
+          const wmWidth = short * settings.size / 100;
+          const wmHeight = wmWidth * watermark.height / watermark.width;
+          const [x, y] = place(settings.position, width, height, wmWidth, wmHeight, short * settings.margin / 100);
+          ctx.globalAlpha = settings.opacity / 100;
+          ctx.drawImage(scaled(watermark, wmWidth, wmHeight), x, y, wmWidth, wmHeight);
+          ctx.globalAlpha = 1;
+        }
+
+        const type = png ? 'image/png' : 'image/jpeg';
+        const blob = await toBlob(canvas, type, settings.quality / 100);
+        canvas.width = canvas.height = 0; // frees memory right away on iOS
+        const base = (file.name || 'photo').replace(/\.[^.]+$/, '');
+        return { blob, name: `${base}-watermarked.${png ? 'png' : 'jpg'}` };
+      }
+
+      async function processAll() {
+        const id = ++run;
+        const total = photos.length;
+        renderResults();
+        for (let i = 0; i < total; i++) {
+          if (id !== run) return;
+          $('status').textContent = `Processing ${i + 1} of ${total}…`;
+          const photo = photos[i];
+          try {
+            const { blob, name } = await processPhoto(photo.file);
+            if (id !== run) return;
+            if (photo.url) URL.revokeObjectURL(photo.url);
+            Object.assign(photo, { blob, name, url: URL.createObjectURL(blob), error: null });
+          } catch (e) {
+            photo.error = e.message || String(e);
+          }
+          renderResults();
+        }
+        const failed = photos.filter((p) => p.error).length;
+        $('status').textContent = failed ? `${failed} photo${failed === 1 ? '' : 's'} couldn't be read.` : '';
+      }
+
+      function renderResults() {
+        const ready = photos.filter((p) => p.blob);
+        $('results').hidden = photos.length === 0;
+        $('savebar').hidden = ready.length === 0;
+        $('count').textContent = `${photos.length} photo${photos.length === 1 ? '' : 's'}`;
+        $('grid').replaceChildren(...photos.filter((p) => p.url).map((p) => {
+          const a = document.createElement('a');
+          a.href = p.url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          const img = document.createElement('img');
+          img.src = p.url;
+          img.alt = p.name;
+          a.append(img);
+          return a;
+        }));
+        const busy = ready.length < photos.filter((p) => !p.error).length;
+        $('saveButton').disabled = busy;
+        $('saveButton').textContent = busy ? 'Processing…' : `Save ${ready.length} photo${ready.length === 1 ? '' : 's'}`;
+        $('saveHint').textContent = canShareFiles()
+          ? 'On iPhone, tap "Save Images" in the share sheet to add them to Photos.'
+          : 'Photos are saved to your Downloads.';
+      }
+
+      function readyFiles() {
+        return photos.filter((p) => p.blob).map((p) => new File([p.blob], p.name, { type: p.blob.type }));
+      }
+
+      function canShareFiles() {
+        try {
+          return !!(navigator.canShare && navigator.canShare({ files: [new File([''], 'x.jpg', { type: 'image/jpeg' })] }));
+        } catch { return false; }
+      }
+
+      async function save() {
+        const files = readyFiles();
+        if (!files.length) return;
+        if (navigator.canShare && navigator.canShare({ files })) {
+          try {
+            await navigator.share({ files });
+            return;
+          } catch (e) {
+            if (e.name === 'AbortError') return;
+          }
+        }
+        for (const file of files) {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(file);
+          a.download = file.name;
+          document.body.append(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+          await new Promise((r) => setTimeout(r, 300)); // browsers drop rapid back-to-back downloads
+        }
+      }
+
+      // The watermark is shrunk and stored as PNG so it fits comfortably in browser storage.
+      async function setWatermark(file) {
+        const img = await loadImage(file);
+        const max = 1200;
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = canvasOf(w, h);
+        canvas.getContext('2d').drawImage(scale < 1 ? scaled(img, w, h) : img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/png');
+        const saved = store.set('rw:watermark', dataUrl);
+        await useWatermark(dataUrl);
+        $('wmHint').textContent = saved ? 'Saved on this device for next time.' : "Set for now, but this browser won't remember it.";
+      }
+
+      async function useWatermark(dataUrl) {
+        const img = new Image();
+        img.src = dataUrl;
+        await img.decode();
+        watermark = img;
+        $('wmThumb').replaceChildren(img.cloneNode());
+        $('wmButton').textContent = 'Change';
+        $('wmHint').textContent = 'Saved on this device.';
+      }
+
+      function renderSettings() {
+        $('longEdge').value = settings.longEdge;
+        $('upscale').checked = settings.upscale;
+        $('size').value = settings.size;
+        $('sizeOut').textContent = `${settings.size}%`;
+        $('opacity').value = settings.opacity;
+        $('opacityOut').textContent = `${settings.opacity}%`;
+        $('margin').value = settings.margin;
+        $('marginOut').textContent = `${settings.margin}%`;
+        $('quality').value = settings.quality;
+        $('qualityOut').textContent = `${settings.quality}%`;
+        for (const b of document.querySelectorAll('#positions [data-pos]')) {
+          b.setAttribute('aria-pressed', String(b.dataset.pos === settings.position));
+          b.setAttribute('aria-label', POSITION_NAMES[b.dataset.pos]);
+        }
+        $('summary').textContent = `${settings.longEdge || 'Original'}${settings.longEdge ? ' px' : ''} · ${settings.size}% · ${POSITION_NAMES[settings.position]}`;
+      }
+
+      let reprocessTimer;
+      function update(changes) {
+        Object.assign(settings, changes);
+        store.set('rw:settings', JSON.stringify(settings));
+        renderSettings();
+        if (photos.length) {
+          clearTimeout(reprocessTimer);
+          reprocessTimer = setTimeout(processAll, 350);
+        }
+      }
+
+      $('wmButton').addEventListener('click', () => $('wmInput').click());
+      $('wmInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        try {
+          await setWatermark(file);
+          if (photos.length) processAll();
+        } catch {
+          $('wmHint').textContent = "That image couldn't be read. Try a PNG or JPEG.";
+        }
+      });
+
+      $('pickButton').addEventListener('click', () => {
+        if (!watermark && !confirm('No watermark chosen yet. Resize photos without one?')) return;
+        $('photoInput').click();
+      });
+      $('photoInput').addEventListener('change', (e) => {
+        const files = [...e.target.files];
+        e.target.value = '';
+        if (!files.length) return;
+        photos.push(...files.map((file) => ({ file })));
+        processAll();
+      });
+
+      $('clear').addEventListener('click', () => {
+        run++;
+        for (const p of photos) if (p.url) URL.revokeObjectURL(p.url);
+        photos = [];
+        $('status').textContent = '';
+        renderResults();
+      });
+      $('saveButton').addEventListener('click', save);
+
+      $('longEdge').addEventListener('change', (e) => update({ longEdge: Math.max(0, Math.round(Number(e.target.value) || 0)) }));
+      $('upscale').addEventListener('change', (e) => update({ upscale: e.target.checked }));
+      for (const key of ['size', 'opacity', 'margin', 'quality']) {
+        $(key).addEventListener('input', (e) => update({ [key]: Number(e.target.value) }));
+      }
+      $('positions').addEventListener('click', (e) => {
+        const pos = e.target.closest('[data-pos]')?.dataset.pos;
+        if (pos) update({ position: pos });
+      });
+      $('reset').addEventListener('click', () => update({ ...DEFAULTS }));
+
+      renderSettings();
+      renderResults();
+      const storedWatermark = store.get('rw:watermark');
+      if (storedWatermark) useWatermark(storedWatermark).catch(() => {});
+    </script>
+  </body>
+</html>
