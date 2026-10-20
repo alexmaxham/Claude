@@ -7,6 +7,7 @@
   "released": "2026-08-20",
   "price": { "amount": 899, "currency": "USD", "config": "256 GB" },
   "art": ["#c7d4e8", "#52627c"],
+  "image": { "file": "google-pixel-11.webp", "alt": "Google Pixel 11 in purple, back and front", "credit": "Google", "source": "https://store.google.com/product/pixel_11?hl=en-US" },
   "display": { "size_in": 6.3, "type": "OLED (Actua)", "resolution": "1080 × 2424", "refresh_hz": 120, "refresh": "60–120 Hz", "peak_nits": 3000 },
   "platform": { "chipset": "Google Tensor G6" },
   "camera": { "main": "48 MP, f/1.7", "ultrawide": "13 MP, f/2.2", "telephoto": "10.8 MP" },
