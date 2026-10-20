@@ -1,0 +1,29 @@
+name: iOS build
+
+# Compiles the iPhone app for the simulator (unsigned) so a change can't break the Xcode build unnoticed.
+on:
+  push:
+    paths: ['ios/**', 'src/**', 'capacitor.config.ts', 'package.json', 'package-lock.json', '.github/workflows/ios.yml']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - run: npm ci
+      - run: npm run ios:sync
+      - name: Build for the iOS simulator
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build | tail -40
+          exit ${PIPESTATUS[0]}

@@ -1163,3 +1163,15 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
+
+/* ───────────── iPhone app (Capacitor, html.native) ───────────── */
+/* Feel like an app rather than a page: no text selection, callouts or rubber-band past the glass. */
+.native body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior-y: none;
+}
+.native input, .native textarea, .native [contenteditable] { -webkit-user-select: text; user-select: text; }
+/* No physical keyboard on a phone: hide keyboard-shortcut hints. */
+.native .footer-hint { display: none; }

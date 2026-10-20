@@ -8,7 +8,8 @@ import { toCsv, toJson, toMarkdown, toTodoistCsv } from '../core/export';
 import { isThemeUnlocked, THEMES, type Action } from '../core/store';
 import type { AppState, Category, Stats, ThemeId } from '../core/types';
 import { download } from '../download';
-import { notificationsSupported } from '../useReminders';
+import { isNative } from '../native';
+import { notificationsSupported, requestNotifications } from '../useReminders';
 import { Sheet } from './Sheet';
 import { WeeklyChallenges } from './WeeklyChallenges';
 
@@ -276,8 +277,13 @@ function SettingsPanel({
     setNotifyError(null);
     if (reminders.on) return onReminders({ ...reminders, on: false });
     if (!notificationsSupported()) return setNotifyError('This browser doesn’t support notifications.');
-    const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
-    if (permission !== 'granted') return setNotifyError('Notifications are blocked. Allow them for this site in your browser settings.');
+    if (!(await requestNotifications())) {
+      return setNotifyError(
+        isNative
+          ? 'Notifications are off. Turn them on in the iPhone Settings app → Tasko → Notifications.'
+          : 'Notifications are blocked. Allow them for this site in your browser settings.',
+      );
+    }
     onReminders({ ...reminders, on: true });
   };
 
@@ -328,7 +334,7 @@ function SettingsPanel({
         <span>
           Daily reminder
           <span className="muted small" style={{ display: 'block' }}>
-            Lists quests due today. Works while Tasko is open in a tab.
+            {isNative ? 'Lists quests due today, even when Tasko is closed.' : 'Lists quests due today. Works while Tasko is open in a tab.'}
           </span>
           {notifyError && <span className="small error-text" style={{ display: 'block' }}>{notifyError}</span>}
         </span>

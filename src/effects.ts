@@ -1,5 +1,7 @@
 // Small "juice" helpers: confetti, sounds and haptics. All optional and fail-safe.
 
+import { isNative, nativeHaptic } from './native';
+
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 let canvas: HTMLCanvasElement | null = null;
@@ -96,5 +98,6 @@ export function chime(notes: number[] = [660, 880]) {
 }
 
 export function haptic(pattern: number | number[] = 12) {
+  if (isNative) return nativeHaptic(pattern);
   navigator.vibrate?.(pattern);
 }

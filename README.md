@@ -1,6 +1,6 @@
 # Tasko
 
-A gamified to-do list with a liquid glass look. Built as a web app first, structured so it can become iOS and Android apps later.
+A gamified to-do list with a liquid glass look. Runs on the web and as a native iPhone app (see [iPhone app](#iphone-app)).
 
 **Live app:** https://alexmaxham.github.io/Claude/
 
@@ -59,7 +59,7 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 - **Week strip:** the next seven days with a dot per quest due; tap a day to see just those.
 - **Weekly challenges:** three new challenges every Monday for bonus XP, shown in the sidebar and the Trophies tab.
 - **Theme rewards:** Teal, Pink, Gold and Midnight unlock at levels 3, 5, 8 and 12.
-- **Daily reminder:** an optional browser notification at a time you pick, listing what's due. It only fires while Tasko is open in a tab (there's no push server).
+- **Daily reminder:** an optional browser notification at a time you pick, listing what's due. On the web it only fires while Tasko is open in a tab (there's no push server); the iPhone app schedules real notifications.
 - **Light / dark / auto:** pick the appearance in Settings; Auto follows your device.
 - **Profile:** tap your profile picture (or the person icon as a guest) for XP, tasks done, streaks, a 15-week activity heatmap, tasks by category and your latest trophies.
 - **Level milestones:** the Trophies tab shows how much XP is left to the next big levels and what each unlocks.
@@ -76,7 +76,7 @@ VITE_FIREBASE_EMULATORS=true npm run dev
   - Daily goal ring (adjustable). Hitting it pays a +25 XP bonus once per day.
   - 100 levels, each with its own rank title (Novice → Questlord), and a level-up celebration.
   - 44 achievements (trophies) for totals, streaks, levels, daily goals, on-time and high-priority work, steps, repeating tasks and weekly challenges.
-  - Confetti, floating XP, sounds (can be turned off) and haptics on Android.
+  - Confetti, floating XP, sounds (can be turned off) and haptics (Android, and the Taptic Engine in the iPhone app).
   - Un-checking a task takes back exactly the XP it earned, so you can't farm XP.
 - Optional sign-in with Google or email/password, with sync across devices (see above). Without an account, data stays in the browser.
 - Undo after deleting a task. Light and dark mode follow the system. Reduced-motion is respected.
@@ -88,14 +88,48 @@ src/core/        Platform-agnostic logic: types, reducer, XP/levels/streaks, ach
 src/cloud/       Firebase auth + sync (SDK is lazy-loaded; config in config.ts)
 src/components/  React (DOM) UI
 src/effects.ts   Confetti, sound, haptics
+src/native.ts    iPhone app bridge (Capacitor plugins); no-ops on the web
+ios/             Xcode project for the iPhone app
 src/styles.css   Liquid glass design system
 ```
 
 `src/core` has no DOM or React imports. All state changes go through the pure `reduce(state, action)` function, which returns the new state plus game events (XP, level up, achievement) for the UI to celebrate.
 
-## Going mobile later
+## iPhone app
 
-There are two paths:
+`ios/` is a native iPhone app built with [Capacitor](https://capacitorjs.com). It runs this same web build, so it has the identical liquid glass design, and swaps in native pieces where the web falls short:
 
-1. **Capacitor (fastest).** Wrap this web app as-is in native iOS/Android shells. Swap `localStorage` for Capacitor Preferences using the `KeyValueStore` interface in `src/core/storage.ts`, and use `@capacitor/haptics` in `effects.ts`. For Google sign-in inside the native shell, use `@capacitor-firebase/authentication`.
-2. **React Native / Expo (most native feel).** Reuse `src/core` unchanged and rebuild the components with RN primitives. Accounts carry over because the same Firebase project works from React Native. iOS 26+ also offers native Liquid Glass materials there.
+| | Web | iPhone app |
+|---|---|---|
+| Haptics | `navigator.vibrate` (Android only) | Taptic Engine: light/medium taps, a success buzz on level up |
+| Daily reminder | Only while a tab is open | Real iOS notifications for the next 7 days, even when Tasko is closed |
+| Export | File download | Share sheet (Save to Files, AirDrop, Mail…) |
+| Saved data | localStorage | localStorage mirrored to native storage, so iOS clearing web data can't lose it |
+| Google sign-in | Popup | Native Google sign-in (after the setup below) |
+| Status bar, launch screen, icon | — | Follows light/dark; launch screen and icon from the Tasko logo |
+
+All native calls live in `src/native.ts`; on the web each one is a no-op or falls back to the browser API.
+
+### Build and run (needs a Mac with Xcode 16.3+)
+
+```bash
+npm install
+npm run ios          # builds the web app, syncs it into ios/, opens Xcode
+```
+
+In Xcode: select the **App** target → **Signing & Capabilities** → pick your Team (a free Apple ID works for your own phone), then choose your iPhone or a simulator and press Run. After changing web code, run `npm run ios:sync` (or `npm run ios` again). Swift packages download on the first build.
+
+The bundle ID is `com.alexmaxham.tasko` (in `capacitor.config.ts` and Xcode). To publish on the App Store you need an Apple Developer account; then **Product → Archive** in Xcode and upload to TestFlight/App Store Connect.
+
+`npm run ios:assets` re-renders the app icon and launch screen from `public/icon-maskable.svg`. The **iOS build** workflow compiles the app for the simulator on every push.
+
+### Sign-in in the iPhone app
+
+Email/password sign-in and sync work out of the box. Google blocks its sign-in page inside apps' web views, so Google sign-in (and Google Calendar sync) uses the native Google SDK and needs a one-time setup:
+
+1. Firebase console → Project settings → Your apps → **Add app → iOS**, bundle ID `com.alexmaxham.tasko`. Download **GoogleService-Info.plist**.
+2. In Xcode, drag it into `App/App` (tick "Copy items if needed" and the App target).
+3. Open `GoogleService-Info.plist`, copy the `REVERSED_CLIENT_ID` value. App target → **Info** → URL Types → **+** → paste it into *URL Schemes*.
+4. Set `IOS_GOOGLE_SIGN_IN = true` in `src/cloud/config.ts`, then `npm run ios`.
+
+Until then the app hides the Google button and offers email sign-in only.
