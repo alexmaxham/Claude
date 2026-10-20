@@ -3,7 +3,7 @@ import '@fontsource-variable/roboto-flex/wdth.css';
 import '../styles/global.css';
 import Icon from '../components/Icon.astro';
 import { allDevices, deviceUrl, fullName } from '../lib/devices';
-import { cookiePath } from '../lib/art';
+import Logo from '../components/Logo.astro';
 import { SITE_NAME } from '../lib/site';
 
 interface Props {
@@ -49,6 +49,7 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
     {imageUrl && <meta property="og:image" content={imageUrl} />}
     <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap.xml" />
     <script is:inline>
       // Apply the saved theme before first paint so the page never flashes the wrong one.
@@ -64,7 +65,7 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
     <div class="app">
       <aside class="rail" aria-label="Main">
         <a class="logo" href="/" aria-label={`${SITE_NAME} home`}>
-          <svg viewBox="0 0 100 100" width="44" height="44" aria-hidden="true"><path d={cookiePath(9, 0.16, 0.1)} fill="currentColor" /></svg>
+          <Logo size={46} />
         </a>
         <a class="fab" href="/compare/" data-compare-link aria-label="Compare selected devices">
           <Icon name="compare_arrows" />
@@ -82,7 +83,10 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
 
       <div class="main">
         <header class="topbar">
-          <a class="brandname" href="/">{SITE_NAME}</a>
+          <a class="brandname" href="/" aria-label={`${SITE_NAME} home`}>
+            <Logo size={30} class="brand-mark" />
+            <span class="wordmark" aria-hidden="true"><b>Spec</b><span>Atlas</span></span>
+          </a>
           <form class="search" action="/" method="get" role="search">
             <Icon name="search" />
             <label class="sr-only" for="q">Search devices</label>
@@ -151,7 +155,11 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
 
   .main { min-width: 0; padding-left: 8px; padding-right: var(--gutter-r); padding-bottom: 120px; }
   .topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; padding-block: 12px; background: var(--surface); }
-  .brandname { display: none; font-weight: 800; font-size: 22px; font-variation-settings: 'wdth' 120; letter-spacing: -.01em; text-decoration: none; color: var(--primary); }
+  .brandname { display: inline-flex; align-items: center; gap: 8px; flex: none; text-decoration: none; color: var(--on-surface); }
+  .brandname .brand-mark { display: none; }
+  .wordmark { font-size: 24px; line-height: 1; letter-spacing: -.02em; font-variation-settings: 'wdth' 118; }
+  .wordmark b { font-weight: 800; }
+  .wordmark span { font-weight: 500; color: var(--primary); }
   .search { flex: 1; max-width: 720px; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 20px; border-radius: var(--shape-full); background: var(--surface-high); color: var(--on-surface-var); }
   .search:focus-within { outline: 3px solid var(--primary); outline-offset: 2px; }
   .search input { flex: 1; min-width: 0; border: 0; background: none; font: inherit; color: var(--on-surface); outline: none; }
@@ -186,7 +194,8 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
     .rail { display: none; }
     .main { padding-left: var(--gutter-l); padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px)); }
     .topbar { flex-wrap: wrap; gap: 8px; padding-top: calc(8px + env(safe-area-inset-top, 0px)); }
-    .brandname { display: block; }
+    .brandname .brand-mark { display: block; }
+    .wordmark { font-size: 22px; }
     .search { order: 3; flex-basis: 100%; height: 48px; }
     .theme-toggle { width: 40px; height: 40px; }
     .bottomnav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; justify-content: space-around; padding: 12px max(8px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); background: var(--surface-c); }

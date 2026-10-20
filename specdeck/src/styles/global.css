@@ -9,6 +9,7 @@
   --on-surface: #171d1e; --on-surface-var: #3f484b; --outline: #6f797b; --outline-var: #bfc8cb;
   --inverse-surface: #2b3133; --inverse-on: #ecf2f3; --inverse-primary: #85d2e6;
   --win: #1f6b3a; --win-container: #c9efd0; --on-win: #ffffff;
+  --logo-accent: #e8746b;
   --device-screen: #0b0f10;
 
   --font: 'Roboto Flex Variable', 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -31,6 +32,7 @@
     --on-surface: #dee3e5; --on-surface-var: #bfc8cb; --outline: #899295; --outline-var: #3f484b;
     --inverse-surface: #dee3e5; --inverse-on: #2b3133; --inverse-primary: #00687a;
     --win: #a3d9ae; --win-container: #1b4a2b; --on-win: #0b2914;
+    --logo-accent: #ffb3b2;
     color-scheme: dark;
   }
 }
@@ -43,6 +45,7 @@
   --on-surface: #dee3e5; --on-surface-var: #bfc8cb; --outline: #899295; --outline-var: #3f484b;
   --inverse-surface: #dee3e5; --inverse-on: #2b3133; --inverse-primary: #00687a;
   --win: #a3d9ae; --win-container: #1b4a2b; --on-win: #0b2914;
+  --logo-accent: #ffb3b2;
   color-scheme: dark;
 }
 

@@ -1,0 +1,26 @@
+---
+// The SpecAtlas mark: two devices opened like the pages of an atlas, with map lines across them.
+interface Props {
+  size?: number;
+  /** Small sizes drop the second map line so the mark stays legible. */
+  detail?: 'full' | 'simple';
+  class?: string;
+}
+const { size = 40, detail = size >= 40 ? 'full' : 'simple', class: className } = Astro.props;
+---
+<svg class:list={['logo-mark', className]} width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
+  <rect class="page-a" x="13" y="10" width="37" height="80" rx="11" transform="rotate(-9 50 92)"></rect>
+  <rect class="page-b" x="50" y="10" width="37" height="80" rx="11" transform="rotate(9 50 92)"></rect>
+  {detail === 'full' ? (
+    <g class="lines"><path d="M12 46Q50 32 88 46"></path><path d="M15 64Q50 51 85 64"></path></g>
+  ) : (
+    <g class="lines"><path d="M12 52Q50 38 88 52"></path></g>
+  )}
+</svg>
+
+<style>
+  .logo-mark { flex: none; }
+  .page-a { fill: var(--primary); }
+  .page-b { fill: var(--logo-accent); }
+  .lines { fill: none; stroke: var(--surface); stroke-width: 5; stroke-linecap: round; }
+</style>

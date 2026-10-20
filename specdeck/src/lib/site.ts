@@ -1,1 +1,1 @@
-export const SITE_NAME = 'Specdeck';
+export const SITE_NAME = 'SpecAtlas';

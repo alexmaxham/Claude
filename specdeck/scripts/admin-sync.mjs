@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Moves changes saved on the admin page (Firestore) into the repo. Run by the Specdeck deploy workflow.
+// Moves changes saved on the admin page (Firestore) into the repo. Run by the SpecAtlas deploy workflow.
 //
 //   node scripts/admin-sync.mjs check            prints count=<n> (pending changes) for $GITHUB_OUTPUT
 //   node scripts/admin-sync.mjs import           writes device JSON and photos, records what it took
@@ -131,7 +131,7 @@ if (command === 'check') {
   // The schema error names the file ("devices → <slug> data does not match") and the fields below it.
   const detail = log.match(/does not match collection schema\.[\s\S]*?(?=\n\s*Error reference|\n\s*Hint|$)/)?.[0]
     .replace(/\*\*/g, '').replace(/\s+/g, ' ').replace('does not match collection schema.', '').trim();
-  const message = `The site build rejected this change${detail ? `: ${detail}` : '. See the Specdeck deploy run on GitHub.'}`;
+  const message = `The site build rejected this change${detail ? `: ${detail}` : '. See the SpecAtlas deploy run on GitHub.'}`;
   const blamed = state.taken.filter((t) => log.includes(`devices → ${t.name.split('/').pop()} `));
 
   for (const t of state.taken) {

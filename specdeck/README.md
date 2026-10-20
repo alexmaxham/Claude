@@ -1,4 +1,4 @@
-# Specdeck
+# SpecAtlas
 
 A spec database for phones and tablets, built with [Astro](https://astro.build) as a fully static site and styled with Material 3 Expressive.
 
@@ -48,7 +48,7 @@ Only Google accounts listed in the Firestore document `config/editors` (field `e
 ### How publishing works
 
 1. Saving on the admin page stores the change in Firestore (`devices/<slug>` holds the device JSON, `photos/<slug>` the image).
-2. The **Specdeck deploy** workflow (`.github/workflows/specdeck-deploy.yml`) runs every 10 minutes. When changes are waiting, `scripts/admin-sync.mjs` writes them into `src/data/devices/` and `src/assets/devices/`, then the site is built and deployed to Firebase Hosting, the files are committed to the default branch, and the changes are cleared from Firestore.
+2. The **SpecAtlas deploy** workflow (`.github/workflows/specdeck-deploy.yml`) runs every 10 minutes. When changes are waiting, `scripts/admin-sync.mjs` writes them into `src/data/devices/` and `src/assets/devices/`, then the site is built and deployed to Firebase Hosting, the files are committed to the default branch, and the changes are cleared from Firestore.
 3. If a change breaks the build, nothing is deployed. The admin page shows that change as "Not published" with the reason, and other waiting changes go out on the next run. Fix it and save again.
 
 The workflow also deploys on every push to the default branch that touches `specdeck/`, and can be started by hand from the Actions tab. It signs in to Google Cloud through Workload Identity Federation as the `specdeck-publisher` service account. No keys are stored in GitHub, and only this repository's default branch can use it. If the default branch is renamed, update the provider's condition in Google Cloud (IAM → Workload Identity Federation → `github` pool) and the branch in the workflow.
