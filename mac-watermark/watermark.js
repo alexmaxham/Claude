@@ -13,7 +13,7 @@ const DEFAULTS = {
   upscale: false,           // also enlarge images smaller than longEdge
   watermark: SUPPORT_DIR + '/watermark.png',
   position: 'bottom-right', // bottom-right, bottom-left, top-right, top-left, center
-  watermarkSize: 0.03,      // watermark width as a fraction of the image's shorter edge
+  watermarkSize: 0.22,      // watermark width as a fraction of the image's shorter edge
   margin: 0.03,             // gap from the edges as a fraction of the shorter edge
   opacity: 1,               // 0 (invisible) to 1 (solid)
   suffix: '-watermarked',   // added to the file name; the original is never touched
