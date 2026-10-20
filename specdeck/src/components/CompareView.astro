@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro';
+import SizeView from './SizeView.astro';
 import { compareTableHtml, COMPARE_ICONS } from '../lib/compare-table';
 import { iconMap } from '../lib/icons';
 import type { Device } from '../lib/schema';
@@ -34,6 +35,12 @@ const groups = [
   <span class="swipe"><Icon name="swap_horiz" size={18} />Swipe sideways to see every device.</span>
 </p>
 
+<section class="cmpsize" data-compare-filled hidden={devices.length === 0} aria-labelledby="h-size">
+  <h2 id="h-size" class="title">Size</h2>
+  <p class="muted">Drawn to scale from the published dimensions.</p>
+  <SizeView devices={devices} />
+</section>
+
 <dialog class="picker" data-picker aria-labelledby="picker-title">
   <form method="dialog" class="picker-inner">
     <div class="picker-head">
@@ -65,6 +72,8 @@ const groups = [
 </script>
 
 <style is:global>
+  .cmpsize { margin-top: 40px; }
+  .cmpsize > p { margin: 4px 0 16px; font-size: 14px; }
   .cmpbar { display: flex; justify-content: flex-end; margin: -8px 0 12px; }
   .switch { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--on-surface-var); }
   .switch input { appearance: none; width: 52px; height: 32px; border-radius: var(--shape-full); background: var(--surface-highest); border: 2px solid var(--outline); position: relative; cursor: pointer; margin: 0; transition: background .2s; }

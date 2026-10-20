@@ -2,6 +2,7 @@
 // (or the saved selection). On pre-rendered comparison pages the table is already in the HTML,
 // and changing the devices moves the visitor to /compare/ with the new set.
 import { compareTableHtml } from '../lib/compare-table';
+import { sizeViewHtml } from '../lib/size';
 import { getSelection, setSelection, compareHref, MAX_COMPARE } from './compare-tray';
 import type { Device } from '../lib/schema';
 
@@ -31,6 +32,8 @@ if (root) {
     const chosen = list.map((s) => devices.get(s)!);
     tableHost.innerHTML = chosen.length ? compareTableHtml(chosen, icons, chosen.length < MAX_COMPARE) : '';
     tableHost.querySelector('.ctable')?.classList.toggle('hide-same', hideSame.checked);
+    const sizeHost = document.querySelector<HTMLElement>('[data-size-view]');
+    if (sizeHost) sizeHost.innerHTML = chosen.length ? sizeViewHtml(chosen) : '';
     document.querySelectorAll<HTMLElement>('[data-compare-empty]').forEach((el) => (el.hidden = chosen.length > 0));
     document.querySelectorAll<HTMLElement>('[data-compare-filled]').forEach((el) => (el.hidden = chosen.length === 0));
     const title = document.querySelector('[data-compare-title]');

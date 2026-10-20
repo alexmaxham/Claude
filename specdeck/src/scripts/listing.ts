@@ -1,5 +1,6 @@
 // Client-side filtering and sorting of the server-rendered device grid.
 // Filter state is mirrored in the URL (?q=, ?type=, ?brand=, ?sort=) so results can be shared.
+// The search matches names, and spec values too ("IP68", "Wi-Fi 7") once /search.json has loaded.
 const root = document.querySelector<HTMLElement>('[data-listing]');
 if (root) {
   const grid = root.querySelector<HTMLElement>('[data-grid]')!;
@@ -13,6 +14,31 @@ if (root) {
     sort: params.get('sort') ?? 'newest',
   };
   if (input) input.value = state.q;
+
+  // Lower case, no hyphens or thousands separators, so "wifi 7" finds "Wi-Fi 7" and "5000 mah" finds "5,000 mAh".
+  const norm = (s: string) => s.toLowerCase().replace(/(\d),(?=\d{3})/g, '$1').replace(/-/g, '').replace(/\s+/g, ' ').trim();
+  let specs: Map<string, [string, string][]> | null = null;
+  let loading = false;
+  function loadSpecs() {
+    if (specs || loading) return;
+    loading = true;
+    fetch('/search.json')
+      .then((r) => r.json() as Promise<{ slug: string; specs: [string, string][] }[]>)
+      .then((list) => {
+        specs = new Map(list.map((d) => [d.slug, d.specs]));
+        apply();
+      })
+      .catch(() => {})
+      .finally(() => (loading = false));
+  }
+  /** The first spec whose value contains the whole query as words, e.g. ["Wi-Fi", "Wi-Fi 7 (802.11be)"]. */
+  function specMatch(c: HTMLElement, q: string): [string, string] | null {
+    const list = specs?.get(c.dataset.slug!);
+    // A bare number like "7" would match half the spec sheet; spec matches need a letter ("IP68", "5G").
+    if (!list || q.length < 2 || !/[a-z]/i.test(q)) return null;
+    const re = new RegExp(`(^|[^a-z0-9])${norm(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^a-z0-9])`);
+    return list.find(([, v]) => re.test(norm(v))) ?? null;
+  }
 
   const matchesType = (c: HTMLElement) => {
     const form = c.dataset.form!;
@@ -40,12 +66,17 @@ if (root) {
   function apply() {
     const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
     let shown = 0;
+    if (state.q) loadSpecs();
     for (const c of [...cards].sort(sorters[state.sort] ?? sorters.newest)) {
-      const visible =
-        matchesType(c) &&
-        (!state.brand || c.dataset.brand === state.brand) &&
-        words.every((w) => c.dataset.name!.includes(w));
+      const byName = words.every((w) => c.dataset.name!.includes(w));
+      const bySpec = byName ? null : specMatch(c, state.q);
+      const visible = matchesType(c) && (!state.brand || c.dataset.brand === state.brand) && (byName || !!bySpec);
       c.hidden = !visible;
+      const why = c.querySelector<HTMLElement>('[data-why]');
+      if (why) {
+        why.hidden = !bySpec;
+        why.textContent = bySpec ? `${bySpec[0]}: ${bySpec[1]}` : '';
+      }
       if (visible) shown++;
       grid.append(c);
     }

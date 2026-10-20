@@ -1,4 +1,6 @@
 import type { ImageMetadata } from 'astro';
+import { join } from 'node:path';
+import sharp from 'sharp';
 import { getImage } from 'astro:assets';
 import type { Device } from './schema';
 import { fullName } from './names';
@@ -26,4 +28,24 @@ export async function thumbUrl(d: Device): Promise<string | null> {
 export async function shareImageUrl(d: Device): Promise<string | null> {
   const src = photoFor(d);
   return src ? (await getImage({ src, width: Math.min(1200, src.width), format: 'jpg' })).src : null;
+}
+
+/**
+ * The render for the to-scale size comparison, with where the device sits on its square canvas.
+ * Only upright renders are used: a sideways or open-fold render can't be matched to the height.
+ */
+export async function scaleImage(d: Device): Promise<{ src: string; x: number; y: number; w: number; h: number } | null> {
+  const src = photoFor(d);
+  if (!src || !(d.formFactor === 'bar' || d.formFactor === 'tablet')) return null;
+  const { info } = await sharp(join(process.cwd(), 'src/assets/devices', d.image!.file)).trim().toBuffer({ resolveWithObject: true });
+  if (info.width > info.height * 1.1) return null;
+  const left = -(info.trimOffsetLeft ?? 0);
+  const top = -(info.trimOffsetTop ?? 0);
+  return {
+    src: (await getImage({ src, height: Math.min(720, src.height), format: 'webp' })).src,
+    x: left / src.width,
+    y: top / src.height,
+    w: info.width / src.width,
+    h: info.height / src.height,
+  };
 }

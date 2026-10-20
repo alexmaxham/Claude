@@ -4,12 +4,13 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import DeviceArt from '../../components/DeviceArt.astro';
 import DeviceCard from '../../components/DeviceCard.astro';
 import CompareButton from '../../components/CompareButton.astro';
+import FavButton from '../../components/FavButton.astro';
 import Icon from '../../components/Icon.astro';
 import AdSlot from '../../components/AdSlot.astro';
 import {
   allDevices, rivals, deviceUrl, fullName, brandSlug, compareSlug, CATEGORY_PATH, CATEGORY_LABEL,
 } from '../../lib/devices';
-import { SECTIONS, visibleRows, keySpecs, describe, completeness, formatDate, ppi, NOT_CONFIRMED } from '../../lib/specs';
+import { SECTIONS, visibleRows, keySpecs, describe, completeness, formatDate, ppi, isRumored, NOT_CONFIRMED, RUMORED } from '../../lib/specs';
 import { breadcrumbLd } from '../../lib/seo';
 import { shareImageUrl } from '../../lib/images';
 import type { Device } from '../../lib/schema';
@@ -57,11 +58,12 @@ const product = {
       .map(({ r, v }) => ({ '@type': 'PropertyValue', name: r.label, value: v })),
   ),
 };
+const rumor = (key: string, v: string) => (v && isRumored(d, key) ? `${v} (rumoured)` : v);
 const tiles = [
-  { icon: 'mobile', label: 'Display', big: d.display.size_in ? `${d.display.size_in}"` : NOT_CONFIRMED, small: [d.display.resolution, d.display.refresh].filter(Boolean).join(' · ') },
-  { icon: 'memory', label: 'Chipset', big: k.chip ?? NOT_CONFIRMED, small: d.memory.ram_gb.length ? `${d.memory.ram_gb.join(' / ')} GB RAM` : '' },
-  { icon: 'photo_camera', label: 'Main camera', big: k.camera ?? NOT_CONFIRMED, small: d.camera.telephoto && d.camera.telephoto !== 'None' ? `Telephoto ${d.camera.telephoto}` : '' },
-  { icon: 'battery_charging_full', label: 'Battery', big: k.battery ?? NOT_CONFIRMED, small: d.battery.wired_w ? `${d.battery.wired_w} W wired` : '' },
+  { icon: 'mobile', label: 'Display', big: d.display.size_in ? rumor('size', `${d.display.size_in}"`) : NOT_CONFIRMED, small: [d.display.resolution, d.display.refresh].filter(Boolean).join(' · ') },
+  { icon: 'memory', label: 'Chipset', big: k.chip ?? NOT_CONFIRMED, small: d.memory.ram_gb.length ? rumor('ram', `${d.memory.ram_gb.join(' / ')} GB RAM`) : '' },
+  { icon: 'photo_camera', label: 'Main camera', big: k.camera ?? NOT_CONFIRMED, small: d.camera.telephoto && d.camera.telephoto !== 'None' ? rumor('telephoto', `Telephoto ${d.camera.telephoto}`) : '' },
+  { icon: 'battery_charging_full', label: 'Battery', big: k.battery ?? NOT_CONFIRMED, small: d.battery.wired_w ? rumor('wired', `${d.battery.wired_w} W wired`) : '' },
 ];
 const top = others[0];
 const ppiValue = ppi(d);
@@ -73,11 +75,12 @@ const description = `${name} full specifications: ${[k.display, k.chip, k.batter
 
   <div class="dhero">
     <div class="dhead">
-      <span class="label">{d.brand} · {CATEGORY_LABEL[d.category].slice(0, -1)}{d.formFactor === 'book-fold' ? ' · Book-style foldable' : d.formFactor === 'flip' ? ' · Flip foldable' : ''}</span>
+      <span class="label">{d.status === 'upcoming' && <span class="upbadge">Upcoming</span>}{d.brand} · {CATEGORY_LABEL[d.category].slice(0, -1)}{d.formFactor === 'book-fold' ? ' · Book-style foldable' : d.formFactor === 'flip' ? ' · Flip foldable' : ''}</span>
       <h1 class="headline">{name} <span class="h1-sub">specifications</span></h1>
       <p class="summary">{summary}</p>
       <div class="actions">
         <CompareButton device={d} variant="full" />
+        <FavButton device={d} variant="full" />
         {top && (
           <a class="btn filled" href={`/compare/${compareSlug(d, top)}/`}>
             <Icon name="compare_arrows" />Compare with {top.name}
@@ -106,6 +109,18 @@ const description = `${name} full specifications: ${[k.display, k.chip, k.batter
     ))}
   </div>
 
+  {d.status === 'upcoming' && (
+    <p class="notice upcoming">
+      <Icon name="event_upcoming" size={20} />
+      <span>
+        The {name} isn't on sale yet.{' '}
+        {d.rumored.length > 0
+          ? <>Values marked “{RUMORED}” come from leaks and reports, not from {d.brand}, and may change at launch.</>
+          : <>The specs below are as announced by {d.brand}.</>}
+      </span>
+    </p>
+  )}
+
   {!d.verified && (
     <p class="notice">
       <Icon name="info" size={20} />
@@ -132,7 +147,7 @@ const description = `${name} full specifications: ${[k.display, k.chip, k.batter
             return (
               <div class="r">
                 <dt>{r.label}</dt>
-                <dd class:list={{ missing: v === null }}>{v ?? NOT_CONFIRMED}</dd>
+                <dd class:list={{ missing: v === null }}>{v ?? NOT_CONFIRMED}{v !== null && isRumored(d, r.key) && <span class="rumor">{RUMORED}</span>}</dd>
               </div>
             );
           })}
@@ -200,6 +215,7 @@ const description = `${name} full specifications: ${[k.display, k.chip, k.batter
 
   .notice { display: flex; gap: 12px; align-items: flex-start; margin: 16px 0 0; padding: 14px 18px; border-radius: var(--shape-l); background: var(--secondary-container); color: var(--on-secondary-container); font-size: 14px; }
   .notice :global(.icon) { margin-top: 1px; }
+  .notice.upcoming { background: var(--tertiary-container); color: var(--on-tertiary-container); }
 
   .secnav { position: sticky; top: 80px; z-index: 4; display: flex; gap: 8px; overflow-x: auto; padding-block: 12px; margin-top: 12px; background: var(--surface); scrollbar-width: none; }
   .secnav::-webkit-scrollbar { display: none; }

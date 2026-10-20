@@ -55,6 +55,8 @@ Work top to bottom. Each phase is one PR.
 
 ### Phase 2: Size comparison, favourites, upcoming devices, spec search
 
+**Done.** Size drawings come from `src/lib/size.ts`. Bar phones and tablets with an upright render use their image; foldables, sideways renders and devices without an image use the drawing. No devices are marked upcoming yet, so `/upcoming/` shows an empty state and stays out of the sitemap and footer until one is.
+
 - **Size comparison:** draw 2 to 4 devices to scale side by side, using `body.dimensions` (height × width). Use their images when they have one, otherwise the drawing. Put it on the compare pages, and add a standalone `/size/` page.
 - **Favourites:** a heart button on cards and device pages, stored in `localStorage` (no accounts), and a `/favorites/` page.
 - **Upcoming:**

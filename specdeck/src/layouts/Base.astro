@@ -23,6 +23,7 @@ const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;
 const devices = await allDevices();
 // Small index the compare tray and search use on every page.
 const index = devices.map((d) => ({ slug: d.slug, name: fullName(d), url: deviceUrl(d), category: d.category }));
+const hasUpcoming = devices.some((d) => d.status === 'upcoming');
 const navItems = [
   { id: 'home', label: 'Browse', href: '/', icon: 'grid_view' },
   { id: 'phones', label: 'Phones', href: '/phones/', icon: 'mobile' },
@@ -98,9 +99,13 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
           <form class="search" action="/" method="get" role="search">
             <Icon name="search" />
             <label class="sr-only" for="q">Search devices</label>
-            <input id="q" name="q" type="search" placeholder={`Search ${devices.length} phones and tablets`} autocomplete="off" list="device-names" />
+            <input id="q" name="q" type="search" placeholder="Search phones, tablets and specs" autocomplete="off" list="device-names" />
             <datalist id="device-names">{index.map((d) => <option value={d.name} />)}</datalist>
           </form>
+          <a class="iconbtn favlink" href="/favorites/" aria-label="Favourites" title="Favourites">
+            <Icon name="favorite" />
+            <span class="badge num" data-fav-count hidden>0</span>
+          </a>
           <button class="iconbtn theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" title="Switch theme">
             <Icon name="dark_mode" class="when-light" />
             <Icon name="light_mode" class="when-dark" />
@@ -117,6 +122,9 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
             <a href="/brands/">Brands</a>
             <a href="/best/">Best of</a>
             <a href="/finder/">Phone finder</a>
+            <a href="/size/">Size comparison</a>
+            {hasUpcoming && <a href="/upcoming/">Upcoming</a>}
+            <a href="/favorites/">Favourites</a>
             <a href="/compare/">Compare</a>
             <a href="/about/">About the data</a>
             <a href="/privacy/">Privacy</a>
@@ -144,6 +152,7 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
     <script>
       import '../scripts/theme';
       import '../scripts/compare-tray';
+      import '../scripts/favorites';
     </script>
   </body>
 </html>
@@ -175,7 +184,9 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
   .search:focus-within { outline: 3px solid var(--primary); outline-offset: 2px; }
   .search input { flex: 1; min-width: 0; border: 0; background: none; font: inherit; color: var(--on-surface); outline: none; }
   .search input::placeholder { color: var(--on-surface-var); }
-  .theme-toggle { margin-left: auto; width: 48px; height: 48px; background: var(--surface-high); }
+  .favlink { position: relative; margin-left: auto; width: 48px; height: 48px; background: var(--surface-high); color: var(--on-surface-var); }
+  .favlink .badge { top: -2px; right: -2px; }
+  .theme-toggle { width: 48px; height: 48px; background: var(--surface-high); }
   .theme-toggle:active { border-radius: var(--shape-s); }
   .when-dark { display: none; }
   :root[data-theme='dark'] .when-light { display: none; }
@@ -208,7 +219,7 @@ const site = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_
     .brandname .brand-mark { display: block; }
     .wordmark { font-size: 22px; }
     .search { order: 3; flex-basis: 100%; height: 48px; }
-    .theme-toggle { width: 40px; height: 40px; }
+    .theme-toggle, .favlink { width: 40px; height: 40px; }
     .bottomnav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; justify-content: space-around; padding: 12px max(8px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); background: var(--surface-c); }
     .tray { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
     html { scroll-padding-top: 140px; }

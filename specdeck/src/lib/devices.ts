@@ -2,7 +2,7 @@ import { getCollection } from 'astro:content';
 import type { Device } from './schema';
 
 import { compareSlug } from './names';
-import { thumbUrl } from './images';
+import { scaleImage, thumbUrl } from './images';
 
 export * from './names';
 
@@ -14,7 +14,7 @@ export function allDevices(): Promise<Device[]> {
     const devices = await Promise.all(
       entries.map(async (e) => {
         const d: Device = { ...e.data, slug: e.id };
-        return { ...d, thumb: await thumbUrl(d) };
+        return { ...d, thumb: await thumbUrl(d), scaleImage: await scaleImage(d) };
       }),
     );
     return devices.sort((a, b) => b.announced.localeCompare(a.announced) || a.name.localeCompare(b.name));

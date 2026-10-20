@@ -247,6 +247,12 @@ export const SECTIONS: Section[] = [
   },
 ];
 
+/** Every row key, e.g. for marking values as rumoured in a device file. */
+export const SPEC_KEYS = SECTIONS.flatMap((s) => s.rows.map((r) => r.key)) as [string, ...string[]];
+
+export const RUMORED = 'Rumoured';
+export const isRumored = (d: Pick<Device, 'rumored'>, key: string) => d.rumored.includes(key);
+
 /** Rows that only apply to some devices (e.g. a cover screen) are hidden when every device lacks them. */
 const OPTIONAL_ROWS = new Set(['folded', 'cover', 'stylus', 'life', 'thickness']);
 
@@ -259,6 +265,8 @@ export function visibleRows(section: Section, devices: Device[]): Row[] {
 /** Index of the single best device for a row, or -1 when the row is not ranked or there is a tie. */
 export function bestIndex(row: Row, devices: Device[]): number {
   if (!row.rank || !row.better || devices.length < 2) return -1;
+  // A rumoured value can't win a row.
+  if (devices.some((d) => isRumored(d, row.key))) return -1;
   const values = devices.map((d) => row.rank!(d));
   if (values.some((v) => v === null)) return -1;
   const nums = values as number[];
@@ -266,33 +274,35 @@ export function bestIndex(row: Row, devices: Device[]): number {
   return nums.filter((n) => n === target).length === 1 ? nums.indexOf(target) : -1;
 }
 
-/** The four headline specs used on cards and in meta descriptions. */
+/** The four headline specs used on cards and in meta descriptions. Rumoured values say so. */
 export function keySpecs(d: Device) {
+  const tag = (keys: string[], v: string | null) => (v !== null && keys.some((k) => isRumored(d, k)) ? `${v} (rumoured)` : v);
   return {
-    display: d.display.size_in ? `${d.display.size_in}" ${d.display.type?.split(/[,(]/)[0].trim() ?? ''}`.trim() : null,
-    chip: d.platform.chipset?.replace(/\s*\(.*\)$/, '').replace(/ for Galaxy$/, '') ?? null,
-    camera: d.camera.main?.split(',')[0] ?? null,
-    battery: batteryLabel(d),
+    display: tag(['size', 'type'], d.display.size_in ? `${d.display.size_in}" ${d.display.type?.split(/[,(]/)[0].trim() ?? ''}`.trim() : null),
+    chip: tag(['chipset'], d.platform.chipset?.replace(/\s*\(.*\)$/, '').replace(/ for Galaxy$/, '') ?? null),
+    camera: tag(['main'], d.camera.main?.split(',')[0] ?? null),
+    battery: tag(['capacity', 'life'], batteryLabel(d)),
   };
 }
 
 export const NOT_CONFIRMED = 'Not confirmed';
 
-/** One plain sentence summarizing a device, built only from known values. Used on device pages and in meta descriptions. */
+/** One plain sentence summarizing a device, built only from known values (never rumoured ones). Used on device pages and in meta descriptions. */
 export function describe(d: Device): string {
   const parts: string[] = [];
-  const display = d.display.size_in
+  const ok = (key: string) => !isRumored(d, key);
+  const display = d.display.size_in && ok('size')
     ? `a ${d.display.size_in}-inch ${d.display.type ? d.display.type.split(/[,(]/)[0].trim() + ' ' : ''}display`
     : null;
   if (display) parts.push(display);
-  if (d.platform.chipset) parts.push(`the ${d.platform.chipset.replace(/\s*\(.*\)$/, '')} chip`);
-  if (d.memory.ram_gb.length) parts.push(`${list(d.memory.ram_gb)} of RAM`);
+  if (d.platform.chipset && ok('chipset')) parts.push(`the ${d.platform.chipset.replace(/\s*\(.*\)$/, '')} chip`);
+  if (d.memory.ram_gb.length && ok('ram')) parts.push(`${list(d.memory.ram_gb)} of RAM`);
   const bat = batteryLabel(d);
-  if (d.battery.mah || d.battery.wh) parts.push(`a ${bat} battery`);
+  if ((d.battery.mah || d.battery.wh) && ok('capacity')) parts.push(`a ${bat} battery`);
   const has = parts.length
     ? `It has ${parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts.at(-1) : parts[0]}.`
     : '';
-  const launch = `Announced ${formatDate(d.announced)}${d.price ? ` at ${formatPrice({ ...d.price, config: undefined })}` : ''}.`;
+  const launch = `${ok('announced') ? 'Announced' : 'Expected'} ${formatDate(d.announced)}${d.price && ok('price') ? ` at ${formatPrice({ ...d.price, config: undefined })}` : ''}.`;
   return `${launch} ${has}`.trim();
 }
 

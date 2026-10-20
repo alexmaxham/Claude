@@ -13,6 +13,8 @@ export const GET: APIRoute = async ({ site }) => {
     { path: '/brands/', lastmod: latest },
     { path: '/best/', lastmod: latest },
     { path: '/finder/', lastmod: latest },
+    { path: '/size/', lastmod: latest },
+    ...(devices.some((d) => d.status === 'upcoming') ? [{ path: '/upcoming/', lastmod: latest }] : []),
     { path: '/about/' },
     { path: '/privacy/' },
     ...devices.map((d) => ({ path: deviceUrl(d), lastmod: d.checked })),

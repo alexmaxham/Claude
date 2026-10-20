@@ -1,10 +1,11 @@
 ---
 import DeviceArt from './DeviceArt.astro';
 import CompareButton from './CompareButton.astro';
+import FavButton from './FavButton.astro';
 import Icon from './Icon.astro';
 import type { Device } from '../lib/schema';
 import { deviceUrl, fullName } from '../lib/names';
-import { keySpecs } from '../lib/specs';
+import { keySpecs, isRumored } from '../lib/specs';
 
 interface Props {
   device: Device;
@@ -14,36 +15,42 @@ const { device: d, headingLevel = 'h2' } = Astro.props;
 const k = keySpecs(d);
 const H = headingLevel;
 // Unknown values are empty strings, so the finder can tell "not confirmed" from "no".
+// Rumoured values count as unknown: filters and sorting only use published specs.
+const known = <T,>(key: string, v: T) => (isRumored(d, key) ? null : v);
 const flag = (b: boolean | null) => (b === null ? '' : b ? 'yes' : 'no');
-const ip68 = d.body.ip === null ? null : /IP68/i.test(d.body.ip);
-const card = d.memory.card === null ? null : /microsd/i.test(d.memory.card);
+const ip68 = known('ip', d.body.ip === null ? null : /IP68/i.test(d.body.ip));
+const card = known('card', d.memory.card === null ? null : /microsd/i.test(d.memory.card));
 const typeLabel = d.formFactor === 'book-fold' || d.formFactor === 'flip' ? 'Foldable' : d.category === 'phone' ? 'Phone' : 'Tablet';
 ---
 <article
   class="card"
+  data-slug={d.slug}
   data-name={fullName(d).toLowerCase()}
   data-brand={d.brand}
   data-category={d.category}
   data-form={d.formFactor}
   data-announced={d.announced}
-  data-battery={d.battery.mah ?? ''}
-  data-screen={d.display.size_in ?? ''}
-  data-price={d.price?.currency === 'USD' ? d.price.amount : ''}
-  data-ram={d.memory.ram_gb.length ? Math.max(...d.memory.ram_gb) : ''}
-  data-wired={d.battery.wired_w ?? ''}
-  data-wireless={d.battery.wireless_w ?? ''}
-  data-weight={d.body.weight_g ?? ''}
+  data-battery={known('capacity', d.battery.mah) ?? ''}
+  data-screen={known('size', d.display.size_in) ?? ''}
+  data-price={known('price', d.price?.currency === 'USD' ? d.price.amount : null) ?? ''}
+  data-ram={known('ram', d.memory.ram_gb.length ? Math.max(...d.memory.ram_gb) : null) ?? ''}
+  data-wired={known('wired', d.battery.wired_w) ?? ''}
+  data-wireless={known('wireless', d.battery.wireless_w) ?? ''}
+  data-weight={known('weight', d.body.weight_g) ?? ''}
   data-ip68={flag(ip68)}
-  data-jack={flag(d.features.jack)}
+  data-jack={flag(known('jack', d.features.jack))}
   data-card={flag(card)}
 >
   <DeviceArt device={d} height={168} class="card-art" />
   <div class="meta">
     <div>
-      <span class="label">{d.brand} · {typeLabel}{d.markets === 'China only' ? ' · China' : ''}</span>
+      <span class="label">{d.status === 'upcoming' && <span class="upbadge">Upcoming</span>}{d.brand} · {typeLabel}{d.markets === 'China only' ? ' · China' : ''}</span>
       <H class="card-title"><a href={deviceUrl(d)}>{d.name}</a></H>
     </div>
-    <CompareButton device={d} />
+    <div class="acts">
+      <FavButton device={d} />
+      <CompareButton device={d} />
+    </div>
   </div>
   <ul class="keyspecs">
     <li><Icon name="mobile" size={18} /><span>{k.display ?? '—'}</span></li>
@@ -51,6 +58,7 @@ const typeLabel = d.formFactor === 'book-fold' || d.formFactor === 'flip' ? 'Fol
     <li><Icon name="photo_camera" size={18} /><span>{k.camera ?? '—'}</span></li>
     <li><Icon name="battery_full" size={18} /><span>{k.battery ?? '—'}</span></li>
   </ul>
+  <p class="why" data-why hidden></p>
 </article>
 
 <style>
@@ -60,10 +68,12 @@ const typeLabel = d.formFactor === 'book-fold' || d.formFactor === 'flip' ? 'Fol
   .card:has(:focus-visible) { outline: 3px solid var(--primary); outline-offset: 2px; }
   .card :global(.card-art) { border-radius: var(--shape-m); background: var(--surface-low); }
   .meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .acts { display: flex; gap: 6px; flex: none; }
   .card-title { margin: 2px 0 0; font-size: 20px; font-weight: 700; font-variation-settings: 'wdth' 110; line-height: 1.15; }
   .card-title a { text-decoration: none; outline: none; }
   /* The whole card is clickable through the title link. */
   .card-title a::after { content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 1; }
+  .why { margin: 0; padding: 6px 10px; border-radius: var(--shape-s); background: var(--secondary-container); color: var(--on-secondary-container); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .keyspecs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--on-surface-var); }
   .keyspecs li { display: flex; gap: 6px; align-items: center; min-width: 0; }
   .keyspecs li span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
