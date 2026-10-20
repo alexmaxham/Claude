@@ -57,6 +57,7 @@ interface Prefs {
   appearance: Appearance;
 }
 
+// Storage keys keep the app's original name so existing data and settings carry over.
 const PREFS_KEY = 'questlog:prefs';
 const DEFAULT_PREFS: Prefs = { soundOn: true, filter: 'all', sort: 'smart', remindersOn: false, reminderTime: '09:00', appearance: 'system' };
 
@@ -380,7 +381,7 @@ export default function App() {
       <main className={`app ${drag.draggingId ? 'is-dragging' : ''}`}>
         <div className="topbar">
           <h1>
-            Quest<span>log</span>
+            Task<span>o</span>
           </h1>
           <div className="topbar-actions">
             {cloud.status === 'signedIn' && cloud.user ? (

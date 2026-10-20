@@ -1,6 +1,6 @@
 {
-  "name": "Questlog",
-  "short_name": "Questlog",
+  "name": "Tasko",
+  "short_name": "Tasko",
   "description": "A gamified to-do list. Earn XP, keep streaks, level up.",
   "start_url": "./",
   "display": "standalone",

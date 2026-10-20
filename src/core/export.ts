@@ -97,7 +97,7 @@ export function toCsv(state: AppState): string {
  * Obsidian, Apple Notes, GitHub and most other list apps.
  */
 export function toMarkdown(state: AppState): string {
-  const lines: string[] = ['# Questlog tasks', ''];
+  const lines: string[] = ['# Tasko tasks', ''];
   const sections = [
     ...state.categories.map((c) => ({ title: `${c.emoji} ${c.name}`, tasks: state.tasks.filter((t) => t.categoryId === c.id) })),
     { title: 'No category', tasks: state.tasks.filter((t) => !state.categories.some((c) => c.id === t.categoryId)) },
@@ -122,5 +122,5 @@ export function toMarkdown(state: AppState): string {
 
 /** Everything, exactly as stored: a full backup. */
 export function toJson(state: AppState): string {
-  return JSON.stringify({ app: 'questlog', exportedAt: new Date().toISOString(), ...state }, null, 2);
+  return JSON.stringify({ app: 'tasko', exportedAt: new Date().toISOString(), ...state }, null, 2);
 }

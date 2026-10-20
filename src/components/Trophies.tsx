@@ -180,10 +180,10 @@ const APPEARANCES: { id: Appearance; label: string }[] = [
 function ExportButtons({ state }: { state: AppState }) {
   const stamp = new Date().toISOString().slice(0, 10);
   const formats = [
-    { label: 'Todoist', hint: 'CSV template', run: () => download(`questlog-todoist-${stamp}.csv`, toTodoistCsv(state), 'text/csv') },
-    { label: 'Spreadsheet', hint: 'CSV', run: () => download(`questlog-${stamp}.csv`, toCsv(state), 'text/csv', { bom: true }) },
-    { label: 'Checklist', hint: 'Markdown', run: () => download(`questlog-${stamp}.md`, toMarkdown(state), 'text/markdown') },
-    { label: 'Backup', hint: 'JSON', run: () => download(`questlog-backup-${stamp}.json`, toJson(state), 'application/json') },
+    { label: 'Todoist', hint: 'CSV template', run: () => download(`tasko-todoist-${stamp}.csv`, toTodoistCsv(state), 'text/csv') },
+    { label: 'Spreadsheet', hint: 'CSV', run: () => download(`tasko-${stamp}.csv`, toCsv(state), 'text/csv', { bom: true }) },
+    { label: 'Checklist', hint: 'Markdown', run: () => download(`tasko-${stamp}.md`, toMarkdown(state), 'text/markdown') },
+    { label: 'Backup', hint: 'JSON', run: () => download(`tasko-backup-${stamp}.json`, toJson(state), 'application/json') },
   ];
   return (
     <div className="export-grid">
@@ -328,7 +328,7 @@ function SettingsPanel({
         <span>
           Daily reminder
           <span className="muted small" style={{ display: 'block' }}>
-            Lists quests due today. Works while Questlog is open in a tab.
+            Lists quests due today. Works while Tasko is open in a tab.
           </span>
           {notifyError && <span className="small error-text" style={{ display: 'block' }}>{notifyError}</span>}
         </span>

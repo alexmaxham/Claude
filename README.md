@@ -1,4 +1,4 @@
-# Questlog
+# Tasko
 
 A gamified to-do list with a liquid glass look. Built as a web app first, structured so it can become iOS and Android apps later.
 
@@ -32,7 +32,7 @@ Google Calendar sync (one-time setup, needed before **Sync now** works):
 1. Enable the **Google Calendar API** for the project: https://console.cloud.google.com/apis/library/calendar-json.googleapis.com?project=questlog2-e03f9
 2. Google Cloud console → **APIs & Services → OAuth consent screen** (Google Auth Platform → Data access): add the scope `https://www.googleapis.com/auth/calendar.events`. Until Google verifies the app, people see an "unverified app" warning and can continue via *Advanced*; that's fine for personal use (up to 100 users).
 
-The app asks for calendar access with a Google popup the first time you sync. Accounts created with email get Google linked to them. Only events Questlog created are ever changed.
+The app asks for calendar access with a Google popup the first time you sync. Accounts created with email get Google linked to them. Only events Tasko created are ever changed.
 
 How it works:
 
@@ -44,7 +44,7 @@ How it works:
 Local testing with the Firebase emulators (needs Java):
 
 ```bash
-npx firebase-tools emulators:start --only auth,firestore --project demo-questlog
+npx firebase-tools emulators:start --only auth,firestore --project demo-tasko
 VITE_FIREBASE_EMULATORS=true npm run dev
 ```
 
@@ -59,7 +59,7 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 - **Week strip:** the next seven days with a dot per quest due; tap a day to see just those.
 - **Weekly challenges:** three new challenges every Monday for bonus XP, shown in the sidebar and the Trophies tab.
 - **Theme rewards:** Teal, Pink, Gold and Midnight unlock at levels 3, 5, 8 and 12.
-- **Daily reminder:** an optional browser notification at a time you pick, listing what's due. It only fires while Questlog is open in a tab (there's no push server).
+- **Daily reminder:** an optional browser notification at a time you pick, listing what's due. It only fires while Tasko is open in a tab (there's no push server).
 - **Light / dark / auto:** pick the appearance in Settings; Auto follows your device.
 - **Profile:** tap your profile picture (or the person icon as a guest) for XP, tasks done, streaks, a 15-week activity heatmap, tasks by category and your latest trophies.
 - **Level milestones:** the Trophies tab shows how much XP is left to the next big levels and what each unlocks.

@@ -24,7 +24,7 @@ export function authErrorMessage(e: unknown): string | null {
     case 'auth/unauthorized-domain':
       return 'This website isn’t authorized for sign-in yet (add it under Authentication → Settings → Authorized domains in Firebase).';
     case 'auth/credential-already-in-use':
-      return 'That Google account is already used by a different Questlog account. Pick another Google account.';
+      return 'That Google account is already used by a different Tasko account. Pick another Google account.';
     case 'auth/user-mismatch':
       return 'Choose the same Google account you signed in with.';
     case 'auth/popup-blocked':
