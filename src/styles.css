@@ -1192,3 +1192,163 @@ kbd {
 .native input, .native textarea, .native [contenteditable] { -webkit-user-select: text; user-select: text; }
 /* No physical keyboard on a phone: hide keyboard-shortcut hints. */
 .native .footer-hint { display: none; }
+
+/* ───────────── Tab bar (iPhone app) ───────────── */
+/* Leave room so the last row can scroll clear of the floating bar. */
+.app.has-tabbar { padding-bottom: calc(env(safe-area-inset-bottom) + 112px); }
+.page-title { margin: 0; font-family: var(--font-display); font-size: 2rem; font-weight: 750; letter-spacing: -0.035em; line-height: 40px; }
+.page { display: flex; flex-direction: column; }
+.page h3 { margin: 22px 0 10px; font-size: 1rem; }
+.page > :first-child { margin-top: 0; }
+
+.tabbar {
+  --pad: 6px;
+  position: fixed;
+  z-index: 40;
+  left: 50%;
+  bottom: max(12px, calc(env(safe-area-inset-bottom) - 8px));
+  width: min(420px, calc(100vw - 28px));
+  height: 66px;
+  padding: var(--pad);
+  display: flex;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  transition: transform 320ms var(--ease), opacity 220ms;
+  /* Liquid glass: strong blur and saturation, a bright rim and a soft drop shadow so it floats. */
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 58%, transparent), color-mix(in srgb, var(--bg) 70%, transparent));
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
+  backdrop-filter: blur(26px) saturate(190%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    0 18px 40px -12px rgba(0, 0, 0, 0.55);
+}
+.tabbar::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(160deg, var(--glass-rim), transparent 35%, transparent 65%, rgba(255, 255, 255, 0.2));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.7;
+}
+:root[data-scheme='light'] .tabbar {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.68));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 1px 2px rgba(20, 30, 70, 0.08), 0 16px 36px -12px rgba(20, 30, 70, 0.3);
+}
+/* The lens: a smaller drop of glass that slides under the active tab. */
+.tabbar-lens {
+  position: absolute;
+  top: var(--pad);
+  bottom: var(--pad);
+  left: var(--pad);
+  width: calc((100% - 2 * var(--pad)) / 4);
+  border-radius: 999px;
+  transform: translateX(calc(var(--i) * 100%));
+  transition: transform 460ms var(--spring);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.2), transparent 60%),
+    rgba(var(--accent-rgb), 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 6px 16px -8px rgba(var(--accent-rgb), 0.7);
+}
+:root[data-scheme='light'] .tabbar-lens {
+  background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.9), transparent 70%), rgba(var(--accent-rgb), 0.14);
+  box-shadow: inset 0 1px 0 #fff, 0 4px 12px -6px rgba(var(--accent-rgb), 0.5);
+}
+.tabbar-btn {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted-color);
+  -webkit-tap-highlight-color: transparent;
+  transition: color 200ms, transform 160ms var(--spring);
+}
+.tabbar-btn:active { transform: scale(0.9); }
+.tabbar-btn.active { color: var(--accent-2); }
+:root[data-scheme='light'] .tabbar-btn.active { color: var(--accent-deep); }
+.tabbar-icon { position: relative; display: block; height: 25px; }
+.tabbar-label { font-size: 0.66rem; font-weight: 600; letter-spacing: 0.01em; }
+.tabbar-badge {
+  position: absolute;
+  top: -4px;
+  left: 17px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg) 70%, transparent);
+}
+/* Out of the way while typing; the keyboard takes the bottom of the screen. */
+.keyboard-open .tabbar { transform: translate(-50%, 140%); opacity: 0; pointer-events: none; }
+.with-tabbar .toasts { bottom: calc(max(12px, env(safe-area-inset-bottom) - 8px) + 78px); }
+
+/* ───────────── Calendar tab ───────────── */
+.calendar-page { display: flex; flex-direction: column; gap: 16px; }
+.calendar { padding: 14px 12px 10px; }
+.calendar-head { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 8px; }
+.calendar-head h2 { margin: 0; font-size: 1.15rem; letter-spacing: -0.02em; }
+.calendar-nav { display: flex; align-items: center; gap: 6px; }
+.calendar-nav .icon-btn { min-width: 36px; height: 36px; font-size: 1.4rem; line-height: 1; padding-bottom: 3px; }
+.btn.calendar-today { padding: 6px 12px; font-size: 0.85rem; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.calendar-wd { text-align: center; font-size: 0.72rem; font-weight: 600; color: var(--muted-color); padding: 4px 0 6px; }
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 0 5px;
+  border: none;
+  border-radius: 14px;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 160ms, transform 160ms var(--spring);
+}
+.calendar-day:active { transform: scale(0.9); }
+.calendar-num {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.calendar-day.outside .calendar-num { color: var(--muted-color); opacity: 0.55; }
+.calendar-day.today .calendar-num { color: var(--accent-2); font-weight: 800; }
+:root[data-scheme='light'] .calendar-day.today .calendar-num { color: var(--accent-deep); }
+.calendar-day.did .calendar-num { box-shadow: inset 0 0 0 1.5px rgba(76, 217, 123, 0.55); }
+.calendar-day.selected .calendar-num {
+  background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+  color: #fff;
+  box-shadow: 0 6px 14px -6px rgba(var(--accent-rgb), 0.8);
+}
+.calendar-dots { display: flex; gap: 3px; height: 5px; }
+.calendar-dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-2); }
+.calendar-dots.late i { background: var(--danger); }
+.calendar-day-list { display: flex; flex-direction: column; gap: 12px; }
+/* The phone layout orders the Tasks page's pieces; here the add box stays under the title. */
+.calendar-day-list .quick-add { order: 0; }
+.calendar-day-title { margin: 4px 2px 0; font-size: 1.15rem; letter-spacing: -0.02em; }
+.calendar-sub { margin: 6px 2px -2px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-color); }
+.calendar-sub.late { color: var(--danger); }
+.calendar-empty { margin: 0; text-align: center; padding: 22px 16px; color: var(--muted-color); }

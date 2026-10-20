@@ -71,7 +71,7 @@ export function Trophies({ initialTab, stats, categories, ...settings }: Props) 
   );
 }
 
-function TrophiesPanel({ stats, categories }: { stats: Stats; categories: Category[] }) {
+export function TrophiesPanel({ stats, categories }: { stats: Stats; categories: Category[] }) {
   const level = levelFromXp(stats.xp);
   const today = dayKey();
   const week = Array.from({ length: 7 }, (_, i) => addDays(today, i - 6));

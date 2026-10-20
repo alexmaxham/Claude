@@ -6,12 +6,14 @@ import { CategoryBar, type Filter } from './components/CategoryBar';
 import { CategoryManager } from './components/CategoryManager';
 import { Header } from './components/Header';
 import { LogoMark, Wordmark } from './components/Logo';
-import { ProfileSheet } from './components/ProfileSheet';
+import { CalendarView } from './components/CalendarView';
+import { ProfileSheet, ProfileView } from './components/ProfileSheet';
 import { QuickAdd } from './components/QuickAdd';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
 import { TaskEditor } from './components/TaskEditor';
 import { TaskItem } from './components/TaskItem';
-import { Trophies, type TrophiesTab } from './components/Trophies';
+import { TabBar, type Tab } from './components/TabBar';
+import { Trophies, TrophiesPanel, type TrophiesTab } from './components/Trophies';
 import { WeeklyChallenges } from './components/WeeklyChallenges';
 import { WeekStrip } from './components/WeekStrip';
 import { describeChallenge } from './core/challenges';
@@ -20,6 +22,7 @@ import { ACHIEVEMENTS, levelTitle } from './core/gamification';
 import { taskOrder, THEMES } from './core/store';
 import type { GameEvent, Task } from './core/types';
 import { chime, confetti, haptic } from './effects';
+import { isNative } from './native';
 import { useAppState } from './useAppState';
 import { useDragReorder } from './useDragReorder';
 import { useReminders } from './useReminders';
@@ -78,6 +81,11 @@ function writePrefs(prefs: Prefs) {
   }
 }
 
+/** The iPhone app gets a floating tab bar; add ?tabbar to the URL to try it in a browser. */
+const TAB_BAR = isNative || new URLSearchParams(location.search).has('tabbar');
+
+const TAB_TITLES: Record<Tab, string> = { tasks: 'Tasks', trophies: 'Trophies', calendar: 'Calendar', profile: 'Profile' };
+
 let nextId = 1;
 const PRIORITY_RANK = { high: 0, medium: 1, low: 2 };
 const byDue = (a: Task, b: Task) => (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999');
@@ -108,6 +116,7 @@ export default function App() {
   const [pulse, setPulse] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sheet, setSheet] = useState<'categories' | 'account' | 'profile' | 'shortcuts' | TrophiesTab | null>(null);
+  const [tab, setTab] = useState<Tab>('tasks');
   const [showDone, setShowDone] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -197,6 +206,20 @@ export default function App() {
   useReminders(tasks, prefs.remindersOn, prefs.reminderTime);
   useAppearance(prefs.appearance);
 
+  useLayoutEffect(() => {
+    document.documentElement.classList.toggle('with-tabbar', TAB_BAR);
+  }, []);
+
+  const changeTab = (next: Tab) => {
+    // Tapping the current tab again scrolls back to the top, like iOS.
+    if (next === tab) return window.scrollTo({ top: 0, behavior: 'smooth' });
+    haptic(6);
+    setTab(next);
+    setSelectedId(null);
+    window.scrollTo(0, 0);
+  };
+  const openTrophies = () => (TAB_BAR ? changeTab('trophies') : setSheet('trophies'));
+
   // The stylesheet picks its accent colors from this attribute.
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -274,7 +297,7 @@ export default function App() {
 
   // Keyboard shortcuts. Ignored while typing or while a sheet or dialog is open.
   const keyState = useRef({ navigable, selectedId, toggle, blocked: false });
-  keyState.current = { navigable, selectedId, toggle, blocked: !!(sheet || editing || levelUp !== null) };
+  keyState.current = { navigable, selectedId, toggle, blocked: !!(sheet || editing || levelUp !== null || tab !== 'tasks') };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const k = keyState.current;
@@ -379,14 +402,18 @@ export default function App() {
         <div className="blob b4" />
       </div>
 
-      <main className={`app ${drag.draggingId ? 'is-dragging' : ''}`}>
+      <main className={`app ${TAB_BAR ? 'has-tabbar' : ''} ${drag.draggingId ? 'is-dragging' : ''}`}>
         <div className="topbar">
-          <h1 className="brand">
-            <LogoMark size={34} />
-            <Wordmark />
-          </h1>
+          {TAB_BAR && tab !== 'tasks' ? (
+            <h1 className="page-title">{TAB_TITLES[tab]}</h1>
+          ) : (
+            <h1 className="brand">
+              <LogoMark size={34} />
+              <Wordmark />
+            </h1>
+          )}
           <div className="topbar-actions">
-            {cloud.status === 'signedIn' && cloud.user ? (
+            {TAB_BAR ? null : cloud.status === 'signedIn' && cloud.user ? (
               <button
                 className={`account-btn sync-${cloud.sync}`}
                 onClick={() => setSheet('profile')}
@@ -415,105 +442,138 @@ export default function App() {
           </div>
         </div>
 
-        {/* On phones these two wrappers vanish (display: contents) and their children
-            stack in one column; on wide screens they become a sidebar and a main column. */}
-        <aside className="sidebar">
-          <Header stats={stats} pulse={pulse} onOpenTrophies={() => setSheet('trophies')} />
-
-          <CategoryBar
-            categories={categories}
+        {TAB_BAR && tab === 'trophies' && (
+          <div className="page">
+            <TrophiesPanel stats={stats} categories={categories} />
+          </div>
+        )}
+        {TAB_BAR && tab === 'calendar' && (
+          <CalendarView
             tasks={tasks}
-            filter={filter}
-            todayCount={todayCount}
-            onChange={(f) => updatePrefs({ filter: f })}
-            onEdit={() => setSheet('categories')}
-            dropTarget={drag.overCategory}
-          />
-
-          <WeekStrip tasks={tasks} selectedDay={activeDay} onSelect={(day) => updatePrefs({ filter: day ? { day } : 'all' })} />
-
-          <WeeklyChallenges stats={stats} categories={categories} compact />
-
-          <p className="footer-hint muted small">
-            Press <kbd>N</kbd> to add, <kbd>/</kbd> to search, <kbd>J</kbd>/<kbd>K</kbd> to move, <kbd>X</kbd> to complete.{' '}
-            <button className="link-btn inline" onClick={() => setSheet('shortcuts')}>
-              All shortcuts (<kbd>?</kbd>)
-            </button>
-          </p>
-        </aside>
-
-        <div className="main-col">
-          <QuickAdd
+            stats={stats}
             categories={categories}
-            defaultCategoryId={activeCategory?.id ?? null}
-            defaultDue={filter === 'today' ? today : activeDay}
             onAdd={(t) => dispatch({ type: 'addTask', ...t })}
+            renderTask={(t) => renderTask(t, false)}
           />
+        )}
+        {TAB_BAR && tab === 'profile' && (
+          <div className="page">
+            <ProfileView
+              state={state}
+              user={cloud.user}
+              sync={cloud.sync}
+              onOpenAccount={() => setSheet('account')}
+              onSignOut={cloud.signOut}
+              onOpenTrophies={openTrophies}
+            />
+          </div>
+        )}
 
-          <section className="tasks" aria-label="Tasks">
-            <div className="list-toolbar">
-              <h2 className="list-title">
-                {listTitle}
-                <span className="muted"> · {open.length} open</span>
-              </h2>
-              <div className="list-tools">
-                <label className="search glass-soft">
-                  <span aria-hidden="true">🔍</span>
-                  <input
-                    ref={searchRef}
-                    type="search"
-                    placeholder="Search quests…"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    aria-label="Search quests"
-                  />
-                </label>
-                <label className="sort glass-soft">
-                  <span className="sr-only">Sort by</span>
-                  <span aria-hidden="true">↕︎</span>
-                  <select value={prefs.sort} onChange={(e) => {
-                      updatePrefs({ sort: e.target.value as SortMode });
-                      e.target.blur(); // hand the keyboard back to the list shortcuts
-                    }} aria-label="Sort by">
-                    {SORTS.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </div>
+        {(!TAB_BAR || tab === 'tasks') && (
+          <>
+            {/* On phones these two wrappers vanish (display: contents) and their children
+                stack in one column; on wide screens they become a sidebar and a main column. */}
+            <aside className="sidebar">
+              <Header stats={stats} pulse={pulse} onOpenTrophies={openTrophies} />
 
-            {open.length === 0 ? (
-              <div className="empty glass-soft">
-                <span className="empty-icon">
-                  {done.length && !q ? '🎉' : emptyMessage.icon === 'logo' ? <LogoMark size={56} /> : emptyMessage.icon}
-                </span>
-                <p>{done.length && !q ? 'All clear! Every quest here is done.' : emptyMessage.text}</p>
-              </div>
-            ) : (
-              <ul className="task-list">{open.map((t) => renderTask(t, true))}</ul>
-            )}
+              <CategoryBar
+                categories={categories}
+                tasks={tasks}
+                filter={filter}
+                todayCount={todayCount}
+                onChange={(f) => updatePrefs({ filter: f })}
+                onEdit={() => setSheet('categories')}
+                dropTarget={drag.overCategory}
+              />
 
-            {done.length > 0 && (
-              <div className="done-section">
-                <div className="done-header">
-                  <button className="link-btn" onClick={() => setShowDone((v) => !v)} aria-expanded={showDone}>
-                    {showDone ? '▾' : '▸'} Completed ({done.length})
-                  </button>
-                  {showDone && (
-                    <button className="link-btn muted" onClick={() => dispatch({ type: 'clearCompleted' })}>
-                      Clear completed
-                    </button>
-                  )}
+              <WeekStrip tasks={tasks} selectedDay={activeDay} onSelect={(day) => updatePrefs({ filter: day ? { day } : 'all' })} />
+
+              <WeeklyChallenges stats={stats} categories={categories} compact />
+
+              <p className="footer-hint muted small">
+                Press <kbd>N</kbd> to add, <kbd>/</kbd> to search, <kbd>J</kbd>/<kbd>K</kbd> to move, <kbd>X</kbd> to complete.{' '}
+                <button className="link-btn inline" onClick={() => setSheet('shortcuts')}>
+                  All shortcuts (<kbd>?</kbd>)
+                </button>
+              </p>
+            </aside>
+
+            <div className="main-col">
+              <QuickAdd
+                categories={categories}
+                defaultCategoryId={activeCategory?.id ?? null}
+                defaultDue={filter === 'today' ? today : activeDay}
+                onAdd={(t) => dispatch({ type: 'addTask', ...t })}
+              />
+
+              <section className="tasks" aria-label="Tasks">
+                <div className="list-toolbar">
+                  <h2 className="list-title">
+                    {listTitle}
+                    <span className="muted"> · {open.length} open</span>
+                  </h2>
+                  <div className="list-tools">
+                    <label className="search glass-soft">
+                      <span aria-hidden="true">🔍</span>
+                      <input
+                        ref={searchRef}
+                        type="search"
+                        placeholder="Search quests…"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        aria-label="Search quests"
+                      />
+                    </label>
+                    <label className="sort glass-soft">
+                      <span className="sr-only">Sort by</span>
+                      <span aria-hidden="true">↕︎</span>
+                      <select value={prefs.sort} onChange={(e) => {
+                          updatePrefs({ sort: e.target.value as SortMode });
+                          e.target.blur(); // hand the keyboard back to the list shortcuts
+                        }} aria-label="Sort by">
+                        {SORTS.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
                 </div>
-                {showDone && <ul className="task-list">{done.map((t) => renderTask(t, false))}</ul>}
-              </div>
-            )}
-          </section>
-        </div>
+
+                {open.length === 0 ? (
+                  <div className="empty glass-soft">
+                    <span className="empty-icon">
+                      {done.length && !q ? '🎉' : emptyMessage.icon === 'logo' ? <LogoMark size={56} /> : emptyMessage.icon}
+                    </span>
+                    <p>{done.length && !q ? 'All clear! Every quest here is done.' : emptyMessage.text}</p>
+                  </div>
+                ) : (
+                  <ul className="task-list">{open.map((t) => renderTask(t, true))}</ul>
+                )}
+
+                {done.length > 0 && (
+                  <div className="done-section">
+                    <div className="done-header">
+                      <button className="link-btn" onClick={() => setShowDone((v) => !v)} aria-expanded={showDone}>
+                        {showDone ? '▾' : '▸'} Completed ({done.length})
+                      </button>
+                      {showDone && (
+                        <button className="link-btn muted" onClick={() => dispatch({ type: 'clearCompleted' })}>
+                          Clear completed
+                        </button>
+                      )}
+                    </div>
+                    {showDone && <ul className="task-list">{done.map((t) => renderTask(t, false))}</ul>}
+                  </div>
+                )}
+              </section>
+            </div>
+          </>
+        )}
       </main>
+
+      {TAB_BAR && <TabBar tab={tab} onChange={changeTab} dueCount={todayCount} />}
 
       {floats.map((f) => (
         <div key={f.id} className="xp-float" style={{ left: f.x, top: f.y }} aria-hidden="true">
@@ -590,7 +650,7 @@ export default function App() {
           sync={cloud.sync}
           onOpenAccount={() => setSheet('account')}
           onSignOut={cloud.signOut}
-          onOpenTrophies={() => setSheet('trophies')}
+          onOpenTrophies={openTrophies}
           onClose={() => setSheet(null)}
         />
       )}
