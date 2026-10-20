@@ -20,7 +20,7 @@ export function Header({ stats, pulse, onOpenTrophies }: Props) {
     <section className="hero glass" aria-label="Your progress">
       <div className="hero-top">
         <button className="level-badge" onClick={onOpenTrophies} aria-label={`Level ${level.level}, open trophies`}>
-          <span className="level-num">{level.level}</span>
+          <span className={`level-num ${level.level >= 100 ? 'three' : ''}`}>{level.level}</span>
           <span className="level-cap">LVL</span>
         </button>
         <div className="hero-title">
@@ -29,7 +29,15 @@ export function Header({ stats, pulse, onOpenTrophies }: Props) {
             <div className="xp-fill" style={{ width: `${level.progress * 100}%` }} />
           </div>
           <div className="xp-text">
-            {level.intoLevel} / {level.needed} XP <span className="muted">to level {level.level + 1}</span>
+            {level.max ? (
+              <>
+                Max level <span className="muted">· {stats.xp.toLocaleString()} XP total</span>
+              </>
+            ) : (
+              <>
+                {level.intoLevel} / {level.needed} XP <span className="muted">to level {level.level + 1}</span>
+              </>
+            )}
           </div>
         </div>
       </div>

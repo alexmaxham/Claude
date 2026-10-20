@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { challengeProgress, generateChallenges, weekKey } from './challenges';
 import { addDays, dayKey, daysBetween } from './dates';
-import { effectiveStreak, levelFromXp, streakMultiplier, SUBTASK_BONUS, xpForTask, xpToNext } from './gamification';
+import { ACHIEVEMENTS, effectiveStreak, levelFromXp, levelTitle, MAX_LEVEL, streakMultiplier, SUBTASK_BONUS, xpForTask, xpToNext } from './gamification';
 import { mergeStates } from './merge';
-import { nextDueDate, repeatLabel } from './recurrence';
+import { nextDueDate, repeatLabel, repeatPreset } from './recurrence';
 import { parseState } from './storage';
 import { createInitialState, reduce, taskOrder, type Action } from './store';
 import type { AppState } from './types';
@@ -34,7 +34,24 @@ describe('levels', () => {
     expect(levelFromXp(xpToNext(1) + xpToNext(2) - 1).level).toBe(2);
   });
 
-  it('caps the streak multiplier', () => {
+  it('stops at level 100 with a title for every level', () => {
+    let total = 0;
+    for (let l = 1; l < MAX_LEVEL; l++) total += xpToNext(l);
+    expect(levelFromXp(total - 1).level).toBe(MAX_LEVEL - 1);
+    const top = levelFromXp(total + 5000);
+    expect(top.level).toBe(MAX_LEVEL);
+    expect(top.max).toBe(true);
+    expect(top.progress).toBe(1);
+    const titles = Array.from({ length: MAX_LEVEL }, (_, i) => levelTitle(i + 1));
+    expect(new Set(titles).size).toBe(MAX_LEVEL);
+  });
+
+  it('has unique trophy ids', () => {
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(ACHIEVEMENTS.length);
+    expect(ACHIEVEMENTS.length).toBeGreaterThanOrEqual(44);
+  });
+
+    it('caps the streak multiplier', () => {
     expect(streakMultiplier(0)).toBe(1);
     expect(streakMultiplier(100)).toBe(1.5);
   });
@@ -210,9 +227,32 @@ describe('recurrence', () => {
     expect(nextDueDate({ kind: 'monthly' }, '2026-10-20', '2026-10-20')).toBe('2026-11-20');
   });
 
-  it('labels repeats', () => {
+  it('handles weekends, intervals and yearly', () => {
+    // Fri 2026-10-23 → Sat; Sat → Sun; Sun → next Sat.
+    const weekends = { kind: 'weekly' as const, days: [0, 6] };
+    expect(nextDueDate(weekends, '2026-10-23', '2026-10-23')).toBe('2026-10-24');
+    expect(nextDueDate(weekends, '2026-10-24', '2026-10-24')).toBe('2026-10-25');
+    expect(nextDueDate(weekends, '2026-10-25', '2026-10-25')).toBe('2026-10-31');
+    expect(nextDueDate({ kind: 'daily', interval: 3 }, '2026-10-20', '2026-10-20')).toBe('2026-10-23');
+    // Every 2 weeks on Tue: Tue 10-20 → Tue 11-03.
+    expect(nextDueDate({ kind: 'weekly', days: [2], interval: 2 }, '2026-10-20', '2026-10-20')).toBe('2026-11-03');
+    // Every 2 weeks on Mon+Thu, done Mon: Thu same week comes first.
+    expect(nextDueDate({ kind: 'weekly', days: [1, 4], interval: 2 }, '2026-10-19', '2026-10-19')).toBe('2026-10-22');
+    expect(nextDueDate({ kind: 'monthly', interval: 3 }, '2026-10-20', '2026-10-20')).toBe('2027-01-20');
+    expect(nextDueDate({ kind: 'yearly' }, '2026-10-20', '2026-10-20')).toBe('2027-10-20');
+    expect(nextDueDate({ kind: 'yearly' }, '2028-02-29', '2028-02-29')).toBe('2029-02-28');
+  });
+
+  it('labels repeats and maps them to picker presets', () => {
     expect(repeatLabel({ kind: 'weekly', days: [5, 1, 2, 3, 4] })).toBe('Weekdays');
-    expect(repeatLabel({ kind: 'weekly', days: [1, 3] })).toBe('Mon, Wed');
+    expect(repeatLabel({ kind: 'weekly', days: [6, 0] })).toBe('Weekends');
+    expect(repeatLabel({ kind: 'weekly', days: [1, 3] })).toBe('Weekly on Mon, Wed');
+    expect(repeatLabel({ kind: 'weekly', days: [1], interval: 2 })).toBe('Every 2 weeks on Mon');
+    expect(repeatLabel({ kind: 'daily', interval: 3 })).toBe('Every 3 days');
+    expect(repeatLabel({ kind: 'yearly' })).toBe('Yearly');
+    expect(repeatPreset({ kind: 'weekly', days: [0, 6] })).toBe('weekends');
+    expect(repeatPreset({ kind: 'monthly', interval: 2 })).toBe('custom');
+    expect(repeatPreset(null)).toBe('none');
   });
 
   it('creates the next occurrence on completion and removes it on undo', () => {
@@ -302,5 +342,24 @@ describe('theme unlocks', () => {
     const r = reduce(s, { type: 'toggleTask', id: s.tasks[0].id }, NOON);
     expect(r.events).toContainEqual({ type: 'themeUnlocked', theme: 'teal' });
     expect(run(r.state, [{ type: 'setTheme', theme: 'teal' }]).theme).toBe('teal');
+  });
+});
+
+describe('lifetime counters', () => {
+  it('counts high-priority, on-time and repeating completions and takes them back on undo', () => {
+    let s = run(createInitialState(), [
+      { type: 'addTask', title: 'Gym', categoryId: null, priority: 'high', dueDate: '2026-10-20', repeat: { kind: 'daily' } },
+    ]);
+    const id = s.tasks[0].id;
+    s = run(s, [{ type: 'toggleTask', id }]);
+    expect(s.stats).toMatchObject({ highCompleted: 1, onTimeCompleted: 1, repeatCompleted: 1 });
+    s = run(s, [{ type: 'toggleTask', id }]);
+    expect(s.stats).toMatchObject({ highCompleted: 0, onTimeCompleted: 0, repeatCompleted: 0 });
+  });
+
+  it('defaults the counters for data saved before they existed', () => {
+    const s = parseState(JSON.stringify({ stats: { xp: 10 } }));
+    expect(s.stats.highCompleted).toBe(0);
+    expect(s.stats.challengesCompleted).toBe(0);
   });
 });

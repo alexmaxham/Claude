@@ -46,7 +46,7 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 - **Quick add:** type and press Enter. Tap ⌄ to add a description or set category, priority and due date. Press `N` anywhere to jump to the input.
 - **Descriptions:** each task can have optional notes. The first two lines show in the list; tap a task to read or edit the rest.
 - **Steps (subtasks):** break a task into a checklist in the editor. Each finished step adds +3 XP when you complete the task.
-- **Repeating tasks:** daily, weekdays, weekly on chosen days, or monthly. Completing one creates the next occurrence; un-completing removes it again.
+- **Repeating tasks:** every day, weekdays, weekends, weekly on chosen days, monthly, yearly, or custom (every N days, weeks or months). Completing one creates the next occurrence; un-completing removes it again.
 - **Search and sort:** search titles, descriptions and steps; sort by smart order, due date, priority, newest, or your own order.
 - **Drag and drop:** drag a task by its ⋮⋮ handle to reorder it, or onto a category to move it. Works with mouse and touch.
 - **Week strip:** the next seven days with a dot per quest due; tap a day to see just those.
@@ -62,8 +62,8 @@ VITE_FIREBASE_EMULATORS=true npm run dev
   - XP per task: Low 10, Medium 20, High 35, plus 5 for finishing on or before the due date.
   - Streaks: each consecutive active day adds +5% XP, up to +50%.
   - Daily goal ring (adjustable). Hitting it pays a +25 XP bonus once per day.
-  - Levels with a new rank title at each level, and a level-up celebration.
-  - 15 achievements (trophies).
+  - 100 levels, each with its own rank title (Novice → Questlord), and a level-up celebration.
+  - 44 achievements (trophies) for totals, streaks, levels, daily goals, on-time and high-priority work, steps, repeating tasks and weekly challenges.
   - Confetti, floating XP, sounds (can be turned off) and haptics on Android.
   - Un-checking a task takes back exactly the XP it earned, so you can't farm XP.
 - Optional sign-in with Google or email/password, with sync across devices (see above). Without an account, data stays in the browser.

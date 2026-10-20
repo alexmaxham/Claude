@@ -83,6 +83,10 @@ export function createInitialState(): AppState {
       goalBonusDays: [],
       completionsByDay: {},
       achievements: {},
+      highCompleted: 0,
+      onTimeCompleted: 0,
+      repeatCompleted: 0,
+      challengesCompleted: 0,
       week: null,
     },
     theme: 'blue',
@@ -144,6 +148,7 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
         stats.xp = Math.max(0, stats.xp - task.xpAwarded);
         stats.totalCompleted = Math.max(0, stats.totalCompleted - 1);
         stats.completionsByDay[day] = Math.max(0, (stats.completionsByDay[day] ?? 0) - 1);
+        Object.assign(stats, countLifetime(stats, task, -1));
         if (stats.week && weekKey(task.completedAt) === stats.week.key) {
           stats.week = countCompletion(stats.week, task, -1);
         }
@@ -172,6 +177,7 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
       stats.lastActiveDay = today;
       stats.completionsByDay[today] = (stats.completionsByDay[today] ?? 0) + 1;
       events.push({ type: 'xp', amount: xp, taskId: task.id });
+      Object.assign(stats, countLifetime(stats, { ...task, completedAt: now }, 1));
 
       let week = countCompletion(currentWeek(state.stats, state.categories, now), { ...task, completedAt: now }, 1);
 
@@ -186,6 +192,7 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
         if (!week.claimed.includes(c.id) && challengeProgress(week, c) >= c.target) {
           week = { ...week, claimed: [...week.claimed, c.id] };
           stats.xp += c.reward;
+          stats.challengesCompleted += 1;
           events.push({ type: 'challenge', challenge: c });
         }
       }
@@ -349,5 +356,16 @@ function countCompletion(week: WeekProgress, task: Task, delta: 1 | -1): WeekPro
     high: task.priority === 'high' ? add(week.high) : week.high,
     onTime: onTime ? add(week.onTime) : week.onTime,
     byCategory,
+  };
+}
+
+/** Lifetime trophy counters after a task is completed (+1) or un-completed (-1). */
+function countLifetime(stats: AppState['stats'], task: Task, delta: 1 | -1) {
+  const add = (n: number) => Math.max(0, n + delta);
+  const onTime = !!task.dueDate && !!task.completedAt && dayKey(task.completedAt) <= task.dueDate;
+  return {
+    highCompleted: task.priority === 'high' ? add(stats.highCompleted) : stats.highCompleted,
+    onTimeCompleted: onTime ? add(stats.onTimeCompleted) : stats.onTimeCompleted,
+    repeatCompleted: task.repeat ? add(stats.repeatCompleted) : stats.repeatCompleted,
   };
 }
