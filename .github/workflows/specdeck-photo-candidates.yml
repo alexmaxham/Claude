@@ -1,0 +1,36 @@
+name: Specdeck photo candidates
+
+# One-off: gathers candidate product photos (free-licensed Wikimedia images and official press images)
+# into specdeck/image-candidates/ on the branch it runs on, for review before any are published.
+on:
+  push:
+    branches: [claude/dazzling-hopper-bw85bw]
+    paths: ['specdeck/scripts/find-photo-candidates.mjs', '.github/workflows/specdeck-photo-candidates.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: specdeck
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: specdeck/package-lock.json
+      - run: npm ci
+      - run: node scripts/find-photo-candidates.mjs
+      - name: Commit candidates
+        run: |
+          git config user.name "specdeck-admin[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add image-candidates
+          git diff --cached --quiet && exit 0
+          git commit -m "Specdeck: photo candidates for review"
+          git push
