@@ -1,12 +1,19 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import type { Category, Priority } from '../core/types';
-import { CategoryPicker, DuePicker, PriorityPicker } from './Pickers';
+import type { Category, Priority, Repeat } from '../core/types';
+import { CategoryPicker, DuePicker, PriorityPicker, RepeatPicker } from './Pickers';
 
 interface Props {
   categories: Category[];
   defaultCategoryId: string | null;
   defaultDue: string | null;
-  onAdd: (task: { title: string; description: string; categoryId: string | null; priority: Priority; dueDate: string | null }) => void;
+  onAdd: (task: {
+    title: string;
+    description: string;
+    categoryId: string | null;
+    priority: Priority;
+    dueDate: string | null;
+    repeat: Repeat | null;
+  }) => void;
 }
 
 export function QuickAdd({ categories, defaultCategoryId, defaultDue, onAdd }: Props) {
@@ -15,6 +22,7 @@ export function QuickAdd({ categories, defaultCategoryId, defaultDue, onAdd }: P
   const [categoryId, setCategoryId] = useState(defaultCategoryId);
   const [priority, setPriority] = useState<Priority>('medium');
   const [dueDate, setDueDate] = useState(defaultDue);
+  const [repeat, setRepeat] = useState<Repeat | null>(null);
   const [expanded, setExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -35,12 +43,12 @@ export function QuickAdd({ categories, defaultCategoryId, defaultDue, onAdd }: P
     return () => document.removeEventListener('click', onClick);
   }, [expanded, title, description]);
 
-  // "n" or "/" focuses the input from anywhere.
+  // "n" focuses the input from anywhere.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (target.closest('input, textarea, [contenteditable]')) return;
-      if (e.key === 'n' || e.key === '/') {
+      if (e.key === 'n' && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault();
         inputRef.current?.focus();
       }
@@ -52,7 +60,7 @@ export function QuickAdd({ categories, defaultCategoryId, defaultDue, onAdd }: P
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onAdd({ title, description, categoryId, priority, dueDate });
+    onAdd({ title, description, categoryId, priority, dueDate, repeat });
     setTitle('');
     setDescription('');
     inputRef.current?.focus();
@@ -101,6 +109,7 @@ export function QuickAdd({ categories, defaultCategoryId, defaultDue, onAdd }: P
           <CategoryPicker categories={categories} value={categoryId} onChange={setCategoryId} />
           <PriorityPicker value={priority} onChange={setPriority} />
           <DuePicker value={dueDate} onChange={setDueDate} />
+          <RepeatPicker value={repeat} dueDate={dueDate} onChange={setRepeat} />
         </div>
       )}
     </form>

@@ -67,5 +67,7 @@ function mergeStats(a: Stats, b: Stats): Stats {
     goalBonusDays: [...new Set([...a.goalBonusDays, ...b.goalBonusDays])].sort(),
     completionsByDay,
     achievements,
+    // Weekly challenge progress isn't additive in a meaningful way; keep the newer week.
+    week: (b.week?.key ?? '') > (a.week?.key ?? '') ? b.week : a.week,
   };
 }

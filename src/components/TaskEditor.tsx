@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { TaskPatch } from '../core/store';
 import type { Category, Task } from '../core/types';
-import { CategoryPicker, DuePicker, PriorityPicker } from './Pickers';
+import { CategoryPicker, DuePicker, PriorityPicker, RepeatPicker } from './Pickers';
 import { Sheet } from './Sheet';
+import { SubtaskEditor } from './SubtaskEditor';
 
 interface Props {
   task: Task;
@@ -18,10 +19,13 @@ export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Prop
   const [categoryId, setCategoryId] = useState(task.categoryId);
   const [priority, setPriority] = useState(task.priority);
   const [dueDate, setDueDate] = useState(task.dueDate);
+  const [subtasks, setSubtasks] = useState(task.subtasks ?? []);
+  const [repeat, setRepeat] = useState(task.repeat ?? null);
 
   const save = () => {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), description: description.trim(), categoryId, priority, dueDate });
+    const steps = subtasks.map((s) => ({ ...s, title: s.title.trim() })).filter((s) => s.title);
+    onSave({ title: title.trim(), description: description.trim(), subtasks: steps, repeat, categoryId, priority, dueDate });
     onClose();
   };
 
@@ -49,6 +53,13 @@ export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Prop
           />
         </label>
         <div className="field">
+          <span>
+            Steps
+            {subtasks.length > 0 && <span className="muted"> · {subtasks.filter((s) => s.done).length}/{subtasks.length} done, +3 XP each</span>}
+          </span>
+          <SubtaskEditor value={subtasks} onChange={setSubtasks} />
+        </div>
+        <div className="field">
           <span>Category</span>
           <CategoryPicker categories={categories} value={categoryId} onChange={setCategoryId} />
         </div>
@@ -59,6 +70,10 @@ export function TaskEditor({ task, categories, onSave, onDelete, onClose }: Prop
         <div className="field">
           <span>Due</span>
           <DuePicker value={dueDate} onChange={setDueDate} />
+        </div>
+        <div className="field">
+          <span>Repeat</span>
+          <RepeatPicker value={repeat} dueDate={dueDate} onChange={setRepeat} />
         </div>
         {task.completedAt && (
           <p className="muted small">

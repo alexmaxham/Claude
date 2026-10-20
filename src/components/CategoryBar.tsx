@@ -1,6 +1,6 @@
 import type { Category, Task } from '../core/types';
 
-export type Filter = 'all' | 'today' | { categoryId: string };
+export type Filter = 'all' | 'today' | { categoryId: string } | { day: string };
 
 interface Props {
   categories: Category[];
@@ -9,12 +9,14 @@ interface Props {
   todayCount: number;
   onChange: (f: Filter) => void;
   onEdit: () => void;
+  /** Category currently under a dragged task, highlighted as a drop target. */
+  dropTarget?: string | null;
 }
 
-export function CategoryBar({ categories, tasks, filter, todayCount, onChange, onEdit }: Props) {
+export function CategoryBar({ categories, tasks, filter, todayCount, onChange, onEdit, dropTarget }: Props) {
   const openCount = (id: string) => tasks.filter((t) => !t.completedAt && t.categoryId === id).length;
-  const active = (f: Filter) =>
-    typeof f === 'string' ? filter === f : typeof filter === 'object' && filter.categoryId === f.categoryId;
+  const active = (f: 'all' | 'today' | { categoryId: string }) =>
+    typeof f === 'string' ? filter === f : typeof filter === 'object' && 'categoryId' in filter && filter.categoryId === f.categoryId;
 
   return (
     <nav className="category-bar" aria-label="Categories">
@@ -28,7 +30,8 @@ export function CategoryBar({ categories, tasks, filter, todayCount, onChange, o
         {categories.map((c) => (
           <button
             key={c.id}
-            className={`tab glass-soft ${active({ categoryId: c.id }) ? 'active' : ''}`}
+            data-drop-category={c.id}
+            className={`tab glass-soft ${active({ categoryId: c.id }) ? 'active' : ''} ${dropTarget === c.id ? 'drop-target' : ''}`}
             style={active({ categoryId: c.id }) ? { background: c.color, borderColor: c.color, color: '#10131c' } : undefined}
             onClick={() => onChange({ categoryId: c.id })}
           >

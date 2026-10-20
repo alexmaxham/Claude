@@ -4,7 +4,38 @@
 export type Priority = 'low' | 'medium' | 'high';
 
 /** The app's accent color, chosen by the user. */
-export type ThemeId = 'blue' | 'orange' | 'red' | 'green' | 'purple';
+export type ThemeId = 'blue' | 'orange' | 'red' | 'green' | 'purple' | 'teal' | 'pink' | 'gold' | 'midnight';
+
+export interface Subtask {
+  id: string;
+  title: string;
+  done: boolean;
+}
+
+/** How a task comes back after it's completed. Weekly `days` are 0 (Sun) – 6 (Sat). */
+export type Repeat = { kind: 'daily' } | { kind: 'weekly'; days: number[] } | { kind: 'monthly' };
+
+export type ChallengeKind = 'complete' | 'high' | 'onTime' | 'goalDays' | 'category';
+
+export interface Challenge {
+  id: string;
+  kind: ChallengeKind;
+  target: number;
+  categoryId?: string;
+  reward: number;
+}
+
+/** This week's challenges and the counters that drive them. */
+export interface WeekProgress {
+  key: string; // day key of the Monday the week starts on
+  challenges: Challenge[];
+  completed: number;
+  high: number;
+  onTime: number;
+  goalDays: number;
+  byCategory: Record<string, number>;
+  claimed: string[]; // challenge ids already rewarded
+}
 
 export interface Category {
   id: string;
@@ -21,6 +52,12 @@ export interface Task {
   categoryId: string | null;
   priority: Priority;
   dueDate: string | null; // YYYY-MM-DD (local)
+  subtasks?: Subtask[];
+  repeat?: Repeat | null;
+  /** Position when sorting manually; lower comes first. Defaults to -createdAt (newest first). */
+  order?: number;
+  /** For a completed repeating task: the id of the next occurrence it created. */
+  spawnedId?: string;
   createdAt: number;
   completedAt: number | null;
   /** XP granted when completed, so un-completing can take back exactly that much. */
@@ -39,6 +76,7 @@ export interface Stats {
   /** Completion count per day key, used for the daily goal ring and history. */
   completionsByDay: Record<string, number>;
   achievements: Record<string, number>; // achievement id -> unlocked timestamp
+  week: WeekProgress | null;
 }
 
 export interface AppState {
@@ -54,4 +92,6 @@ export type GameEvent =
   | { type: 'xp'; amount: number; taskId: string }
   | { type: 'levelUp'; level: number }
   | { type: 'goalReached'; bonus: number }
-  | { type: 'achievement'; id: string };
+  | { type: 'achievement'; id: string }
+  | { type: 'challenge'; challenge: Challenge }
+  | { type: 'themeUnlocked'; theme: ThemeId };

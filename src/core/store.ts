@@ -1,11 +1,25 @@
+import { challengeProgress, currentWeek, weekKey } from './challenges';
 import { dayKey } from './dates';
 import { ACHIEVEMENTS, GOAL_BONUS, levelFromXp, nextStreak, xpForTask } from './gamification';
-import type { AppState, Category, GameEvent, Priority, Task, ThemeId } from './types';
+import { nextDueDate } from './recurrence';
+import type { AppState, Category, GameEvent, Priority, Repeat, Subtask, Task, ThemeId, WeekProgress } from './types';
 
 export type Action =
-  | { type: 'addTask'; title: string; description?: string; categoryId: string | null; priority: Priority; dueDate: string | null }
+  | {
+      type: 'addTask';
+      title: string;
+      description?: string;
+      categoryId: string | null;
+      priority: Priority;
+      dueDate: string | null;
+      repeat?: Repeat | null;
+      subtasks?: Subtask[];
+    }
   | { type: 'updateTask'; id: string; patch: TaskPatch }
   | { type: 'toggleTask'; id: string }
+  | { type: 'toggleSubtask'; taskId: string; subtaskId: string }
+  /** `ids` in their new order; they take over the positions those tasks held between them. */
+  | { type: 'reorderTasks'; ids: string[] }
   | { type: 'deleteTask'; id: string }
   | { type: 'restoreTask'; task: Task; index: number }
   | { type: 'clearCompleted' }
@@ -19,15 +33,29 @@ export type Action =
   /** Replace everything, e.g. with data loaded from the cloud. */
   | { type: 'load'; state: AppState };
 
-export type TaskPatch = Partial<Pick<Task, 'title' | 'description' | 'categoryId' | 'priority' | 'dueDate'>>;
+export type TaskPatch = Partial<Pick<Task, 'title' | 'description' | 'categoryId' | 'priority' | 'dueDate' | 'subtasks' | 'repeat'>>;
 
-export const THEMES: { id: ThemeId; name: string; color: string }[] = [
+/** The first five are free; the rest unlock as rewards when you reach their level. */
+export const THEMES: { id: ThemeId; name: string; color: string; unlockLevel?: number }[] = [
   { id: 'blue', name: 'Blue', color: '#4f8cff' },
   { id: 'orange', name: 'Orange', color: '#ff8a3d' },
   { id: 'red', name: 'Red', color: '#ff4d5e' },
   { id: 'green', name: 'Green', color: '#2fbf71' },
   { id: 'purple', name: 'Purple', color: '#8b6cff' },
+  { id: 'teal', name: 'Teal', color: '#1fc8c0', unlockLevel: 3 },
+  { id: 'pink', name: 'Pink', color: '#ff5fa8', unlockLevel: 5 },
+  { id: 'gold', name: 'Gold', color: '#f5b82e', unlockLevel: 8 },
+  { id: 'midnight', name: 'Midnight', color: '#5b6b9a', unlockLevel: 12 },
 ];
+
+export function isThemeUnlocked(theme: ThemeId, level: number): boolean {
+  return level >= (THEMES.find((t) => t.id === theme)?.unlockLevel ?? 0);
+}
+
+/** Sort key for manual ordering. */
+export function taskOrder(t: Task): number {
+  return t.order ?? -t.createdAt;
+}
 
 export const CATEGORY_COLORS = [
   '#ff6b8b', '#ff9f43', '#ffd166', '#4cd97b', '#2ec4b6', '#5ac8fa', '#6c8cff', '#a78bfa', '#f472b6',
@@ -55,6 +83,7 @@ export function createInitialState(): AppState {
       goalBonusDays: [],
       completionsByDay: {},
       achievements: {},
+      week: null,
     },
     theme: 'blue',
   };
@@ -84,6 +113,8 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
         id: uid(),
         title,
         ...(description ? { description } : {}),
+        ...(action.subtasks?.length ? { subtasks: action.subtasks } : {}),
+        ...(action.repeat ? { repeat: action.repeat } : {}),
         categoryId: action.categoryId,
         priority: action.priority,
         dueDate: action.dueDate,
@@ -113,10 +144,18 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
         stats.xp = Math.max(0, stats.xp - task.xpAwarded);
         stats.totalCompleted = Math.max(0, stats.totalCompleted - 1);
         stats.completionsByDay[day] = Math.max(0, (stats.completionsByDay[day] ?? 0) - 1);
+        if (stats.week && weekKey(task.completedAt) === stats.week.key) {
+          stats.week = countCompletion(stats.week, task, -1);
+        }
+        // A repeating task's next occurrence goes away again, unless it's been worked on.
+        const spawned = task.spawnedId ? state.tasks.find((t) => t.id === task.spawnedId) : undefined;
+        const dropSpawned = spawned && !spawned.completedAt && !spawned.subtasks?.some((s) => s.done);
         next = {
           ...state,
           stats,
-          tasks: state.tasks.map((t) => (t.id === task.id ? { ...t, completedAt: null, xpAwarded: 0 } : t)),
+          tasks: state.tasks
+            .filter((t) => !(dropSpawned && t.id === spawned.id))
+            .map((t) => (t.id === task.id ? { ...t, completedAt: null, xpAwarded: 0, spawnedId: undefined } : t)),
         };
         break;
       }
@@ -134,20 +173,81 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
       stats.completionsByDay[today] = (stats.completionsByDay[today] ?? 0) + 1;
       events.push({ type: 'xp', amount: xp, taskId: task.id });
 
+      let week = countCompletion(currentWeek(state.stats, state.categories, now), { ...task, completedAt: now }, 1);
+
       if (stats.completionsByDay[today] >= stats.dailyGoal && !stats.goalBonusDays.includes(today)) {
         stats.xp += GOAL_BONUS;
         stats.goalBonusDays = [...stats.goalBonusDays, today];
+        week = { ...week, goalDays: week.goalDays + 1 };
         events.push({ type: 'goalReached', bonus: GOAL_BONUS });
       }
 
-      const levelAfter = levelFromXp(stats.xp).level;
-      if (levelAfter > levelBefore) events.push({ type: 'levelUp', level: levelAfter });
+      for (const c of week.challenges) {
+        if (!week.claimed.includes(c.id) && challengeProgress(week, c) >= c.target) {
+          week = { ...week, claimed: [...week.claimed, c.id] };
+          stats.xp += c.reward;
+          events.push({ type: 'challenge', challenge: c });
+        }
+      }
+      stats.week = week;
 
-      justCompleted = { ...task, completedAt: now, xpAwarded: xp };
+      const levelAfter = levelFromXp(stats.xp).level;
+      if (levelAfter > levelBefore) {
+        events.push({ type: 'levelUp', level: levelAfter });
+        for (const t of THEMES) {
+          if (t.unlockLevel && t.unlockLevel > levelBefore && t.unlockLevel <= levelAfter) {
+            events.push({ type: 'themeUnlocked', theme: t.id });
+          }
+        }
+      }
+
+      let tasks = state.tasks;
+      let spawnedId: string | undefined;
+      if (task.repeat) {
+        const occurrence: Task = {
+          ...task,
+          id: uid(),
+          dueDate: nextDueDate(task.repeat, task.dueDate, today),
+          subtasks: task.subtasks?.map((s) => ({ ...s, done: false })),
+          createdAt: now,
+          completedAt: null,
+          xpAwarded: 0,
+          spawnedId: undefined,
+        };
+        spawnedId = occurrence.id;
+        tasks = [occurrence, ...tasks];
+      }
+
+      justCompleted = { ...task, completedAt: now, xpAwarded: xp, ...(spawnedId ? { spawnedId } : {}) };
       next = {
         ...state,
         stats,
-        tasks: state.tasks.map((t) => (t.id === task.id ? justCompleted! : t)),
+        tasks: tasks.map((t) => (t.id === task.id ? justCompleted! : t)),
+      };
+      break;
+    }
+
+    case 'toggleSubtask':
+      next = {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.taskId
+            ? { ...t, subtasks: t.subtasks?.map((s) => (s.id === action.subtaskId ? { ...s, done: !s.done } : s)) }
+            : t,
+        ),
+      };
+      break;
+
+    case 'reorderTasks': {
+      const byId = new Map(state.tasks.map((t) => [t.id, t]));
+      const ids = action.ids.filter((id) => byId.has(id));
+      const slots = ids.map((id) => taskOrder(byId.get(id)!)).sort((a, b) => a - b);
+      // Equal slots (e.g. tasks created in the same millisecond) would make the order ambiguous.
+      for (let i = 1; i < slots.length; i++) if (slots[i] <= slots[i - 1]) slots[i] = slots[i - 1] + 0.001;
+      const newOrder = new Map(ids.map((id, i) => [id, slots[i]]));
+      next = {
+        ...state,
+        tasks: state.tasks.map((t) => (newOrder.has(t.id) ? { ...t, order: newOrder.get(t.id)! } : t)),
       };
       break;
     }
@@ -209,6 +309,7 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
       break;
 
     case 'setTheme':
+      if (!isThemeUnlocked(action.theme, levelFromXp(state.stats.xp).level)) return { state, events };
       next = { ...state, theme: action.theme };
       break;
 
@@ -234,4 +335,19 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
   }
 
   return { state: next, events };
+}
+
+/** Adjust this week's counters for a task being completed (+1) or un-completed (-1). */
+function countCompletion(week: WeekProgress, task: Task, delta: 1 | -1): WeekProgress {
+  const add = (n: number) => Math.max(0, n + delta);
+  const onTime = !!task.dueDate && !!task.completedAt && dayKey(task.completedAt) <= task.dueDate;
+  const byCategory = { ...week.byCategory };
+  if (task.categoryId) byCategory[task.categoryId] = add(byCategory[task.categoryId] ?? 0);
+  return {
+    ...week,
+    completed: add(week.completed),
+    high: task.priority === 'high' ? add(week.high) : week.high,
+    onTime: onTime ? add(week.onTime) : week.onTime,
+    byCategory,
+  };
 }
