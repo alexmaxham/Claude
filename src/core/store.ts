@@ -1,10 +1,10 @@
 import { dayKey } from './dates';
 import { ACHIEVEMENTS, GOAL_BONUS, levelFromXp, nextStreak, xpForTask } from './gamification';
-import type { AppState, Category, GameEvent, Priority, Task } from './types';
+import type { AppState, Category, GameEvent, Priority, Task, ThemeId } from './types';
 
 export type Action =
-  | { type: 'addTask'; title: string; categoryId: string | null; priority: Priority; dueDate: string | null }
-  | { type: 'updateTask'; id: string; patch: Partial<Pick<Task, 'title' | 'categoryId' | 'priority' | 'dueDate'>> }
+  | { type: 'addTask'; title: string; description?: string; categoryId: string | null; priority: Priority; dueDate: string | null }
+  | { type: 'updateTask'; id: string; patch: TaskPatch }
   | { type: 'toggleTask'; id: string }
   | { type: 'deleteTask'; id: string }
   | { type: 'restoreTask'; task: Task; index: number }
@@ -14,9 +14,20 @@ export type Action =
   | { type: 'deleteCategory'; id: string }
   | { type: 'moveCategory'; id: string; delta: -1 | 1 }
   | { type: 'setDailyGoal'; goal: number }
+  | { type: 'setTheme'; theme: ThemeId }
   | { type: 'reset' }
   /** Replace everything, e.g. with data loaded from the cloud. */
   | { type: 'load'; state: AppState };
+
+export type TaskPatch = Partial<Pick<Task, 'title' | 'description' | 'categoryId' | 'priority' | 'dueDate'>>;
+
+export const THEMES: { id: ThemeId; name: string; color: string }[] = [
+  { id: 'blue', name: 'Blue', color: '#4f8cff' },
+  { id: 'orange', name: 'Orange', color: '#ff8a3d' },
+  { id: 'red', name: 'Red', color: '#ff4d5e' },
+  { id: 'green', name: 'Green', color: '#2fbf71' },
+  { id: 'purple', name: 'Purple', color: '#8b6cff' },
+];
 
 export const CATEGORY_COLORS = [
   '#ff6b8b', '#ff9f43', '#ffd166', '#4cd97b', '#2ec4b6', '#5ac8fa', '#6c8cff', '#a78bfa', '#f472b6',
@@ -45,6 +56,7 @@ export function createInitialState(): AppState {
       completionsByDay: {},
       achievements: {},
     },
+    theme: 'blue',
   };
 }
 
@@ -67,9 +79,11 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
     case 'addTask': {
       const title = action.title.trim();
       if (!title) return { state, events };
+      const description = action.description?.trim();
       const task: Task = {
         id: uid(),
         title,
+        ...(description ? { description } : {}),
         categoryId: action.categoryId,
         priority: action.priority,
         dueDate: action.dueDate,
@@ -194,8 +208,13 @@ export function reduce(state: AppState, action: Action, now = Date.now()): Reduc
       next = { ...state, stats: { ...state.stats, dailyGoal: Math.max(1, Math.min(20, Math.round(action.goal))) } };
       break;
 
+    case 'setTheme':
+      next = { ...state, theme: action.theme };
+      break;
+
     case 'reset':
-      return { state: createInitialState(), events };
+      // Erases progress, not the look the user picked.
+      return { state: { ...createInitialState(), theme: state.theme }, events };
 
     case 'load':
       return { state: action.state, events };

@@ -43,7 +43,9 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 
 ## Features
 
-- **Quick add:** type and press Enter. Tap ⌄ to set category, priority and due date. Press `N` anywhere to jump to the input.
+- **Quick add:** type and press Enter. Tap ⌄ to add a description or set category, priority and due date. Press `N` anywhere to jump to the input.
+- **Descriptions:** each task can have optional notes. The first two lines show in the list; tap a task to read or edit the rest.
+- **Color themes:** pick Blue, Orange, Red, Green or Purple under ⚙︎ → Settings. The whole app (backgrounds, buttons, XP bar, confetti) follows it, and it syncs with your account.
 - **Categories:** filter with the tabs. Tap ✏️ Edit to rename, change emoji or color, reorder, add or delete categories. Deleting a category keeps its tasks; they become uncategorized.
 - **Smart "Today" view:** shows tasks due today or overdue, plus what you finished today.
 - **Gamification**

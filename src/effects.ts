@@ -11,7 +11,12 @@ interface Particle {
   size: number; color: string; rot: number; vr: number; life: number;
 }
 
-const COLORS = ['#ff6b8b', '#ffd166', '#4cd97b', '#5ac8fa', '#a78bfa', '#ff9f43', '#ffffff'];
+/** Confetti uses shades of the current theme color, plus white and gold sparkle. */
+function confettiColors(): string[] {
+  const css = getComputedStyle(document.documentElement);
+  const shades = ['--accent', '--accent-2', '--accent-deep'].map((v) => css.getPropertyValue(v).trim()).filter(Boolean);
+  return [...shades, ...shades, '#ffffff', '#ffd166'];
+}
 
 export function confetti(x: number, y: number, amount = 40) {
   if (reducedMotion()) return;
@@ -23,6 +28,7 @@ export function confetti(x: number, y: number, amount = 40) {
   const dpr = window.devicePixelRatio || 1;
   canvas.width = innerWidth * dpr;
   canvas.height = innerHeight * dpr;
+  const colors = confettiColors();
   for (let i = 0; i < amount; i++) {
     const angle = Math.random() * Math.PI * 2;
     const speed = 3 + Math.random() * 7;
@@ -31,7 +37,7 @@ export function confetti(x: number, y: number, amount = 40) {
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed - 4,
       size: 4 + Math.random() * 5,
-      color: COLORS[(Math.random() * COLORS.length) | 0],
+      color: colors[(Math.random() * colors.length) | 0],
       rot: Math.random() * Math.PI,
       vr: (Math.random() - 0.5) * 0.4,
       life: 1,

@@ -52,6 +52,7 @@ export function TaskItem({ task, category, stats, onToggle, onOpen }: Props) {
       </button>
       <button className="task-main" onClick={() => onOpen(task)}>
         <span className="task-title">{task.title}</span>
+        {task.description && <span className="task-desc">{task.description}</span>}
         <span className="task-meta">
           {category && (
             <span className="chip-mini">

@@ -119,6 +119,27 @@ describe('reduce', () => {
     s = run(s, [{ type: 'deleteTask', id: victim.id }, { type: 'restoreTask', task: victim, index: 1 }]);
     expect(s.tasks.map((t) => t.title)).toEqual(['two', 'one']);
   });
+
+  it('stores an optional description and lets it be edited', () => {
+    let s = run(createInitialState(), [
+      { type: 'addTask', title: 'Plan trip', description: '  Book flights\nFind hotel  ', categoryId: null, priority: 'low', dueDate: null },
+      { type: 'addTask', title: 'No notes', description: '   ', categoryId: null, priority: 'low', dueDate: null },
+    ]);
+    const [noNotes, trip] = s.tasks;
+    expect(trip.description).toBe('Book flights\nFind hotel');
+    expect(noNotes.description).toBeUndefined();
+
+    s = run(s, [{ type: 'updateTask', id: trip.id, patch: { description: 'Flights booked' } }]);
+    expect(s.tasks.find((t) => t.id === trip.id)!.description).toBe('Flights booked');
+  });
+
+  it('switches theme and keeps it through a reset', () => {
+    let s = run(withTask(), [{ type: 'setTheme', theme: 'green' }]);
+    expect(s.theme).toBe('green');
+    s = run(s, [{ type: 'reset' }]);
+    expect(s.tasks).toHaveLength(0);
+    expect(s.theme).toBe('green');
+  });
 });
 
 describe('storage', () => {
@@ -127,6 +148,12 @@ describe('storage', () => {
     const s = parseState(JSON.stringify({ tasks: [], stats: { xp: 42 } }));
     expect(s.stats.xp).toBe(42);
     expect(s.stats.dailyGoal).toBe(3);
+    expect(s.theme).toBe('blue');
+  });
+
+  it('keeps a saved theme and ignores unknown ones', () => {
+    expect(parseState(JSON.stringify({ theme: 'orange' })).theme).toBe('orange');
+    expect(parseState(JSON.stringify({ theme: 'rainbow' })).theme).toBe('blue');
   });
 });
 
