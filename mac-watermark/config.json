@@ -1,0 +1,11 @@
+{
+  "maxSize": 2048,
+  "upscale": false,
+  "position": "bottom-right",
+  "watermarkSize": 0.25,
+  "margin": 0.03,
+  "opacity": 0.8,
+  "suffix": "-watermarked",
+  "outputFolder": "",
+  "jpegQuality": 0.9
+}
