@@ -1,0 +1,101 @@
+name: Specdeck deploy
+
+# Publishes Specdeck to Firebase Hosting. Runs when specdeck/ changes on the default branch, and every
+# 10 minutes to pick up changes saved on the site's admin page (stored in Firestore until published).
+# Google Cloud access uses Workload Identity Federation, so no keys are stored in GitHub: only this
+# repository's default branch may act as the specdeck-publisher service account.
+on:
+  push:
+    branches: [claude/gamified-todo-app-wc0pod]
+    paths: ['specdeck/**', '.github/workflows/specdeck-deploy.yml']
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: specdeck-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: specdeck
+    env:
+      SITE_URL: https://specdeck-db.web.app
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/228313530849/locations/global/workloadIdentityPools/github/providers/alexmaxham-claude
+          service_account: specdeck-publisher@specdeck-db.iam.gserviceaccount.com
+          token_format: access_token
+
+      - name: Check for admin changes
+        id: pending
+        run: node scripts/admin-sync.mjs check
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+
+      # Scheduled runs stop here when nobody has saved anything.
+      - id: go
+        run: echo "run=${{ github.event_name != 'schedule' || steps.pending.outputs.count != '0' }}" >> "$GITHUB_OUTPUT"
+
+      - if: steps.go.outputs.run == 'true'
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: specdeck/package-lock.json
+
+      - if: steps.go.outputs.run == 'true'
+        run: npm ci
+
+      - name: Import admin changes
+        id: import
+        if: steps.go.outputs.run == 'true'
+        run: node scripts/admin-sync.mjs import
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+
+      - name: Build
+        id: build
+        if: steps.go.outputs.run == 'true'
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
+
+      - name: Deploy to Firebase Hosting
+        if: steps.go.outputs.run == 'true'
+        run: npx firebase-tools deploy --only hosting --project specdeck-db --non-interactive
+
+      - name: Commit admin changes
+        if: steps.go.outputs.run == 'true' && steps.import.outputs.count != '0'
+        run: |
+          git config user.name "specdeck-admin[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/devices src/assets/devices
+          git diff --cached --quiet && exit 0
+          git commit -m "Specdeck admin: ${{ steps.import.outputs.summary }}"
+          git push || (git pull --rebase && git push)
+
+      - name: Record publish
+        if: steps.go.outputs.run == 'true' && steps.import.outputs.count != '0'
+        run: node scripts/admin-sync.mjs finish ok
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+
+      # A change that breaks the build is reported back to the admin page instead of retried forever.
+      - name: Report build failure to the admin page
+        if: failure() && steps.build.outcome == 'failure' && steps.import.outputs.count != '0'
+        run: node scripts/admin-sync.mjs finish failed
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          BUILD_LOG: build.log

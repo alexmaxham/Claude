@@ -30,7 +30,46 @@ npx firebase-tools deploy --only hosting
 
 `firebase.json` serves `dist/` with clean URLs and long-lived caching for hashed assets. `.firebaserc` points at the `specdeck-db` project.
 
-## Adding a new phone or tablet
+## The admin page
+
+Go to https://specdeck-db.web.app/admin/ and sign in with Google. From there you can:
+
+- **Add a device:** a form with every spec field. Required fields and formats are checked before saving, using the same rules as the build.
+- **Edit specs** of any device. The brand and model name can't change, since they set the page's URL.
+- **Add or replace a photo:** pick an image file and enter the credit and source link. It's resized in the browser before upload.
+- **Discard changes** that haven't been published yet.
+
+Saved changes go live within about 15 minutes, with no other steps needed.
+
+### Who can sign in
+
+Only Google accounts listed in the Firestore document `config/editors` (field `emails`, a list) can read or save anything; `firestore.rules` enforces this. To add an editor, open the [Firestore console](https://console.firebase.google.com/project/specdeck-db/firestore/databases/-default-/data/~2Fconfig~2Feditors) and add their email to the list.
+
+### How publishing works
+
+1. Saving on the admin page stores the change in Firestore (`devices/<slug>` holds the device JSON, `photos/<slug>` the image).
+2. The **Specdeck deploy** workflow (`.github/workflows/specdeck-deploy.yml`) runs every 10 minutes. When changes are waiting, `scripts/admin-sync.mjs` writes them into `src/data/devices/` and `src/assets/devices/`, then the site is built and deployed to Firebase Hosting, the files are committed to the default branch, and the changes are cleared from Firestore.
+3. If a change breaks the build, nothing is deployed. The admin page shows that change as "Not published" with the reason, and other waiting changes go out on the next run. Fix it and save again.
+
+The workflow also deploys on every push to the default branch that touches `specdeck/`, and can be started by hand from the Actions tab. It signs in to Google Cloud through Workload Identity Federation as the `specdeck-publisher` service account. No keys are stored in GitHub, and only this repository's default branch can use it. If the default branch is renamed, update the provider's condition in Google Cloud (IAM → Workload Identity Federation → `github` pool) and the branch in the workflow.
+
+### Testing the admin page locally
+
+```sh
+npx firebase-tools emulators:start --only auth,firestore --project specdeck-db --config firebase.emulators.json
+# in another terminal: add a test editor to the emulator
+curl -X PATCH "http://localhost:8080/v1/projects/specdeck-db/databases/(default)/documents/config/editors" \
+  -H "Authorization: Bearer owner" -H "Content-Type: application/json" \
+  -d '{"fields":{"emails":{"arrayValue":{"values":[{"stringValue":"you@example.com"}]}}}}'
+npm run build && npm run preview
+# open http://localhost:4321/admin/?emulator=you@example.com
+```
+
+`FIRESTORE_URL=http://localhost:8080 ACCESS_TOKEN=owner node scripts/admin-sync.mjs import` pulls the emulator's saved changes into the repo, as the workflow does.
+
+## Adding a new phone or tablet from the command line
+
+The admin page is the easiest way. To do the same by hand:
 
 1. Create the file:
 

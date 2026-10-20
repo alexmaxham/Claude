@@ -1,0 +1,27 @@
+rules_version = '2';
+
+// Only editors can read or change anything. Editors are listed in the config/editors document
+// (field "emails"), which is managed from the Firebase console. The publishing job uses a
+// service account, which is not subject to these rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isEditor() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in get(/databases/$(database)/documents/config/editors).data.emails;
+    }
+
+    match /config/editors {
+      allow read: if isEditor();
+      allow write: if false;
+    }
+
+    match /{collection}/{id} {
+      allow read, write: if collection != 'config' && isEditor();
+    }
+
+    match /config/publish {
+      allow read: if isEditor();
+    }
+  }
+}
