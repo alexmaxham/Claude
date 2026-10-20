@@ -33,6 +33,8 @@ Work top to bottom. Each phase is one PR.
 
 ### Phase 1: "Best of" pages and phone finder
 
+**Done.** Rankings are defined in `src/lib/rankings.ts`; a ranking gets a page on its own once 3 devices qualify. The under-$800, under-$1,000, headphone jack and microSD lists have fewer than 3 today, so they don't appear yet.
+
 - **Ranking pages** at `/best/<slug>/`, generated from the data, plus an index at `/best/`. Only generate a ranking with 3 or more qualifying devices.
   - Ranked lists use numbered positions, since the order is real.
   - Show the ranked value on every row, and say how many devices were left out because the value isn't confirmed.

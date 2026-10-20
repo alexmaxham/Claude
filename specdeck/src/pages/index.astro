@@ -3,10 +3,12 @@ import Base from '../layouts/Base.astro';
 import DeviceListing from '../components/DeviceListing.astro';
 import DeviceArt from '../components/DeviceArt.astro';
 import Icon from '../components/Icon.astro';
+import RankingTile from '../components/RankingTile.astro';
 import { allDevices, comparePairs, compareSlug, fullName } from '../lib/devices';
 import { SECTIONS } from '../lib/specs';
 import { cookiePath } from '../lib/art';
 import { SITE_NAME } from '../lib/site';
+import { activeRankings } from '../lib/rankings';
 
 const devices = await allDevices();
 const brands = new Set(devices.map((d) => d.brand)).size;
@@ -20,6 +22,12 @@ const popular = comparePairs(devices)
   .filter(([a, b]) => a.brand !== b.brand)
   .sort((x, y) => Math.max(...y.map((d) => Date.parse(d.announced))) - Math.max(...x.map((d) => Date.parse(d.announced))))
   .slice(0, 8);
+// A few rankings from each category for the "Best of" section.
+const rankings = activeRankings(devices);
+const bestOf = [
+  ...rankings.filter((b) => b.ranking.category === 'phone').slice(0, 4),
+  ...rankings.filter((b) => b.ranking.category === 'tablet').slice(0, 2),
+];
 ---
 <Base
   title={SITE_NAME}
@@ -47,6 +55,18 @@ const popular = comparePairs(devices)
 
   <h2 class="sr-only">All devices</h2>
   <DeviceListing devices={devices} typeFilter />
+
+  {bestOf.length > 0 && (
+    <section class="best" aria-labelledby="h-best">
+      <div class="shead">
+        <h2 id="h-best" class="title">Best of</h2>
+        <a href="/best/">All {rankings.length} rankings</a>
+      </div>
+      <ul>
+        {bestOf.map((b) => <li><RankingTile built={b} long /></li>)}
+      </ul>
+    </section>
+  )}
 
   {popular.length > 0 && (
     <section class="popular" aria-labelledby="h-popular">
@@ -80,6 +100,11 @@ const popular = comparePairs(devices)
   .h-phone { position: absolute; right: 44%; top: 30px; transform: rotate(-8deg); }
   .h-tablet { position: absolute; right: 6%; top: 40px; transform: rotate(6deg); }
   .hero-art :global(.art) { overflow: visible; }
+
+  .best { margin-top: 48px; }
+  .shead { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .shead a { font-size: 14px; font-weight: 600; }
+  .best ul { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
 
   .popular { margin-top: 48px; }
   .popular ul { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }

@@ -1,0 +1,139 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import DeviceArt from '../../components/DeviceArt.astro';
+import RankingTile from '../../components/RankingTile.astro';
+import Icon from '../../components/Icon.astro';
+import { allDevices, deviceUrl, fullName } from '../../lib/devices';
+import { activeRankings, type Built } from '../../lib/rankings';
+import { breadcrumbLd } from '../../lib/seo';
+import { SITE_NAME } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const built = activeRankings(await allDevices());
+  return built.map((b) => ({ params: { slug: b.ranking.slug }, props: { built: b, all: built } }));
+}
+
+interface Props {
+  built: Built;
+  all: Built[];
+}
+const { built, all } = Astro.props;
+const { ranking: r, entries, missing, tied } = built;
+const noun = r.category === 'phone' ? 'phone' : 'tablet';
+const plural = (n: number) => `${n} ${noun}${n === 1 ? '' : 's'}`;
+const top = entries[0];
+const crumbs = [{ label: 'Home', href: '/' }, { label: 'Best of', href: '/best/' }, { label: r.title }];
+const compareTop = `/compare/?d=${entries.slice(0, 4).map((e) => e.device.slug).join(',')}`;
+const others = all.filter((b) => b.ranking.slug !== r.slug && b.ranking.category === r.category);
+const typeLabel = (d: (typeof entries)[number]['device']) =>
+  d.formFactor === 'book-fold' || d.formFactor === 'flip' ? 'Foldable' : d.category === 'phone' ? 'Phone' : 'Tablet';
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: r.title,
+  numberOfItems: entries.length,
+  itemListElement: entries.map((e, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: fullName(e.device),
+    url: new URL(deviceUrl(e.device), Astro.site).href,
+  })),
+};
+const description =
+  r.kind === 'ranked'
+    ? `${plural(entries.length)} ranked by ${r.metric}. Number 1 is the ${fullName(top.device)} at ${top.value}.`
+    : `${plural(entries.length)}: ${entries.slice(0, 4).map((e) => fullName(e.device)).join(', ')}${entries.length > 4 ? ' and more' : ''}.`;
+---
+<Base
+  title={r.title}
+  description={`${description} Full specs and side-by-side comparisons on ${SITE_NAME}.`}
+  jsonLd={[itemList, breadcrumbLd(crumbs, Astro.site!)]}
+>
+  <Breadcrumbs items={crumbs} />
+  <header class="phead">
+    <h1 class="headline">{r.title}</h1>
+    <p class="muted">{r.intro}{tied && ' Devices with the same value share a position.'}</p>
+    <a class="btn tonal" href={compareTop}><Icon name="compare_arrows" size={20} />Compare the top {Math.min(4, entries.length)}</a>
+  </header>
+
+  <ol class={`rank ${r.kind}`}>
+    {entries.map((e) => (
+      <li class="row">
+        {e.position !== null && (
+          <span class="pos num" aria-label={`Position ${e.position}`}>{e.position}</span>
+        )}
+        <DeviceArt device={e.device} height={88} class="row-art" />
+        <span class="who">
+          <span class="label">{e.device.brand} · {typeLabel(e.device)}</span>
+          <a class="name" href={deviceUrl(e.device)}>{e.device.name}</a>
+        </span>
+        <span class="val num">{e.value}</span>
+      </li>
+    ))}
+  </ol>
+
+  {missing.length > 0 && (
+    <p class="missing">
+      <Icon name="info" size={20} />
+      <span>
+        {plural(missing.length)} {missing.length === 1 ? "isn't" : "aren't"} {r.kind === 'ranked' ? 'ranked' : 'listed'} because {missing.length === 1 ? 'its' : 'their'} {r.metric} isn't confirmed:{' '}
+        {missing.map((d, i) => (
+          <>{i > 0 && ', '}<a href={deviceUrl(d)}>{fullName(d)}</a></>
+        ))}.
+      </span>
+    </p>
+  )}
+
+  {others.length > 0 && (
+    <section class="others" aria-labelledby="h-others">
+      <h2 id="h-others" class="title">More {noun} rankings</h2>
+      <ul class="tiles">
+        {others.map((b) => <li><RankingTile built={b} /></li>)}
+      </ul>
+      <p><a href="/best/">All rankings</a> · <a href="/finder/">Find a {noun} by spec</a></p>
+    </section>
+  )}
+</Base>
+
+<style>
+  .phead { display: grid; gap: 8px; justify-items: start; }
+  .phead p { margin: 0; max-width: 62ch; }
+  .phead .btn { margin-top: 8px; }
+
+  .rank { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 8px; }
+  .row { position: relative; display: grid; grid-template-columns: 48px 88px minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 8px 20px 8px 12px; border-radius: var(--shape-l); background: var(--surface-c); transition: border-radius .45s var(--spring), background .2s; }
+  .list .row { grid-template-columns: 88px minmax(0, 1fr) auto; padding-left: 8px; }
+  .row:hover { border-radius: var(--shape-xl); background: var(--surface-high); }
+  .row:has(:focus-visible) { outline: 3px solid var(--primary); outline-offset: 2px; }
+  .pos { width: 48px; height: 48px; border-radius: var(--shape-full); display: grid; place-items: center; font-size: 22px; font-weight: 800; font-variation-settings: 'wdth' 120; background: var(--surface-high); color: var(--on-surface-var); }
+  .row:first-child .pos { background: var(--primary); color: var(--on-primary); border-radius: var(--shape-m); }
+  .row :global(.row-art) { border-radius: var(--shape-m); background: var(--surface-low); }
+  .who { display: grid; min-width: 0; }
+  .name { font-size: 18px; font-weight: 700; line-height: 1.2; font-variation-settings: 'wdth' 110; text-decoration: none; outline: none; }
+  /* The whole row is clickable through the name link. */
+  .name::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+  .val { font-size: 22px; font-weight: 750; font-variation-settings: 'wdth' 115; text-align: right; white-space: nowrap; }
+  .list .val { font-size: 14px; font-weight: 600; color: var(--on-surface-var); }
+
+  .missing { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 0; padding: 14px 18px; border-radius: var(--shape-m); background: var(--surface-low); color: var(--on-surface-var); font-size: 14px; max-width: 80ch; }
+  .missing :global(.icon) { margin-top: 1px; }
+  .missing a { color: var(--on-surface); }
+
+  .others { margin-top: 48px; }
+  .tiles { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+  .others p { margin: 16px 0 0; font-size: 14px; }
+
+  @media (max-width: 840px) {
+    .row { grid-template-columns: 36px 64px minmax(0, 1fr); gap: 4px 12px; padding: 8px 12px 8px 8px; border-radius: var(--shape-m); }
+    .list .row { grid-template-columns: 64px minmax(0, 1fr); }
+    .pos { width: 36px; height: 36px; font-size: 17px; }
+    .pos, .row :global(.row-art) { grid-row: 1 / 3; }
+    .who { align-self: end; }
+    .row :global(.row-art) { height: 64px !important; }
+    .row :global(.row-art .device) { transform: scale(.72); }
+    .name { font-size: 16px; }
+    .val { grid-column: -2; align-self: start; text-align: left; font-size: 17px; }
+    .list .val { font-size: 13px; }
+  }
+</style>

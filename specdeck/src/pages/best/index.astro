@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import RankingTile from '../../components/RankingTile.astro';
+import { allDevices, CATEGORY_LABEL } from '../../lib/devices';
+import { activeRankings, rankingUrl } from '../../lib/rankings';
+import { breadcrumbLd } from '../../lib/seo';
+
+const built = activeRankings(await allDevices());
+const groups = (['phone', 'tablet'] as const)
+  .map((c) => ({ category: c, label: CATEGORY_LABEL[c], items: built.filter((b) => b.ranking.category === c) }))
+  .filter((g) => g.items.length > 0);
+const crumbs = [{ label: 'Home', href: '/' }, { label: 'Best of' }];
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Phone and tablet rankings',
+  itemListElement: built.map((b, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: b.ranking.title,
+    url: new URL(rankingUrl(b.ranking), Astro.site).href,
+  })),
+};
+---
+<Base
+  title="Best Phones and Tablets by Spec"
+  description={`${built.length} rankings of phones and tablets by battery, weight, screen, charging speed and more, built from published specs.`}
+  jsonLd={[itemList, breadcrumbLd(crumbs, Astro.site!)]}
+>
+  <Breadcrumbs items={crumbs} />
+  <header class="phead">
+    <h1 class="headline">Best of</h1>
+    <p class="muted">Phones and tablets ranked one spec at a time, using the makers' published numbers. Devices with an unconfirmed value are left out, and each list says how many.</p>
+  </header>
+  {groups.map((g) => (
+    <section class="group" aria-labelledby={`h-${g.category}`}>
+      <h2 id={`h-${g.category}`} class="title">{g.label}</h2>
+      <ul class="tiles">
+        {g.items.map((b) => <li><RankingTile built={b} /></li>)}
+      </ul>
+    </section>
+  ))}
+</Base>
+
+<style>
+  .phead { display: grid; gap: 8px; }
+  .phead p { margin: 0; max-width: 62ch; }
+  .group { margin-top: 32px; }
+  .tiles { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+</style>

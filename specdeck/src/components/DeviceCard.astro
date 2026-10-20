@@ -13,6 +13,10 @@ interface Props {
 const { device: d, headingLevel = 'h2' } = Astro.props;
 const k = keySpecs(d);
 const H = headingLevel;
+// Unknown values are empty strings, so the finder can tell "not confirmed" from "no".
+const flag = (b: boolean | null) => (b === null ? '' : b ? 'yes' : 'no');
+const ip68 = d.body.ip === null ? null : /IP68/i.test(d.body.ip);
+const card = d.memory.card === null ? null : /microsd/i.test(d.memory.card);
 const typeLabel = d.formFactor === 'book-fold' || d.formFactor === 'flip' ? 'Foldable' : d.category === 'phone' ? 'Phone' : 'Tablet';
 ---
 <article
@@ -24,6 +28,14 @@ const typeLabel = d.formFactor === 'book-fold' || d.formFactor === 'flip' ? 'Fol
   data-announced={d.announced}
   data-battery={d.battery.mah ?? ''}
   data-screen={d.display.size_in ?? ''}
+  data-price={d.price?.currency === 'USD' ? d.price.amount : ''}
+  data-ram={d.memory.ram_gb.length ? Math.max(...d.memory.ram_gb) : ''}
+  data-wired={d.battery.wired_w ?? ''}
+  data-wireless={d.battery.wireless_w ?? ''}
+  data-weight={d.body.weight_g ?? ''}
+  data-ip68={flag(ip68)}
+  data-jack={flag(d.features.jack)}
+  data-card={flag(card)}
 >
   <DeviceArt device={d} height={168} class="card-art" />
   <div class="meta">
