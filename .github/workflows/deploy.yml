@@ -26,6 +26,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      # The dividend tracker ships alongside as a static demo at /dividends/ (Robinhood sync needs its own server).
+      - run: npm ci && npx tsc -b && npx vite build --outDir ../dist/dividends --emptyOutDir
+        working-directory: dividends
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

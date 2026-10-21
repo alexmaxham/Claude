@@ -1,0 +1,29 @@
+name: Dividends build
+
+# Tests the dividend tracker (web logic + Python sync server) and builds it.
+on:
+  push:
+    paths: ['dividends/**', '.github/workflows/dividends.yml']
+  pull_request:
+    paths: ['dividends/**', '.github/workflows/dividends.yml']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dividends
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dividends/package-lock.json
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

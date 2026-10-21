@@ -4,6 +4,8 @@ A gamified to-do list with a liquid glass look. Runs on the web and as a native 
 
 **Live app:** https://alexmaxham.github.io/Claude/
 
+Also in this repo: [Dividends](dividends/README.md), a dividend portfolio tracker that syncs daily from Robinhood (sample-data demo at https://alexmaxham.github.io/Claude/dividends/).
+
 ## Run it
 
 ```bash
