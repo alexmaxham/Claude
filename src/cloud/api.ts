@@ -10,7 +10,6 @@ import {
   GoogleAuthProvider,
   indexedDBLocalPersistence,
   initializeAuth,
-  linkWithPopup,
   OAuthProvider,
   onAuthStateChanged,
   reauthenticateWithCredential,
@@ -36,13 +35,9 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
-import type { Task } from '../core/types';
 import { isNative } from '../native';
-import { listEvents, syncCalendar } from './calendar';
 import { FriendlyError } from './errors';
 import { IOS_GOOGLE_SIGN_IN, type CloudConfig } from './config';
-
-const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 
 export interface CloudUser {
   uid: string;
@@ -81,13 +76,12 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
   }
 
   const userDoc = (uid: string) => doc(db, 'users', uid);
-  let calendarToken: { value: string; expires: number } | null = null;
 
   /** Google sign-in through the native SDK (iPhone app), which returns Google's own tokens. */
-  async function nativeGoogle(scopes?: string[]) {
+  async function nativeGoogle() {
     if (!IOS_GOOGLE_SIGN_IN) throw new Error('Google sign-in isn’t set up in the iPhone app yet.');
     const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-    const { credential } = await FirebaseAuthentication.signInWithGoogle({ scopes });
+    const { credential } = await FirebaseAuthentication.signInWithGoogle();
     if (!credential?.idToken) throw new Error('Google sign-in was cancelled.');
     return credential;
   }
@@ -104,32 +98,6 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
       // Apple shares the name only the first time someone signs in.
       displayName: user?.displayName ?? null,
     };
-  }
-
-  /**
-   * An OAuth access token allowed to edit the user's calendar events. Asks Google
-   * once (a popup); the token is kept in memory for most of its one-hour life.
-   * Accounts that signed up with email get Google linked to them for this.
-   */
-  async function getCalendarToken(): Promise<string> {
-    if (calendarToken && calendarToken.expires > Date.now()) return calendarToken.value;
-    const user = auth.currentUser;
-    if (!user) throw new Error('Sign in first to connect Google Calendar.');
-    if (isNative) {
-      const token = (await nativeGoogle([CALENDAR_SCOPE])).accessToken;
-      if (!token) throw new Error('Google didn’t grant calendar access.');
-      calendarToken = { value: token, expires: Date.now() + 50 * 60_000 };
-      return token;
-    }
-    const provider = new GoogleAuthProvider();
-    provider.addScope(CALENDAR_SCOPE);
-    const hasGoogle = user.providerData.some((p) => p.providerId === 'google.com');
-    if (hasGoogle && user.email) provider.setCustomParameters({ login_hint: user.email });
-    const result = hasGoogle ? await reauthenticateWithPopup(user, provider) : await linkWithPopup(user, provider);
-    const token = GoogleAuthProvider.credentialFromResult(result)?.accessToken;
-    if (!token) throw new Error('Google didn’t grant calendar access.');
-    calendarToken = { value: token, expires: Date.now() + 50 * 60_000 };
-    return token;
   }
 
   return {
@@ -174,7 +142,6 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
     },
 
     async signOut() {
-      calendarToken = null;
       if (isNative && IOS_GOOGLE_SIGN_IN) {
         // Also forget the Google account, so the next sign-in offers the account picker.
         const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
@@ -205,35 +172,11 @@ export function createCloud({ options, useEmulators }: CloudConfig) {
       } else {
         await reauthenticateWithPopup(user, new GoogleAuthProvider());
       }
-      calendarToken = null;
       await deleteDoc(userDoc(user.uid));
       await deleteUser(user);
       if (isNative && IOS_GOOGLE_SIGN_IN) {
         const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
         await FirebaseAuthentication.signOut().catch(() => {});
-      }
-    },
-
-    /** Puts every open task with a due date on the user's Google Calendar (and cleans up old ones). */
-    async syncGoogleCalendar(tasks: Task[]) {
-      const token = await getCalendarToken();
-      try {
-        return await syncCalendar(token, tasks);
-      } catch (e) {
-        // A revoked or expired token: forget it so the next try asks again.
-        if ((e as { kind?: string }).kind === 'auth') calendarToken = null;
-        throw e;
-      }
-    },
-
-    /** The user's own Google Calendar events between two day keys. */
-    async googleEvents(from: string, to: string) {
-      const token = await getCalendarToken();
-      try {
-        return await listEvents(token, from, to);
-      } catch (e) {
-        if ((e as { kind?: string }).kind === 'auth') calendarToken = null;
-        throw e;
       }
     },
 
