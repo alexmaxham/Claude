@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main, claude/gamified-todo-app-wc0pod]
+  # Refreshes the deals page (/deals/) every 30 minutes.
+  schedule:
+    - cron: '7,37 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -26,6 +29,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - run: node scripts/fetch-deals.mjs dist/deals/deals.json
+        env:
+          SLICKDEALS_FEED_URL: ${{ vars.SLICKDEALS_FEED_URL }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
