@@ -106,6 +106,8 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 
 Browsers can't read Slickdeals' RSS feed directly, so the deploy workflow fetches it (`scripts/fetch-deals.mjs`) and publishes it as `deals/deals.json`. The workflow also runs every 30 minutes to keep the deals fresh. Only deals whose title names a tech product or brand are kept (the word list is `TECH_WORDS` in the script), so a feed covering every category still gives a tech-only page. If the feed can't be read or has no tech deals, the deals already on the site are kept and the run shows a warning.
 
+Amazon deals link straight to the product on Amazon (`amazon.com/dp/<product ID>`, with no affiliate tag or tracking), built from the product ID in the feed. Other deals link to their Slickdeals page. Coupon codes from the feed are shown on the card, since a direct link skips Slickdeals' write-up.
+
 To change the feed, set the repository variable `SLICKDEALS_FEED_URL` (Settings → Secrets and variables → Actions → Variables). No code change is needed.
 
 ## Project layout

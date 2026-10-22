@@ -96,74 +96,17 @@ export function isTechDeal(title) {
   return TECH_PATTERN.test(title);
 }
 
-// Query parameters that tracking and affiliate redirects (Slickdeals' own and affiliate
-// networks) use to carry the store's address.
-const REDIRECT_PARAMS = ['u2', 'u', 'url', 'murl', 'dest', 'destination', 'redirect', 'redirecturl'];
-
-// Follows redirect links that carry the destination in a query parameter, like
-// slickdeals.net/click?...&u2=https%3A%2F%2Fwww.amazon.com%2Fdp%2F..., and returns where they end up.
-export function unwrapLink(href) {
-  let url = href;
-  for (let i = 0; i < 4; i++) {
-    let parsed;
-    try {
-      parsed = new URL(url);
-    } catch {
-      return url;
-    }
-    if (isAmazon(parsed.hostname)) return url;
-    const params = [...parsed.searchParams].filter(([k]) => REDIRECT_PARAMS.includes(k.toLowerCase()));
-    const next = params.map(([, v]) => v).find((v) => /^https?:\/\//i.test(v));
-    if (!next) return url;
-    url = next;
-  }
-  return url;
-}
-
-function isAmazon(hostname) {
-  return /(^|\.)amazon\.com$/i.test(hostname);
-}
-
-// Amazon's affiliate and tracking parameters; everything else on a product or search page is kept.
-const AMAZON_TRACKING = /^(tag|ascsubtag|linkcode|linkid|ref_?|camp|creative(asin)?|asc_.*|pd_rd_.*|pf_rd_.*|content-id|utm_.*|sr|qid|crid|sprefix|dib|dib_tag|th|psc|_encoding)$/i;
-
-// A clean link to the same Amazon page with no affiliate tag or tracking: www.amazon.com/dp/<ASIN>
-// for products, otherwise the same page without tracking parameters. Null for other stores.
-export function cleanAmazonLink(href) {
-  let url;
-  try {
-    url = new URL(href);
-  } catch {
-    return null;
-  }
-  if (!isAmazon(url.hostname)) return null;
-  const asin = url.pathname.match(/\/(?:dp|gp\/product|gp\/aw\/d|exec\/obidos\/ASIN|o\/ASIN)\/([A-Z0-9]{10})(?=[/?]|$)/i)?.[1];
-  if (asin) return `https://www.amazon.com/dp/${asin.toUpperCase()}`;
-  const clean = new URL(url.pathname.replace(/\/ref=[^/]*$/, ''), 'https://www.amazon.com');
-  for (const [k, v] of url.searchParams) if (!AMAZON_TRACKING.test(k)) clean.searchParams.append(k, v);
-  return clean.href;
-}
-
-// The first link in a deal's description that leads to Amazon, cleaned. Short amzn.to links are
-// returned as they are; main() resolves them, since that needs a network request.
+// Slickdeals' store links are encrypted redirects (slickdeals.net/click?...&u3=...), but links to
+// Amazon carry the product ID: data-store-slug="amazon" data-aps-asin="B07Q32KX3J". That gives a
+// clean product link with no affiliate tag or tracking. Null when the deal has no Amazon link.
 export function amazonLinkFrom(html) {
-  for (const [, raw] of html.matchAll(/<a\s[^>]*href=["']([^"']+)["']/gi)) {
-    const href = unwrapLink(decode(raw));
-    if (/^https?:\/\/(?:www\.)?amzn\.to\//i.test(href)) return href;
-    const clean = cleanAmazonLink(href);
-    if (clean) return clean;
+  for (const [a] of html.matchAll(/<a\s[^>]*>/gi)) {
+    const asin = a.match(/data-aps-asin=["']([A-Z0-9]{10})["']/i)?.[1];
+    if (asin && /data-store-slug=["']amazon["']|data-product-exitwebsite=["']amazon\.com["']/i.test(a)) {
+      return `https://www.amazon.com/dp/${asin.toUpperCase()}`;
+    }
   }
   return null;
-}
-
-async function resolveShortLink(href) {
-  try {
-    const res = await fetch(href, { redirect: 'manual', signal: AbortSignal.timeout(10_000) });
-    const location = res.headers.get('location');
-    return location ? cleanAmazonLink(unwrapLink(new URL(location, href).href)) : null;
-  } catch {
-    return null;
-  }
 }
 
 export function parseFeed(xml) {
@@ -177,9 +120,11 @@ export function parseFeed(xml) {
       body.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1] ??
       item.match(/<(?:media:content|media:thumbnail|enclosure)[^>]+url=["']([^"']+)["']/i)?.[1] ??
       null;
-    const thumbs = stripHtml(body).match(/Thumbs\s*Up:?\s*(\d+)/i)?.[1];
+    const thumbs = stripHtml(body).match(/Thumbs?\s*(?:Up|Score):?\s*\+?(-?\d+)/i)?.[1];
     const date = new Date(tag(item, 'pubDate'));
     const amazon = amazonLinkFrom(body);
+    // Coupon codes are only in Slickdeals' description, so the page shows them on direct links.
+    const coupon = body.match(/class=["']code["'][^>]*>\s*(?:<[^>]+>\s*)*([A-Z0-9][A-Z0-9-]{2,29})\s*</i)?.[1] ?? null;
     return [
       {
         title,
@@ -190,6 +135,7 @@ export function parseFeed(xml) {
         store: storeFromTitle(title) || (amazon ? 'Amazon' : ''),
         image: image && /^https:\/\//.test(image) ? decode(image) : null,
         thumbs: thumbs ? Number(thumbs) : null,
+        coupon,
         published: Number.isNaN(date.getTime()) ? null : date.toISOString(),
       },
     ];
@@ -213,10 +159,6 @@ async function main(outPath) {
     if (!all.length) throw new Error('the feed had no deals (is the URL an RSS feed?)');
     const deals = all.filter((d) => isTechDeal(d.title));
     if (!deals.length) throw new Error(`none of the feed's ${all.length} deals were tech deals`);
-    for (const d of deals) {
-      if (!/^https?:\/\/(?:www\.)?amzn\.to\//i.test(d.link)) continue;
-      d.link = (await resolveShortLink(d.link)) ?? d.thread;
-    }
     data = { source: feedUrl, fetchedAt: new Date().toISOString(), deals };
     const direct = deals.filter((d) => d.link !== d.thread).length;
     console.log(`Fetched ${all.length} deals from ${feedUrl}; kept ${deals.length} tech deals, ${direct} with a direct Amazon link`);
