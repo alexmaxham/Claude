@@ -104,7 +104,7 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 
 `public/deals/` is a separate page, live at https://alexmaxham.github.io/Claude/deals/, listing the latest tech and electronics deals from Slickdeals with search, store filters and sorting.
 
-Browsers can't read Slickdeals' RSS feed directly, so the deploy workflow fetches it (`scripts/fetch-deals.mjs`) and publishes it as `deals/deals.json`. The workflow also runs every 30 minutes to keep the deals fresh. If the feed can't be read, the deals already on the site are kept and the run shows a warning.
+Browsers can't read Slickdeals' RSS feed directly, so the deploy workflow fetches it (`scripts/fetch-deals.mjs`) and publishes it as `deals/deals.json`. The workflow also runs every 30 minutes to keep the deals fresh. Only deals whose title names a tech product or brand are kept (the word list is `TECH_WORDS` in the script), so a feed covering every category still gives a tech-only page. If the feed can't be read or has no tech deals, the deals already on the site are kept and the run shows a warning.
 
 To change the feed, set the repository variable `SLICKDEALS_FEED_URL` (Settings → Secrets and variables → Actions → Variables). No code change is needed.
 

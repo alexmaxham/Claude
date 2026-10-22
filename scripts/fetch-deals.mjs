@@ -60,6 +60,42 @@ export function priceFromTitle(title) {
   return m ? Number(m[1].replace(/,/g, '') + (m[2] ?? '')) : null;
 }
 
+// Deals are kept only when their title names a tech product or brand, so a feed covering
+// every category (like Popular Deals) still gives a tech-only page. Matched as whole words,
+// ignoring case. Leave out words that are common outside tech ("apple", "hp", "switch", "pc" as in
+// "10 pc set", "tablets" as in "dishwasher tablets").
+const TECH_WORDS = [
+  // Computers and parts
+  'laptops?', 'chromebooks?', 'macbook', 'imac', 'mac mini', 'mac studio', 'desktops?', 'gaming pcs?', 'pc games?', 'all-in-one pcs?',
+  'monitors?', 'ssds?', 'nvme', 'hdds?', 'hard drives?', 'flash drives?', 'usb', 'usb-c', 'thunderbolt',
+  'microsd', 'sd cards?', 'memory cards?', 'ram', 'ddr4', 'ddr5', 'gpus?', 'graphics cards?', 'rtx',
+  'radeon', 'geforce', 'cpus?', 'processors?', 'ryzen', 'motherboards?', 'keyboards?', 'mice', 'mouse',
+  'webcams?', 'printers?', 'scanners?', 'nas',
+  // Phones, tablets and wearables
+  'iphone', 'ipad', 'tablet', 'android tablets?', 'fire tablets?', 'galaxy tab', 'smartphones?', 'unlocked phones?', 'galaxy', 'pixel', 'android',
+  'smartwatch(?:es)?', 'apple watch', 'fitbit', 'garmin', 'airtags?', 'kindle', 'e-readers?',
+  // Audio, TV and video
+  'tvs?', 'oled', 'qled', '4k', '8k', 'projectors?', 'soundbars?', 'speakers?', 'headphones?', 'earbuds',
+  'airpods', 'headsets?', 'earphones?', 'beats', 'bose', 'jbl', 'sonos', 'roku', 'fire tv', 'chromecast',
+  'apple tv', 'streaming stick', 'blu-ray', 'cameras?', 'dash ?cams?', 'gopro', 'drones?',
+  // Networking and smart home
+  'routers?', 'wi-?fi', 'mesh', 'modems?', 'ethernet', 'eero', 'tp-link', 'netgear', 'echo', 'alexa',
+  'google home', 'nest', 'ring doorbell', 'video doorbell', 'smart plugs?', 'smart home', 'bluetooth',
+  // Power and accessories
+  'power banks?', 'chargers?', 'charging', 'hdmi', 'displayport', 'docking station', 'ups',
+  // Gaming
+  'gaming', 'xbox', 'playstation', 'ps5', 'nintendo', 'steam deck', 'controllers?', 'vr', 'meta quest',
+  // Brands that are almost always tech
+  'logitech', 'razer', 'corsair', 'anker', 'sandisk', 'samsung', 'sony', 'lenovo', 'dell', 'asus', 'acer',
+  'msi', 'alienware', 'nvidia', 'amd', 'intel', 'western digital', 'seagate', 'crucial', 'kingston',
+  'microsoft surface', 'surface pro', 'ugreen', 'belkin', 'tcl', 'hisense', 'vizio', 'lg oled', 'lg tv',
+];
+const TECH_PATTERN = new RegExp(`(?<![\\w-])(?:${TECH_WORDS.join('|')})(?![\\w-])`, 'i');
+
+export function isTechDeal(title) {
+  return TECH_PATTERN.test(title);
+}
+
 export function parseFeed(xml) {
   const items = xml.match(/<item[\s>][\s\S]*?<\/item>/gi) ?? [];
   return items.slice(0, MAX_DEALS).flatMap((item) => {
@@ -100,10 +136,12 @@ async function main(outPath) {
   const feedUrl = process.env.SLICKDEALS_FEED_URL || FEED_URL;
   let data;
   try {
-    const deals = parseFeed(await fetchText(feedUrl));
-    if (!deals.length) throw new Error('the feed had no deals (is the URL an RSS feed?)');
+    const all = parseFeed(await fetchText(feedUrl));
+    if (!all.length) throw new Error('the feed had no deals (is the URL an RSS feed?)');
+    const deals = all.filter((d) => isTechDeal(d.title));
+    if (!deals.length) throw new Error(`none of the feed's ${all.length} deals were tech deals`);
     data = { source: feedUrl, fetchedAt: new Date().toISOString(), deals };
-    console.log(`Fetched ${deals.length} deals from ${feedUrl}`);
+    console.log(`Fetched ${all.length} deals from ${feedUrl}; kept ${deals.length} tech deals`);
   } catch (err) {
     console.warn(`::warning::Couldn't read the Slickdeals feed (${err.message}). Keeping the live deals.`);
     try {
