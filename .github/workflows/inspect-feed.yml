@@ -1,0 +1,19 @@
+# Temporary: prints the raw Slickdeals feed so its links can be inspected. Removed before merging.
+name: Inspect deals feed
+on:
+  push:
+    branches: [claude/elegant-lamport-n1s015]
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -sSL -A 'TechDealsPage/1.0' "$FEED" -o feed.xml
+          echo "== size: $(wc -c < feed.xml)"
+          echo "== first 2 items (raw)"
+          awk '/<item>/{n++} n>=1 && n<=2' feed.xml | head -c 12000
+          echo
+          echo "== every href in the feed"
+          grep -oE 'href="[^"]+"' feed.xml | sed 's/&amp;/\&/g' | head -120
+        env:
+          FEED: ${{ vars.SLICKDEALS_FEED_URL }}
