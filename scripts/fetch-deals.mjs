@@ -96,6 +96,19 @@ export function isTechDeal(title) {
   return TECH_PATTERN.test(title);
 }
 
+// Slickdeals' store links are encrypted redirects (slickdeals.net/click?...&u3=...), but links to
+// Amazon carry the product ID: data-store-slug="amazon" data-aps-asin="B07Q32KX3J". That gives a
+// clean product link with no affiliate tag or tracking. Null when the deal has no Amazon link.
+export function amazonLinkFrom(html) {
+  for (const [a] of html.matchAll(/<a\s[^>]*>/gi)) {
+    const asin = a.match(/data-aps-asin=["']([A-Z0-9]{10})["']/i)?.[1];
+    if (asin && /data-store-slug=["']amazon["']|data-product-exitwebsite=["']amazon\.com["']/i.test(a)) {
+      return `https://www.amazon.com/dp/${asin.toUpperCase()}`;
+    }
+  }
+  return null;
+}
+
 export function parseFeed(xml) {
   const items = xml.match(/<item[\s>][\s\S]*?<\/item>/gi) ?? [];
   return items.slice(0, MAX_DEALS).flatMap((item) => {
@@ -107,16 +120,22 @@ export function parseFeed(xml) {
       body.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1] ??
       item.match(/<(?:media:content|media:thumbnail|enclosure)[^>]+url=["']([^"']+)["']/i)?.[1] ??
       null;
-    const thumbs = stripHtml(body).match(/Thumbs\s*Up:?\s*(\d+)/i)?.[1];
+    const thumbs = stripHtml(body).match(/Thumbs?\s*(?:Up|Score):?\s*\+?(-?\d+)/i)?.[1];
     const date = new Date(tag(item, 'pubDate'));
+    const amazon = amazonLinkFrom(body);
+    // Coupon codes are only in Slickdeals' description, so the page shows them on direct links.
+    const coupon = body.match(/class=["']code["'][^>]*>\s*(?:<[^>]+>\s*)*([A-Z0-9][A-Z0-9-]{2,29})\s*</i)?.[1] ?? null;
     return [
       {
         title,
-        link,
+        // Amazon deals link straight to the product; others to the Slickdeals deal page.
+        link: amazon ?? link,
+        thread: link,
         price: priceFromTitle(title),
-        store: storeFromTitle(title),
+        store: storeFromTitle(title) || (amazon ? 'Amazon' : ''),
         image: image && /^https:\/\//.test(image) ? decode(image) : null,
         thumbs: thumbs ? Number(thumbs) : null,
+        coupon,
         published: Number.isNaN(date.getTime()) ? null : date.toISOString(),
       },
     ];
@@ -141,7 +160,8 @@ async function main(outPath) {
     const deals = all.filter((d) => isTechDeal(d.title));
     if (!deals.length) throw new Error(`none of the feed's ${all.length} deals were tech deals`);
     data = { source: feedUrl, fetchedAt: new Date().toISOString(), deals };
-    console.log(`Fetched ${all.length} deals from ${feedUrl}; kept ${deals.length} tech deals`);
+    const direct = deals.filter((d) => d.link !== d.thread).length;
+    console.log(`Fetched ${all.length} deals from ${feedUrl}; kept ${deals.length} tech deals, ${direct} with a direct Amazon link`);
   } catch (err) {
     console.warn(`::warning::Couldn't read the Slickdeals feed (${err.message}). Keeping the live deals.`);
     try {

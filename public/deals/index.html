@@ -134,6 +134,14 @@
       .meta { margin-top: auto; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
       .price { font-size: 19px; font-weight: 700; color: var(--price); }
       .store { font-size: 12px; background: var(--chip); border-radius: 6px; padding: 2px 7px; }
+      .coupon {
+        font-size: 12px;
+        border: 1px dashed var(--price);
+        color: var(--price);
+        border-radius: 6px;
+        padding: 1px 6px;
+        user-select: all;
+      }
       .sub { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; }
       .empty { text-align: center; color: var(--muted); padding: 60px 16px; }
       footer { margin-top: 32px; color: var(--muted); font-size: 12px; text-align: center; }
@@ -198,6 +206,7 @@
               el('div', { className: 'meta' }, [
                 d.price != null && el('span', { className: 'price', textContent: money(d.price) }),
                 d.store && el('span', { className: 'store', textContent: d.store }),
+                d.coupon && el('span', { className: 'coupon', title: 'Use this code at checkout', textContent: 'Code ' + d.coupon }),
               ]),
               el('div', { className: 'sub' }, [
                 el('span', { textContent: d.published ? ago(d.published) : '' }),
