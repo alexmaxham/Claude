@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseFeed, priceFromTitle, storeFromTitle } from './fetch-deals.mjs';
+import { isTechDeal, parseFeed, priceFromTitle, storeFromTitle } from './fetch-deals.mjs';
 
 const FEED = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
@@ -50,5 +50,31 @@ describe('title parsing', () => {
   it('finds the first price', () => {
     expect(priceFromTitle('Monitor $199.99 (Reg. $299)')).toBe(199.99);
     expect(priceFromTitle('Free VPN for a year')).toBeNull();
+  });
+});
+
+describe('isTechDeal', () => {
+  it('keeps tech deals', () => {
+    for (const title of [
+      'Apple AirPods Pro 2 $169 at Amazon',
+      'Samsung 65" OLED TV $1,299 at Best Buy',
+      'Crucial 2TB NVMe SSD $99',
+      'TP-Link Deco Wi-Fi 7 mesh system $199',
+      'Anker 20,000mAh Power Bank $29',
+      'Nintendo Switch 2 Mario Kart bundle $499',
+      'Lenovo IdeaPad Slim 5 Laptop $549',
+      'Fire HD 10 Tablet $74.99',
+    ]) expect(isTechDeal(title), title).toBe(true);
+  });
+
+  it('drops deals from other categories', () => {
+    for (const title of [
+      "Levi's Men's 505 Jeans $24 at Amazon",
+      'Finish Quantum Dishwasher Tablets 82-Count $14',
+      'Cuisinart 10 pc Cookware Set $89',
+      'DeWalt 20V Drill and Impact Driver Kit $129',
+      'Apple Cider Vinegar 32oz $4',
+      'Hanes Crew T-Shirts 6-Pack $15',
+    ]) expect(isTechDeal(title), title).toBe(false);
   });
 });
