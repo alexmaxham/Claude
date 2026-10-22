@@ -100,6 +100,14 @@ VITE_FIREBASE_EMULATORS=true npm run dev
 - [Privacy policy](https://alexmaxham.github.io/Claude/privacy.html) (`public/privacy.html`), linked from the sign-in and account screens.
 - Undo after deleting a task. Light and dark mode follow the system. Reduced-motion is respected.
 
+## Tech deals page
+
+`public/deals/` is a separate page, live at https://alexmaxham.github.io/Claude/deals/, listing the latest tech and electronics deals from Slickdeals with search, store filters and sorting.
+
+Browsers can't read Slickdeals' RSS feed directly, so the deploy workflow fetches it (`scripts/fetch-deals.mjs`) and publishes it as `deals/deals.json`. The workflow also runs every 30 minutes to keep the deals fresh. If the feed can't be read, the deals already on the site are kept and the run shows a warning.
+
+To change the feed, set the repository variable `SLICKDEALS_FEED_URL` (Settings → Secrets and variables → Actions → Variables). No code change is needed.
+
 ## Project layout
 
 ```
