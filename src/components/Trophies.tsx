@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { addDays, dayKey } from '../core/dates';
 import type { Appearance } from '../appearance';
-import type { SyncResult } from '../cloud/calendar';
-import { authErrorMessage } from '../cloud/errors';
 import { ACHIEVEMENTS, levelFromXp, levelTitle, MAX_LEVEL, xpForLevel } from '../core/gamification';
 import { toCsv, toJson, toMarkdown, toTodoistCsv } from '../core/export';
 import { isThemeUnlocked, THEMES, type Action } from '../core/store';
@@ -28,8 +26,6 @@ interface Props {
   theme: ThemeId;
   appearance: Appearance;
   onAppearance: (a: Appearance) => void;
-  /** Present when signed in: syncs open, dated tasks to Google Calendar. */
-  syncCalendar: (() => Promise<SyncResult>) | null;
   soundOn: boolean;
   reminders: { on: boolean; time: string };
   onReminders: (r: { on: boolean; time: string }) => void;
@@ -199,67 +195,10 @@ function ExportButtons({ state }: { state: AppState }) {
   );
 }
 
-const CALENDAR_API_URL = 'https://console.cloud.google.com/apis/library/calendar-json.googleapis.com?project=questlog2-e03f9';
-
-function CalendarSync({ sync }: { sync: (() => Promise<SyncResult>) | null }) {
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
-  const [error, setError] = useState<{ text: string; notEnabled?: boolean } | null>(null);
-
-  const run = async () => {
-    if (!sync) return;
-    setBusy(true);
-    setError(null);
-    setResult(null);
-    try {
-      const r = await sync();
-      const parts = [r.created && `${r.created} added`, r.updated && `${r.updated} updated`, r.removed && `${r.removed} removed`].filter(Boolean);
-      setResult(parts.length ? `Synced: ${parts.join(', ')}.` : 'Already up to date.');
-    } catch (e) {
-      const kind = (e as { kind?: string }).kind;
-      if (kind === 'notEnabled') setError({ text: (e as Error).message, notEnabled: true });
-      else if ((e as { code?: string }).code) {
-        const msg = authErrorMessage(e);
-        if (msg) setError({ text: msg });
-      } else setError({ text: (e as Error).message || 'Couldn’t sync with Google Calendar.' });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="setting setting-wrap">
-      <span>
-        Google Calendar
-        <span className="muted small" style={{ display: 'block' }}>
-          {sync
-            ? 'Adds each open quest with a due date to your calendar as an all-day event, and removes ones you’ve finished.'
-            : 'Sign in to sync your quests to Google Calendar.'}
-        </span>
-        {result && <span className="small success-text" style={{ display: 'block' }}>{result}</span>}
-        {error && (
-          <span className="small error-text" style={{ display: 'block' }}>
-            {error.text}{' '}
-            {error.notEnabled && (
-              <a href={CALENDAR_API_URL} target="_blank" rel="noreferrer">
-                Enable it here
-              </a>
-            )}
-          </span>
-        )}
-      </span>
-      <button className="btn" disabled={!sync || busy} onClick={run}>
-        {busy ? 'Syncing…' : 'Sync now'}
-      </button>
-    </div>
-  );
-}
-
 function SettingsPanel({
   state,
   appearance,
   onAppearance,
-  syncCalendar,
   stats,
   theme,
   soundOn,
@@ -383,11 +322,6 @@ function SettingsPanel({
           <button className="btn danger" onClick={() => setConfirmReset(true)}>Reset</button>
         )}
       </div>
-    </div>
-
-    <h3>Connected apps</h3>
-    <div className="settings glass-soft">
-      <CalendarSync sync={syncCalendar} />
     </div>
 
     <h3>Export your tasks</h3>

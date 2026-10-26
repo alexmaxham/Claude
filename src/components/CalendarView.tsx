@@ -1,5 +1,4 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
-import type { GoogleEvent } from '../cloud/calendar';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { addDays, dayKey } from '../core/dates';
 import { formatEstimate } from '../core/parse';
 import type { NewTask } from '../core/store';
@@ -20,8 +19,6 @@ interface Props {
   onToggle: (task: Task, el: HTMLElement) => void;
   onOpen: (task: Task) => void;
   renderTask: (task: Task) => ReactNode;
-  /** Present when signed in: the user's own Google Calendar events. */
-  loadEvents: ((from: string, to: string) => Promise<GoogleEvent[]>) | null;
 }
 
 const parse = (key: string) => {
@@ -30,13 +27,10 @@ const parse = (key: string) => {
 };
 
 /** A month of quests (dots per day, the picked day's list beside it) or a week you can drag quests around in. */
-export function CalendarView({ tasks, stats, categories, mode, onMode, onAdd, onMove, onToggle, onOpen, renderTask, loadEvents }: Props) {
+export function CalendarView({ tasks, stats, categories, mode, onMode, onAdd, onMove, onToggle, onOpen, renderTask }: Props) {
   const today = dayKey();
   const [selected, setSelected] = useState(today);
   const [month, setMonth] = useState(() => today.slice(0, 7)); // "2026-10"
-  const [showEvents, setShowEvents] = useState(false);
-  const [events, setEvents] = useState<GoogleEvent[]>([]);
-  const [eventsError, setEventsError] = useState<string | null>(null);
 
   const [y, m] = month.split('-').map(Number);
   const first = dayKey(new Date(y, m - 1, 1));
@@ -65,26 +59,6 @@ export function CalendarView({ tasks, stats, categories, mode, onMode, onAdd, on
 
   const drag = useDropDrag((id, day) => onMove(id, day));
 
-  // Google events for what's on screen.
-  const from = mode === 'week' ? week[0] : cells[0];
-  const to = mode === 'week' ? week[6] : cells[41];
-  useEffect(() => {
-    if (!showEvents || !loadEvents) return;
-    let live = true;
-    setEventsError(null);
-    loadEvents(from, to)
-      .then((e) => live && setEvents(e))
-      .catch((e: Error) => {
-        if (!live) return;
-        setEventsError(e.message || 'Couldn’t load Google Calendar.');
-        setShowEvents(false);
-      });
-    return () => {
-      live = false;
-    };
-  }, [showEvents, loadEvents, from, to]);
-  const eventsOn = (d: string) => (showEvents ? events.filter((e) => e.day === d) : []);
-
   const head = (
     <div className="calendar-toolbar">
       <div className="segmented calendar-mode" role="radiogroup" aria-label="Calendar view">
@@ -94,12 +68,6 @@ export function CalendarView({ tasks, stats, categories, mode, onMode, onAdd, on
           </button>
         ))}
       </div>
-      {loadEvents && (
-        <button className={`chip ${showEvents ? 'active' : ''}`} onClick={() => setShowEvents((s) => !s)} aria-pressed={showEvents}>
-          📆 Google Calendar
-        </button>
-      )}
-      {eventsError && <span className="small error-text">{eventsError}</span>}
     </div>
   );
 
@@ -136,11 +104,6 @@ export function CalendarView({ tasks, stats, categories, mode, onMode, onAdd, on
                   <span className="dn">{parse(d).getDate()}</span>
                   {mins > 0 && <span className="muted small">{formatEstimate(mins)}</span>}
                 </header>
-                {eventsOn(d).map((e) => (
-                  <div key={e.id} className="gcal-event" title="From Google Calendar">
-                    {e.time && <span className="gcal-time">{e.time}</span>} {e.title}
-                  </div>
-                ))}
                 <ul className="week-cards">
                   {list.map((t) => {
                     const cat = categories.find((c) => c.id === t.categoryId);
@@ -171,7 +134,7 @@ export function CalendarView({ tasks, stats, categories, mode, onMode, onAdd, on
                     );
                   })}
                 </ul>
-                {list.length === 0 && eventsOn(d).length === 0 && <p className="week-empty muted small">Free</p>}
+                {list.length === 0 && <p className="week-empty muted small">Free</p>}
               </section>
             );
           })}
@@ -225,7 +188,6 @@ export function CalendarView({ tasks, stats, categories, mode, onMode, onAdd, on
                   <span className="calendar-num">{date.getDate()}</span>
                   <span className={`calendar-dots ${late ? 'late' : ''}`} aria-hidden="true">
                     {frozen ? '🧊' : Array.from({ length: Math.min(n, 3) }, (_, i) => <i key={i} />)}
-                    {eventsOn(d).length > 0 && <i className="gcal-dot" />}
                   </span>
                 </button>
               );
@@ -244,16 +206,6 @@ export function CalendarView({ tasks, stats, categories, mode, onMode, onAdd, on
           <QuickAdd key={selected} categories={categories} defaultCategoryId={null} defaultDue={selected} onAdd={onAdd} />
         )}
 
-        {eventsOn(selected).length > 0 && (
-          <>
-            <h3 className="calendar-sub">On your calendar</h3>
-            {eventsOn(selected).map((e) => (
-              <div key={e.id} className="gcal-event">
-                {e.time && <span className="gcal-time">{e.time}</span>} {e.title}
-              </div>
-            ))}
-          </>
-        )}
         {overdue.length > 0 && (
           <>
             <h3 className="calendar-sub late">Overdue</h3>

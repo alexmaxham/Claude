@@ -1,4 +1,4 @@
-// Turns on native Google sign-in (and Google Calendar sync) in the iPhone app.
+// Turns on native Google sign-in in the iPhone app.
 // Download GoogleService-Info.plist for the iOS app from the Firebase console, then:
 //   npm run ios:google -- ~/Downloads/GoogleService-Info.plist
 // It copies the file into the Xcode project, registers Google's URL scheme in

@@ -12,7 +12,7 @@ const config = {
 };
 
 /**
- * Google sign-in (and Calendar sync) in the iPhone app goes through the native
+ * Google sign-in in the iPhone app goes through the native
  * Google SDK, which needs GoogleService-Info.plist in ios/App/App and the URL scheme
  * from it in Info.plist. `npm run ios:google -- <path to the plist>` does both and
  * turns this on (see README → iPhone app). Until then the app offers email sign-in
