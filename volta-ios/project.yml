@@ -1,0 +1,44 @@
+# XcodeGen spec: `xcodegen generate` makes VoltaBench.xcodeproj (volta_bench.py does this for you).
+name: VoltaBench
+options:
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    # Override on the command line: BUNDLE_PREFIX=com.you DEVELOPMENT_TEAM=ABCDE12345
+    BUNDLE_PREFIX: com.alexmaxham
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    GENERATE_INFOPLIST_FILE: YES
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  VoltaBench:
+    type: application
+    platform: iOS
+    sources: [App]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_PREFIX).voltabench
+        INFOPLIST_KEY_CFBundleDisplayName: Volta Bench
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+  VoltaBenchRunner:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [Runner]
+    dependencies:
+      - target: VoltaBench
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_PREFIX).voltabench.runner
+        TEST_TARGET_NAME: VoltaBench
+schemes:
+  VoltaBench:
+    build:
+      targets:
+        VoltaBench: all
+        VoltaBenchRunner: [test]
+    test:
+      targets: [VoltaBenchRunner]

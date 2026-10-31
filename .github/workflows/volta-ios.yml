@@ -1,0 +1,36 @@
+name: Volta iOS benchmark
+
+# Tests the Mac side and compiles the iPhone runner (unsigned, for the simulator) so a change can't break either unnoticed.
+on:
+  push:
+    paths: ['volta-ios/**', '.github/workflows/volta-ios.yml']
+  pull_request:
+    paths: ['volta-ios/**', '.github/workflows/volta-ios.yml']
+  workflow_dispatch:
+
+jobs:
+  mac-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s volta-ios/mac -v
+
+  runner:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - run: brew install xcodegen
+      - run: xcodegen generate
+        working-directory: volta-ios
+      - name: Build the app and UI test runner for the iOS simulator
+        working-directory: volta-ios
+        run: |
+          xcodebuild build-for-testing -project VoltaBench.xcodeproj -scheme VoltaBench \
+            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO | tail -60
+          exit ${PIPESTATUS[0]}
