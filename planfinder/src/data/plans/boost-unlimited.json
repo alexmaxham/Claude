@@ -6,15 +6,18 @@
   "networks": [
     "AT&T"
   ],
-  "premiumData": 0,
+  "premiumData": 30,
+  "data": "unlimited",
   "hotspot": 0,
-  "hotspotNote": "Not listed",
-  "international": "Mexico & Canada included",
+  "hotspotNote": "Add-on only",
+  "perks": [],
+  "international": "Not included (add-ons available)",
   "billing": "prepaid",
   "taxesIncluded": false,
-  "perks": [],
-  "data": "unlimited",
-  "highlights": [],
+  "terms": "Price stays $25 as long as you stay active",
+  "highlights": [
+    "Price locked at $25"
+  ],
   "sourceUrl": "https://www.boostmobile.com/plans",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }

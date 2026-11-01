@@ -1,0 +1,22 @@
+{
+  "carrier": "metro",
+  "name": "$40 Period",
+  "price": 40,
+  "networks": [
+    "T-Mobile"
+  ],
+  "premiumData": 35,
+  "data": "unlimited",
+  "hotspot": 0,
+  "perks": [],
+  "international": "Not listed",
+  "billing": "prepaid",
+  "taxesIncluded": true,
+  "terms": "5-year price guarantee. No AutoPay needed.",
+  "highlights": [
+    "Taxes and fees included",
+    "No AutoPay needed"
+  ],
+  "sourceUrl": "https://www.metrobyt-mobile.com/phone-plans",
+  "lastVerified": "2026-11-01"
+}

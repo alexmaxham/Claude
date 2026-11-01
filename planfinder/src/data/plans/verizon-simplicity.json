@@ -1,0 +1,32 @@
+{
+  "carrier": "verizon",
+  "name": "Simplicity Plan",
+  "price": 45,
+  "priceWithoutAutopay": 55,
+  "multiLine": {
+    "2": 45,
+    "3": 45,
+    "4": 45
+  },
+  "networks": [
+    "Verizon"
+  ],
+  "premiumData": 500,
+  "data": "unlimited",
+  "hotspot": 10,
+  "hotspotNote": "10GB, then 1 Mbps",
+  "perks": [
+    "3% back in Verizon Dollars",
+    "Satellite texting"
+  ],
+  "international": "Calls to Mexico & Canada; talk, text & data in Mexico & Canada; texts to 200+ countries",
+  "billing": "postpaid",
+  "taxesIncluded": false,
+  "terms": "$30/line when you switch from another carrier ($15/mo switch discount). Data slows to 4 Mbps after 500GB.",
+  "highlights": [
+    "Same price for every line",
+    "$30/line when you switch"
+  ],
+  "sourceUrl": "https://www.verizon.com/plans/unlimited/",
+  "lastVerified": "2026-11-01"
+}

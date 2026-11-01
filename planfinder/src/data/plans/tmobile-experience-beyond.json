@@ -1,27 +1,32 @@
 {
   "carrier": "tmobile",
-  "name": "Experience Beyond",
+  "name": "Experience Beyond 2.0",
   "price": 100,
   "priceWithoutAutopay": 105,
+  "multiLine": {
+    "2": 85,
+    "3": 71.67,
+    "4": 65
+  },
   "networks": [
     "T-Mobile"
   ],
   "premiumData": "unlimited",
+  "data": "unlimited",
   "hotspot": 250,
   "perks": [
-    "Netflix",
-    "Apple TV",
-    "Hulu"
+    "Netflix Standard with ads",
+    "Hulu",
+    "T-Satellite"
   ],
-  "international": "Texting and data in 215+ countries",
+  "international": "Texting and 15GB data in 215+ countries; 30GB in Canada & Mexico",
   "billing": "postpaid",
   "taxesIncluded": false,
-  "terms": "Plus a $5.49 per line fee",
+  "terms": "Plus a $5.49 per line fee. 5-year price guarantee.",
   "highlights": [
-    "Three streaming services",
+    "Netflix and Hulu included",
     "250GB hotspot"
   ],
-  "data": "unlimited",
   "sourceUrl": "https://www.t-mobile.com/cell-phone-plans",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }

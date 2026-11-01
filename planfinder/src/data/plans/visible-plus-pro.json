@@ -6,16 +6,16 @@
     "Verizon"
   ],
   "premiumData": "unlimited",
+  "data": "unlimited",
   "hotspot": "unlimited",
   "hotspotNote": "Unlimited at 15 Mbps",
-  "international": "Mexico & Canada included",
+  "perks": [],
+  "international": "Roaming in Mexico & Canada; texts to 200+ countries; calls to 85+ countries; 2 Global Pass days a month",
   "billing": "prepaid",
   "taxesIncluded": true,
   "highlights": [
     "Faster hotspot than Visible+"
   ],
-  "perks": [],
-  "data": "unlimited",
   "sourceUrl": "https://www.visible.com/plans",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }

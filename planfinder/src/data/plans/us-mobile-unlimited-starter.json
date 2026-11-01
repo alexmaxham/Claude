@@ -1,0 +1,29 @@
+{
+  "carrier": "us-mobile",
+  "name": "Unlimited Starter",
+  "price": 25,
+  "multiLine": {
+    "2": 25,
+    "3": 25,
+    "4": 25
+  },
+  "networks": [
+    "Verizon",
+    "AT&T",
+    "T-Mobile"
+  ],
+  "premiumData": 0,
+  "data": "unlimited",
+  "hotspot": 20,
+  "hotspotNote": "20GB on Dark Star; varies by network",
+  "perks": [],
+  "international": "International calling & texting; roaming is an add-on",
+  "billing": "prepaid",
+  "taxesIncluded": true,
+  "highlights": [
+    "Choose from 3 networks",
+    "Same price for every line"
+  ],
+  "sourceUrl": "https://www.usmobile.com/plans",
+  "lastVerified": "2026-11-01"
+}

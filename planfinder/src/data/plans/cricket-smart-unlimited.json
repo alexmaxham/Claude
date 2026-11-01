@@ -3,20 +3,28 @@
   "name": "Smart Unlimited",
   "price": 45,
   "priceWithoutAutopay": 50,
+  "multiLine": {
+    "2": 37.5,
+    "3": 31.67,
+    "4": 27.5
+  },
   "networks": [
     "AT&T"
   ],
   "premiumData": 0,
-  "hotspot": 0,
-  "hotspotNote": "Not listed",
-  "international": "Mexico & Canada included",
+  "data": "unlimited",
+  "hotspot": 15,
+  "perks": [
+    "100GB cloud storage"
+  ],
+  "international": "Use in Mexico & Canada; calls & texts to Mexico & Canada; texts to 200+ countries",
   "billing": "prepaid",
   "taxesIncluded": true,
+  "terms": "First month is $5 more; the AutoPay price starts after that",
   "highlights": [
-    "Taxes and fees included"
+    "Taxes and fees included",
+    "15GB hotspot"
   ],
-  "perks": [],
-  "data": "unlimited",
-  "sourceUrl": "https://www.cricketwireless.com/cell-phone-plans",
-  "lastVerified": null
+  "sourceUrl": "https://www.cricketwireless.com/plans/phone",
+  "lastVerified": "2026-11-01"
 }

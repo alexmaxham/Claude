@@ -1,25 +1,30 @@
 {
   "carrier": "att",
   "name": "Unlimited Premium 2.0",
-  "price": 80,
-  "priceWithoutAutopay": 90,
+  "price": 95,
+  "priceWithoutAutopay": 105,
   "multiLine": {
+    "2": 85,
+    "3": 70,
     "4": 55
   },
   "networks": [
     "AT&T"
   ],
   "premiumData": "unlimited",
+  "data": "unlimited",
   "hotspot": 100,
-  "international": "Mexico & Canada included",
+  "perks": [
+    "50% off one tablet or smartwatch line"
+  ],
+  "international": "Mexico & Canada, plus 20 Latin American countries",
   "billing": "postpaid",
   "taxesIncluded": false,
+  "terms": "$5/line less for up to 36 months on a new line when you bring your own phone. Full AutoPay discount needs a bank account or AT&T Points Plus card.",
   "highlights": [
     "Unlimited premium data",
     "100GB hotspot"
   ],
-  "perks": [],
-  "data": "unlimited",
   "sourceUrl": "https://www.att.com/plans/wireless/",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }

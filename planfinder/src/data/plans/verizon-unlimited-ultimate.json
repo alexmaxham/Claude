@@ -3,19 +3,32 @@
   "name": "Unlimited Ultimate",
   "price": 95,
   "priceWithoutAutopay": 105,
+  "multiLine": {
+    "2": 85,
+    "3": 70,
+    "4": 60
+  },
   "networks": [
     "Verizon"
   ],
   "premiumData": "unlimited",
-  "hotspot": 60,
-  "international": "Calling, texting and data in many countries",
+  "data": "unlimited",
+  "hotspot": 200,
+  "hotspotNote": "200GB, then unlimited at 6 Mbps",
+  "perks": [
+    "Verizon Family Plus",
+    "Identity Secure",
+    "50% off two watch or tablet plans"
+  ],
+  "international": "Talk, text & 15GB data in 210+ countries; calls to one country with Global Choice; Mexico & Canada included",
   "billing": "postpaid",
   "taxesIncluded": false,
+  "terms": "3-year price guarantee",
   "highlights": [
-    "Verizon’s top plan"
+    "Unlimited premium data",
+    "200GB hotspot",
+    "Works abroad in 210+ countries"
   ],
-  "perks": [],
-  "data": "unlimited",
-  "sourceUrl": "https://www.verizon.com/plans/unlimited/",
-  "lastVerified": null
+  "sourceUrl": "https://www.verizon.com/plans/unlimited/myplan",
+  "lastVerified": "2026-11-01"
 }

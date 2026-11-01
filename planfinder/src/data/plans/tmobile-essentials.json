@@ -1,21 +1,26 @@
 {
   "carrier": "tmobile",
-  "name": "Essentials",
+  "name": "Essentials 2.0",
   "price": 60,
   "priceWithoutAutopay": 65,
+  "multiLine": {
+    "2": 45,
+    "3": 35,
+    "4": 30
+  },
   "networks": [
     "T-Mobile"
   ],
   "premiumData": 50,
+  "data": "unlimited",
   "hotspot": 0,
   "hotspotNote": "Unlimited at 3G speeds",
+  "perks": [],
   "international": "Mexico & Canada included",
   "billing": "postpaid",
   "taxesIncluded": false,
   "terms": "Plus a $5.49 per line fee",
-  "perks": [],
-  "data": "unlimited",
   "highlights": [],
   "sourceUrl": "https://www.t-mobile.com/cell-phone-plans",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }
