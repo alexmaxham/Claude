@@ -2,7 +2,7 @@
 
 A site for comparing phone plans from Verizon, AT&T and T-Mobile plus MVNOs and prepaid carriers. Visitors answer three questions, get a ranked list, and shortlist up to four plans to compare side by side.
 
-Built with [Astro](https://astro.build) as a fully static site. Live at https://alexmaxham.github.io/Claude/plans/ once merged (the repo's GitHub Pages deploy builds it into `/plans/`).
+Built with [Astro](https://astro.build) as a fully static site. Live at https://alexmaxham.github.io/Claude/ (published by `.github/workflows/deploy.yml` on every push to the default branch).
 
 ## Commands
 
@@ -11,7 +11,7 @@ Run these from the `planfinder/` folder.
 | Command | What it does |
 | --- | --- |
 | `npm install` | Install dependencies |
-| `npm run dev` | Local server at http://localhost:4321/Claude/plans/ |
+| `npm run dev` | Local server at http://localhost:4321/Claude/ |
 | `npm test` | Unit tests for ranking and comparison |
 | `npm run build` | Type-check, check every data file against the schema, build into `dist/` |
 | `npm run preview` | Serve the built site |

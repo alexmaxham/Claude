@@ -1,11 +1,10 @@
 name: Deploy to GitHub Pages
 
+# Builds the plan comparison site in planfinder/ and publishes it at https://alexmaxham.github.io/Claude/.
 on:
   push:
     branches: [main, claude/gamified-todo-app-wc0pod]
-  # Refreshes the deals page (/deals/) every 30 minutes.
-  schedule:
-    - cron: '7,37 * * * *'
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -14,41 +13,34 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: planfinder
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            planfinder/package-lock.json
+          cache-dependency-path: planfinder/package-lock.json
       - run: npm ci
       - run: npm test
       - run: npm run build
-      # Phone plan comparison site, published at /plans/ (source in planfinder/).
-      - name: Build plan finder
-        working-directory: planfinder
-        run: |
-          npm ci
-          npm test
-          npm run build
-      - run: cp -r planfinder/dist dist/plans
-      - run: node scripts/fetch-deals.mjs dist/deals/deals.json
-        env:
-          SLICKDEALS_FEED_URL: ${{ vars.SLICKDEALS_FEED_URL }}
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v4
+      - if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: dist
+          path: planfinder/dist
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
