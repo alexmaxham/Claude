@@ -1,6 +1,7 @@
 {
   "carrier": "metro",
   "name": "Unlimited 5G Data",
+  "description": "Metro's mid-range plan on T-Mobile's network, with 50GB of premium data, 8GB of hotspot and 100GB of Google One storage. Taxes and fees are included.",
   "price": 50,
   "priceWithoutAutopay": 55,
   "networks": [
@@ -20,5 +21,6 @@
     "Taxes and fees included"
   ],
   "sourceUrl": "https://www.metrobyt-mobile.com/phone-plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": []
 }

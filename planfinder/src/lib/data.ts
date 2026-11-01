@@ -61,9 +61,10 @@ async function load() {
       terms: data.terms,
       multiLine: data.multiLine,
       taxesIncluded: data.taxesIncluded,
+      autopayDiscount: data.priceWithoutAutopay ? Math.round((data.priceWithoutAutopay - data.price) * 100) / 100 : 0,
       verified: data.lastVerified !== null,
     };
-    return { ...data, slug: id, url, carrierInfo, lite };
+    return { ...data, slug: id, url, carrierInfo, lite, autopayTerms: data.autopayTerms ?? carrierInfo.autopayTerms };
   });
   plans.sort((a, b) => a.price - b.price || a.slug.localeCompare(b.slug));
   carriers.sort((a, b) => ['big3', 'mvno', 'prepaid'].indexOf(a.kind) - ['big3', 'mvno', 'prepaid'].indexOf(b.kind) || a.name.localeCompare(b.name));

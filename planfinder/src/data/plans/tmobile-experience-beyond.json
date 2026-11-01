@@ -1,6 +1,7 @@
 {
   "carrier": "tmobile",
   "name": "Experience Beyond 2.0",
+  "description": "T-Mobile's top plan, with unlimited premium data, 250GB of hotspot, Netflix Standard with ads, Hulu and T-Satellite. Includes texting and 15GB of data in 215+ countries, and a 5-year price guarantee.",
   "price": 100,
   "priceWithoutAutopay": 105,
   "multiLine": {
@@ -28,5 +29,11 @@
     "250GB hotspot"
   ],
   "sourceUrl": "https://www.t-mobile.com/cell-phone-plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "3rd line free",
+      "details": "T-Mobile gives a 3rd line free through monthly bill credits. The credits stop if you cancel a line."
+    }
+  ]
 }

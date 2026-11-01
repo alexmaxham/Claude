@@ -1,6 +1,7 @@
 {
   "carrier": "att",
   "name": "Unlimited Value 2.0",
+  "description": "AT&T's lowest-priced unlimited plan. You get unlimited data, but only the first 5GB each month is premium, so speeds may slow when the network is busy after that. Hotspot is limited to 3GB.",
   "price": 55,
   "priceWithoutAutopay": 65,
   "multiLine": {
@@ -18,10 +19,19 @@
   "international": "Mexico & Canada included",
   "billing": "postpaid",
   "taxesIncluded": false,
-  "terms": "$5/line less for up to 36 months on a new line when you bring your own phone. Full AutoPay discount needs a bank account or AT&T Points Plus card.",
   "highlights": [
     "Lowest-priced AT&T unlimited plan"
   ],
   "sourceUrl": "https://www.att.com/plans/wireless/",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "$5/line off when you bring your own phone",
+      "details": "A $5/mo bill credit per line for up to 36 months on each new line that uses your own phone. Our prices leave this out, so with it you pay $5/line less."
+    },
+    {
+      "title": "Extra $5/line off with 4+ new lines",
+      "details": "An extra $5/mo off each new line for 12 months when you have 4 or more lines."
+    }
+  ]
 }

@@ -1,6 +1,7 @@
 {
   "carrier": "cricket",
   "name": "Select Unlimited",
+  "description": "Cricket's lowest-priced unlimited plan on the AT&T network, for new lines only. Video is limited to SD, hotspot is an add-on, and taxes and fees are included.",
   "price": 35,
   "priceWithoutAutopay": 40,
   "multiLine": {
@@ -25,5 +26,6 @@
     "Lowest-priced Cricket unlimited plan"
   ],
   "sourceUrl": "https://www.cricketwireless.com/plans/phone",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": []
 }

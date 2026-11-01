@@ -24,12 +24,16 @@ export const carrierSchema = z.object({
   logo: z.string().regex(/^[a-z0-9-]+\.(svg|png|webp)$/).optional(),
   website: z.string().url(),
   summary: z.string(),
+  /** How the carrier's AutoPay discount works: amount, which payment methods qualify, when it starts. */
+  autopayTerms: z.string(),
 });
 
 export const planSchema = z.object({
   /** Slug of the carrier file in src/data/carriers/. */
   carrier: slug,
   name: z.string(),
+  /** A short, plain description of who the plan suits and what stands out. */
+  description: z.string().min(40),
   /** Monthly price for one line, with autopay if offered, before taxes and fees. */
   price: z.number().positive(),
   /** Monthly price for one line without autopay, if different. */
@@ -55,6 +59,19 @@ export const planSchema = z.object({
   /** e.g. "Pay for 12 months upfront for this price". */
   terms: z.string().optional(),
   highlights: z.array(z.string()).max(4).default([]),
+  /** Overrides the carrier's AutoPay terms for this plan (e.g. a plan with no AutoPay discount). */
+  autopayTerms: z.string().optional(),
+  /** Limited-time offers. They are shown on the plan page but never included in prices. */
+  deals: z
+    .array(
+      z.object({
+        title: z.string(),
+        details: z.string(),
+        /** Last day of the offer (YYYY-MM-DD), if the carrier gives one. */
+        ends: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      }),
+    )
+    .default([]),
   /** The carrier page this plan's details came from. */
   sourceUrl: z.string().url(),
   /** Date someone last checked this plan against sourceUrl (YYYY-MM-DD), or null if never. */

@@ -1,6 +1,7 @@
 {
   "carrier": "mint",
   "name": "Unlimited",
+  "description": "A low-cost plan on T-Mobile's network. The lowest price needs 12 months paid upfront. You get 50GB of premium data and 20GB of hotspot.",
   "price": 30,
   "networks": [
     "T-Mobile"
@@ -17,5 +18,6 @@
   "perks": [],
   "data": "unlimited",
   "sourceUrl": "https://www.mintmobile.com/plans/",
-  "lastVerified": null
+  "lastVerified": null,
+  "deals": []
 }

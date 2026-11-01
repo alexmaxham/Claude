@@ -9,7 +9,7 @@ function plan(slug: string, o: Partial<PlanLite> & { kind?: PlanLite['carrier'][
     slug, name: slug, url: `/plans/${slug}/`,
     carrier: { slug: `${slug}-c`, name: `${slug} Carrier`, kind, color: '#000000', textOnColor: '#FFFFFF', monogram: 'X', logoUrl: null },
     price: 50, networks: ['T-Mobile'], premiumData: 0, data: 'unlimited', hotspot: 0, perks: [],
-    international: 'None', billing: 'prepaid', taxesIncluded: false, verified: false, ...rest,
+    international: 'None', billing: 'prepaid', taxesIncluded: false, autopayDiscount: 0, verified: false, ...rest,
   };
 }
 
@@ -104,5 +104,14 @@ describe('multi-line pricing', () => {
     expect(parseLines('3')).toBe(3);
     expect(parseLines('9')).toBe(1);
     expect(parseLines(null)).toBe(1);
+  });
+});
+
+describe('AutoPay transparency', () => {
+  it('shows the AutoPay discount in the comparison, or none', () => {
+    const withDiscount = plan('ap', { price: 65, autopayDiscount: 10 });
+    const without = plan('none', { price: 25 });
+    const row = compareRows([withDiscount, without]).find((r) => r.label === 'AutoPay discount')!;
+    expect(row.cells.map((c) => c.text)).toEqual(['$10/line, included in price', 'None (same price either way)']);
   });
 });

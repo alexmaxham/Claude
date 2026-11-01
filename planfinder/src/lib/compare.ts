@@ -39,6 +39,10 @@ function rowsFor(lines: number): RowDef[] {
 }
 
 const ROWS: RowDef[] = [
+  {
+    label: 'AutoPay discount',
+    text: (p) => (p.autopayDiscount > 0 ? `${formatPrice(p.autopayDiscount)}/line, included in price` : 'None (same price either way)'),
+  },
   { label: 'Taxes & fees', text: (p) => (p.taxesIncluded ? 'Included in price' : 'Extra') },
   { label: 'Network', text: (p) => formatNetworks(p.networks) },
   { label: 'Carrier type', text: (p) => KIND_LONG[p.carrier.kind] },

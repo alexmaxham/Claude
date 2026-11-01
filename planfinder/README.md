@@ -20,7 +20,7 @@ Run these from the `planfinder/` folder.
 
 - `/` guided finder: four questions (lines, data, priority, hotspot) rank every plan, with a "why it fits" line. Answers are kept in the URL so a ranking can be shared.
 - `/plans/` every plan, filterable by carrier type, network and price. Accepts `?kind=mvno` and `?network=Verizon`.
-- `/plans/<slug>/` one plan: full details, source link, when it was last checked, similar plans.
+- `/plans/<slug>/` one plan: description, a pricing table for 1–4 lines with and without AutoPay, the AutoPay discount and how to qualify, plan details, current deals, source link, when it was last checked, and similar plans.
 - `/carriers/` and `/carriers/<slug>/` carriers grouped by type, with their plans.
 - `/compare/` the shortlist side by side, best value in each row marked, priced for 1–4 lines. `?plans=a,b,c&lines=4` opens a shared comparison.
 - `/about/` how plans are ranked and compared.

@@ -9,5 +9,6 @@
   "monogram": "AT&T",
   "logo": "att.svg",
   "website": "https://www.att.com/",
-  "summary": "One of the three national networks. Plans are postpaid and billed monthly."
+  "summary": "One of the three national networks. Plans are postpaid and billed monthly.",
+  "autopayTerms": "AT&T takes $10 off each line every month with AutoPay and paperless billing from a bank account or the AT&T Points Plus Card. A debit card gets $5 off per line. Any other credit card gets no discount. The discount starts within 2 bills."
 }

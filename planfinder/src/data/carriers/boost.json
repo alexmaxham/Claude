@@ -9,5 +9,6 @@
   "monogram": "B",
   "logo": "boost.svg",
   "website": "https://www.boostmobile.com/",
-  "summary": "Runs on its own network, with AT&T coverage where it has none."
+  "summary": "Runs on its own network, with AT&T coverage where it has none.",
+  "autopayTerms": "Boost takes $5 off each line every month with AutoPay. If you turn AutoPay off, the price goes up by $5 per line."
 }
