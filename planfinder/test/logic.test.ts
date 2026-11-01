@@ -3,15 +3,15 @@ import { compareRows, parsePlanList } from '../src/lib/compare';
 import { costOver } from '../src/lib/cost';
 import { verdict } from '../src/lib/versus';
 import { formatAmount, formatHotspot, formatPrice, parseLines, priceFor, type PlanLite } from '../src/lib/model';
-import { DEFAULT_ANSWERS, parseAnswers, rankPlans } from '../src/lib/score';
+import { canBuy, DEFAULT_ANSWERS, parseAnswers, rankPlans } from '../src/lib/score';
 
 function plan(slug: string, o: Partial<PlanLite> & { kind?: PlanLite['carrier']['kind'] } = {}): PlanLite {
   const { kind = 'mvno', ...rest } = o;
   return {
     slug, name: slug, url: `/plans/${slug}/`,
-    carrier: { slug: `${slug}-c`, name: `${slug} Carrier`, kind, color: '#000000', textOnColor: '#FFFFFF', monogram: 'X', logoUrl: null },
+    carrier: { slug: `${slug}-c`, name: `${slug} Carrier`, kind, color: '#000000', textOnColor: '#FFFFFF', monogram: 'X', logoUrl: null, logoBackground: '#FFFFFF' },
     price: 50, networks: ['T-Mobile'], premiumData: 0, data: 'unlimited', hotspot: 0, perks: [],
-    international: 'None', billing: 'prepaid', taxesIncluded: false, autopayDiscount: 0, monthlyFee: 0, oneTimeFee: 0, firstMonthExtra: 0, verified: false, ...rest,
+    international: 'None', billing: 'prepaid', taxesIncluded: false, autopayDiscount: 0, monthlyFee: 0, oneTimeFee: 0, firstMonthExtra: 0, requires: null, verified: false, ...rest,
   };
 }
 
@@ -157,5 +157,26 @@ describe('price formatting', () => {
     expect(formatPrice(1120.88)).toBe('$1,120.88');
     expect(formatPrice(2400)).toBe('$2,400');
     expect(priceFor(plan('t', { price: 85, multiLine: { '3': 56.67 } }), 3).total).toBe(170);
+  });
+});
+
+describe('plan requirements', () => {
+  it('shows what a plan requires in the comparison', () => {
+    const cable = plan('cable', { requires: 'Requires Xfinity Internet at home' });
+    const open = plan('open');
+    const row = compareRows([cable, open]).find((r) => r.label === 'Requires')!;
+    expect(row.cells.map((c) => c.text)).toEqual(['Requires Xfinity Internet at home', 'Nothing extra']);
+  });
+});
+
+describe('plans that need home internet', () => {
+  const cable = plan('cable', { price: 20, requires: 'Requires Cable Internet at home' });
+  const open = plan('open', { price: 40 });
+  it('sorts plans you can\'t buy after the ones you can', () => {
+    expect(rankPlans([cable, open], DEFAULT_ANSWERS)[0].plan.slug).toBe('open');
+  });
+  it('ranks them normally when you have the internet service', () => {
+    expect(rankPlans([cable, open], DEFAULT_ANSWERS, ['cable-c'])[0].plan.slug).toBe('cable');
+    expect(canBuy(cable, ['cable-c'])).toBe(true);
   });
 });

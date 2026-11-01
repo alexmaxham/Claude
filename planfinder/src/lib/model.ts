@@ -13,6 +13,8 @@ export interface CarrierLite {
   monogram: string;
   /** URL of the logo file, or null to show the monogram. */
   logoUrl: string | null;
+  /** Tile color behind the logo (white unless the logo is made for dark backgrounds). */
+  logoBackground: string;
 }
 
 export interface PlanLite {
@@ -42,6 +44,8 @@ export interface PlanLite {
   oneTimeFee: number | null;
   /** Extra charged per line in the first month (when AutoPay savings start from month two). */
   firstMonthExtra: number;
+  /** Something you must already have to buy the plan (e.g. the carrier's home internet), or null. */
+  requires: string | null;
   verified: boolean;
 }
 

@@ -3,13 +3,16 @@
   "kind": "mvno",
   "networks": [
     "Verizon",
-    "AT&T"
+    "AT&T",
+    "T-Mobile"
   ],
   "color": "#FF6B35",
   "textOnColor": "#2A0E02",
   "monogram": "US",
+  "logo": "us-mobile.svg",
+  "logoBackground": "#0E1626",
   "website": "https://www.usmobile.com/",
-  "summary": "Lets you pick the Verizon or AT&T network, and switch later.",
+  "summary": "Lets you pick the Verizon, AT&T or T-Mobile network, and switch later.",
   "autopayTerms": "US Mobile lists no AutoPay discount on regular prices. AutoPay only renews your plan automatically every 30 days, though some port-in deals require it.",
   "coverageUrl": "https://www.usmobile.com/networks",
   "fees": {

@@ -50,6 +50,7 @@ const premiumPill = amountValue(plan.premiumData) > 0 ? `${formatAmount(plan.pre
     <span class="pill">{hotspotPill}</span>
     <span class="pill">{premiumPill}</span>
     {plan.perks.length > 0 && <span class="pill">{plan.perks.join(', ')}</span>}
+    {plan.lite.requires && <span class="pill pill-req">{plan.lite.requires}</span>}
     {plan.taxesIncluded && <span class="pill">Taxes &amp; fees included</span>}
     {plan.lite.autopayDiscount > 0 && <span class="pill">Price includes {formatPrice(plan.lite.autopayDiscount)} AutoPay discount</span>}
   </div>

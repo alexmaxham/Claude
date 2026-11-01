@@ -14,6 +14,8 @@ const { plans, carriers } = await getData();
 const order = rankPlans(plans.map((p) => p.lite), DEFAULT_ANSWERS).map((r) => r.plan.slug);
 const ranked = order.map((slug) => plans.find((p) => p.slug === slug)!);
 const carrierName = new Map(carriers.map((c) => [c.slug, c.name]));
+// Carriers that only sell to their own home-internet customers (Xfinity, Spectrum).
+const internetCarriers = carriers.filter((c) => c.requires);
 ---
 <Base title={SITE_NAME} description="Answer four questions and compare phone plans from Verizon, AT&T, T-Mobile, MVNOs and prepaid carriers side by side." nav="find">
   <section class="hero wrap">
@@ -45,6 +47,7 @@ const carrierName = new Map(carriers.map((c) => [c.slug, c.name]));
         <legend><span class="num" aria-hidden="true">+</span>Do any of these apply to you? <span class="opt-tag">Optional</span></legend>
         <div class="checks">
           {DISCOUNT_GROUPS.map((g) => <label class="check"><input type="checkbox" name="group" value={g} />{GROUP_LABEL[g]}</label>)}
+          {internetCarriers.map((c) => <label class="check"><input type="checkbox" name="owns" value={c.slug} />I have {c.name.replace(' Mobile', '')} Internet</label>)}
         </div>
       </fieldset>
     </form>

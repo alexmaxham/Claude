@@ -1,6 +1,24 @@
 [
   {
     "date": "2026-11-01",
+    "title": "3 carriers added: Xfinity Mobile, Spectrum Mobile and Straight Talk",
+    "details": "Added Xfinity Mobile Plus, Spectrum Unlimited Plus and Straight Talk Silver, Gold and Platinum Unlimited. Xfinity and Spectrum plans need their home internet. Prices are not yet verified on the carriers' sites.",
+    "plans": [
+      "xfinity-mobile-plus",
+      "spectrum-unlimited-plus",
+      "straight-talk-silver-unlimited",
+      "straight-talk-gold-unlimited",
+      "straight-talk-platinum-unlimited"
+    ]
+  },
+  {
+    "date": "2026-11-01",
+    "title": "Logos added for Cricket, Metro and US Mobile",
+    "details": "From each carrier's own website.",
+    "plans": []
+  },
+  {
+    "date": "2026-11-01",
     "title": "AT&T prices corrected",
     "details": "AT&T's 2.0 plans are $15 higher at 1 line than our first figures: Value 2.0 $55, Extra 2.0 $75, Premium 2.0 $95, Elite 2.0 $115 (with AutoPay).",
     "plans": [

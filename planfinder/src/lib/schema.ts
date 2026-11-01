@@ -22,6 +22,10 @@ export const carrierSchema = z.object({
   monogram: z.string().max(4),
   /** File name of the official logo in public/logos/ (SVG or PNG). Leave out until you have it. */
   logo: z.string().regex(/^[a-z0-9-]+\.(svg|png|webp)$/).optional(),
+  /** Tile color behind the logo, for logos made for dark backgrounds. Defaults to white. */
+  logoBackground: hex.optional(),
+  /** Something you must already have to buy this carrier's plans, e.g. its home internet. */
+  requires: z.string().optional(),
   website: z.string().url(),
   summary: z.string(),
   /** How the carrier's AutoPay discount works: amount, which payment methods qualify, when it starts. */

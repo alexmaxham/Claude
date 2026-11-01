@@ -124,6 +124,20 @@ Assumption: the AutoPay discount applies to every line, so the "without AutoPay"
 
 **Coverage maps:** each carrier's `coverageUrl` was opened and loads. Boost's coverage page returned 404, so Boost plans link to the AT&T map. Mint couldn't be checked, so it links to the T-Mobile map.
 
+## Carriers added 1 November 2026 (not yet verified)
+
+xfinity.com, spectrum.com and straighttalk.com weren't reachable from this environment, so these plans come from web search and keep `lastVerified: null`. Verify them on the carriers' sites once those domains are allowed.
+
+- **Xfinity Mobile, Mobile Plus:** $45/line, unlimited premium data, Global Travel Pass ([Comcast](https://corporate.comcast.com/stories/discover-the-best-value-with-xfinity-mobile-plus-the-ultimate-premium-wireless-experience), [UpPhone](https://www.upphone.com/cell-phone-plans/xfinity/xfinity-mobile-plus/)). The hotspot amount conflicts: 30GB (UpPhone) vs unlimited, slowed after 50GB ([Reviews.org](https://www.reviews.org/mobile/xfinity-mobile-cell-phone-plans/)). Requires Xfinity Internet. A $15/line promo for 12 months has been reported.
+- **Spectrum Mobile (Charter), Unlimited Plus:** $50 for 1 line, $40/line from 2 lines, 50GB full-speed data, then 1 Mbps ([Navi](https://www.yournavi.com/plans/spectrum-unlimited-plus), [BestPhonePlans](https://www.bestphoneplans.net/plans/spectrum-mobile-unlimited-plus)). The hotspot amount conflicts (10GB vs 5GB). Requires Spectrum Internet, with $10/line more if a line keeps service without it ([HighSpeedInternet](https://www.highspeedinternet.com/providers/spectrum/mobile)).
+- **Straight Talk:** Silver $45 (15GB hotspot), Gold $55 (50GB hotspot, Walmart+, 100GB cloud) and Platinum $65 (unlimited premium data and hotspot, 200+ destinations, Walmart+, 500GB cloud), after the 19 Oct 2026 upgrade ([GlobeNewswire](https://www.globenewswire.com/news-release/2026/10/19/3383537/0/en/straight-talk-supercharges-unlimited-plans-with-more-data-faster-5g-and-expanded-benefits.html), [GSMArena](https://www.gsmarena.com/verizons_straight_talk_upgrades_its_unlimited_plans_without_raising_prices-news-75128.php)). AutoPay terms, taxes and multi-line prices weren't confirmed.
+- **Brand colors** for these three are approximate.
+
+## More logos (1 November 2026)
+
+- **Cricket** (`cricket.png`), **Metro** (`metro.svg`) and **US Mobile** (`us-mobile.svg`) come from the logo in each carrier's website header. US Mobile's logo is made for dark backgrounds, so its carrier file sets `logoBackground` to a dark tile instead of recoloring the logo.
+- **Still missing:** Google Fi (hosted on www.gstatic.com) and Visible (hosted on s7d1.scene7.com), both blocked here. Mint is behind a Cloudflare check (challenges.cloudflare.com). Xfinity, Spectrum and Straight Talk sites are blocked too.
+
 ## Still unverified
 
 | Plan | Why |

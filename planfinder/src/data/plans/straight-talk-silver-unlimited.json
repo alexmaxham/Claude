@@ -1,0 +1,22 @@
+{
+  "carrier": "straight-talk",
+  "name": "Silver Unlimited",
+  "description": "Straight Talk's entry unlimited plan on the Verizon network, with 5G Ultra Wideband and 15GB of hotspot. Includes calls and texts to Canada, Mexico, India and China.",
+  "price": 45,
+  "networks": [
+    "Verizon"
+  ],
+  "premiumData": 0,
+  "hotspot": 15,
+  "international": "Talk and text to Canada, Mexico, India and China",
+  "billing": "prepaid",
+  "highlights": [
+    "15GB hotspot"
+  ],
+  "perks": [],
+  "data": "unlimited",
+  "deals": [],
+  "taxesIncluded": false,
+  "sourceUrl": "https://www.straighttalk.com/plans",
+  "lastVerified": null
+}

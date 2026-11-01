@@ -40,7 +40,8 @@ export function initFinder() {
     }
     const lines = Number(a.lines);
     setLines(parseLines(a.lines));
-    const ranked = rankPlans(plans, a);
+    const owned = [...form.querySelectorAll<HTMLInputElement>('input[name="owns"]:checked')].map((b) => b.value);
+    const ranked = rankPlans(plans, a, owned);
     const cards = new Map([...results.children].map((li) => [(li as HTMLElement).dataset.slug!, li as HTMLElement]));
     ranked.forEach((r, i) => {
       const li = cards.get(r.plan.slug);

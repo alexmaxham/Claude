@@ -5,7 +5,8 @@ import { amountValue, formatPrice, type PlanLite } from '../lib/model';
 import { readIndex, syncButtons } from './shortlist';
 import { esc } from './render';
 
-function fits(p: PlanLite, data: string, hotspot: string, network: string): boolean {
+function fits(p: PlanLite, data: string, hotspot: string, network: string, owned: string[]): boolean {
+  if (p.requires && !owned.includes(p.carrier.slug)) return false;
   if (network !== 'any' && !p.networks.includes(network)) return false;
   const premium = amountValue(p.premiumData);
   if (data === 'heavy' && premium < 50) return false;
@@ -30,10 +31,11 @@ export function initSavings() {
     const data = String(fd.get('data'));
     const hotspot = String(fd.get('hotspot'));
     const network = String(fd.get('network'));
+    const owned = fd.getAll('owns').map(String);
     const yearNow = bill * 12;
 
     const rows = plans
-      .filter((p) => fits(p, data, hotspot, network))
+      .filter((p) => fits(p, data, hotspot, network, owned))
       .map((p) => ({ p, c: costOver(p, lines, 12) }))
       .sort((a, b) => a.c.total - b.c.total)
       .slice(0, 12);
@@ -59,7 +61,7 @@ export function initSavings() {
         const upfront = /upfront/i.test(p.terms ?? '') ? ' · paid upfront' : '';
         const unknownFees = c.oneTimeKnown ? '' : ' (+ any activation fee)';
         return `<li style="--brand:${p.carrier.color}">
-          <div class="who"><a href="${esc(p.url)}">${esc(p.carrier.name)} ${esc(p.name)}</a><div class="small muted">${esc(p.networks.join(' or '))} network${upfront}${p.verified ? '' : ' · price not yet verified'}</div></div>
+          <div class="who"><a href="${esc(p.url)}">${esc(p.carrier.name)} ${esc(p.name)}</a><div class="small muted">${esc(p.networks.join(' or '))} network${upfront}${p.requires ? ` · <strong>${esc(p.requires)}</strong>` : ''}${p.verified ? '' : ' · price not yet verified'}</div></div>
           <div class="num"><span>Per month</span><strong>${esc(formatPrice(Math.round(c.perMonth)))}</strong></div>
           <div class="num"><span>First year</span><strong>${esc(formatPrice(Math.round(c.total)))}</strong><span class="small muted">${esc(unknownFees)}</span></div>
           <div class="num"><span>Yearly savings</span>${saveText}</div>
