@@ -9,5 +9,12 @@
   "monogram": "MT",
   "website": "https://www.metrobyt-mobile.com/",
   "summary": "Prepaid brand owned by T-Mobile, running on its network.",
-  "autopayTerms": "Metro takes $5 off each line every month with AutoPay. Your first month is charged at the full price, and the discount starts from the second month."
+  "autopayTerms": "Metro takes $5 off each line every month with AutoPay. Your first month is charged at the full price, and the discount starts from the second month.",
+  "coverageUrl": "https://www.metrobyt-mobile.com/coverage/coverage-map",
+  "autopayStartsMonth2": true,
+  "fees": {
+    "monthlyPerLine": 0,
+    "oneTimePerLine": 0,
+    "oneTimeNote": "No activation fee when you order online."
+  }
 }

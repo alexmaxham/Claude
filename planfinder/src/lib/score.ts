@@ -76,7 +76,8 @@ export function scorePlan(p: PlanLite, a: Answers): Ranked {
   const lines = Number(a.lines);
   // Rank on what each line actually costs for the number of lines asked for.
   const lp = priceFor(p, lines);
-  const price = lp.perLine;
+  // Monthly fees (like T-Mobile's per-line fee) count as part of the price.
+  const price = lp.perLine + p.monthlyFee;
   let s = 100 - price;
   const why: string[] = [];
 
@@ -126,5 +127,5 @@ export function scorePlan(p: PlanLite, a: Answers): Ranked {
 export function rankPlans(plans: PlanLite[], a: Answers): Ranked[] {
   return plans
     .map((p) => scorePlan(p, a))
-    .sort((x, y) => y.score - x.score || priceFor(x.plan, Number(a.lines)).perLine - priceFor(y.plan, Number(a.lines)).perLine || x.plan.slug.localeCompare(y.plan.slug));
+    .sort((x, y) => y.score - x.score || priceFor(x.plan, Number(a.lines)).perLine + x.plan.monthlyFee - (priceFor(y.plan, Number(a.lines)).perLine + y.plan.monthlyFee) || x.plan.slug.localeCompare(y.plan.slug));
 }

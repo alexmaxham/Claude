@@ -10,6 +10,7 @@ import {
   priceFor,
   type PlanLite,
 } from './model';
+import { costOver } from './cost';
 
 interface RowDef {
   label: string;
@@ -35,7 +36,35 @@ function rowsFor(lines: number): RowDef[] {
           },
           { label: `Total for ${lines} lines`, text: (p) => `${formatPrice(priceFor(p, lines).total)}/mo`, value: (p) => priceFor(p, lines).total, better: -1 },
         ];
-  return [...price, ...ROWS];
+  const cost: RowDef[] = [
+    {
+      label: lines <= 1 ? 'First-year cost' : `First-year cost (${lines} lines)`,
+      text: (p) => {
+        const c = costOver(p, lines, 12);
+        return `${formatPrice(c.total)}${c.oneTimeKnown ? '' : ' + any activation fee'}`;
+      },
+      value: (p) => costOver(p, lines, 12).total,
+      better: -1,
+    },
+    {
+      label: lines <= 1 ? 'Two-year cost' : `Two-year cost (${lines} lines)`,
+      text: (p) => formatPrice(costOver(p, lines, 24).total),
+      value: (p) => costOver(p, lines, 24).total,
+      better: -1,
+    },
+    {
+      label: 'Extra fees',
+      text: (p) => {
+        const parts: string[] = [];
+        if (p.monthlyFee > 0) parts.push(`${formatPrice(p.monthlyFee)}/line monthly`);
+        if (p.oneTimeFee) parts.push(`${formatPrice(p.oneTimeFee)}/line one-time`);
+        if (p.firstMonthExtra > 0) parts.push(`1st month +${formatPrice(p.firstMonthExtra)}/line`);
+        if (!parts.length) return p.oneTimeFee === null ? 'None listed' : 'None';
+        return parts.join(', ');
+      },
+    },
+  ];
+  return [...price, ...cost, ...ROWS];
 }
 
 const ROWS: RowDef[] = [

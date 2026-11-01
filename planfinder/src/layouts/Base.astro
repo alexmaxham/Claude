@@ -4,11 +4,12 @@ import '@fontsource-variable/bricolage-grotesque';
 import '../styles/global.css';
 import { getData } from '../lib/data';
 import { href, SITE_NAME } from '../lib/site';
+import { ADS, adsLive } from '../lib/ads';
 
 interface Props {
   title: string;
   description: string;
-  nav?: 'find' | 'plans' | 'carriers' | 'compare' | null;
+  nav?: 'find' | 'plans' | 'carriers' | 'compare' | 'savings' | 'guides' | null;
   noindex?: boolean;
 }
 const { title, description, nav = null, noindex = false } = Astro.props;
@@ -20,6 +21,8 @@ const index = JSON.stringify(plans.map((p) => p.lite)).replace(/</g, '\\u003c');
 const links = [
   { id: 'find', label: 'Find a plan', href: href() },
   { id: 'plans', label: 'All plans', href: href('plans/') },
+  { id: 'savings', label: 'Save money', href: href('savings/') },
+  { id: 'guides', label: 'Guides', href: href('guides/') },
   { id: 'carriers', label: 'Carriers', href: href('carriers/') },
 ] as const;
 ---
@@ -40,6 +43,8 @@ const links = [
     <meta property="og:url" content={canonical} />
     <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
     <link rel="sitemap" href={href('sitemap.xml')} />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} price changes`} href={href('changes.xml')} />
+    {adsLive() && <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADS.adsenseClient}`} crossorigin="anonymous"></script>}
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -60,7 +65,16 @@ const links = [
         <p class="display foot-brand">{SITE_NAME}</p>
         <p class="small">Prices are per line per month, with autopay where offered, before taxes and fees. Carriers change plans often: always confirm on the carrier's site before you switch. Plans marked “not yet verified” haven't been checked against the carrier's site.</p>
         <p class="small">Carrier names, colors and logos belong to their owners and are used only to identify their plans. {SITE_NAME} isn't affiliated with any carrier.</p>
-        <p class="small"><a href={href('about/')}>How we compare plans</a></p>
+        <nav aria-label="Footer" class="foot-links small">
+          <a href={href('savings/')}>Savings calculator</a>
+          <a href={href('discounts/')}>Discounts</a>
+          <a href={href('guides/')}>Guides</a>
+          <a href={href('vs/')}>Head-to-head</a>
+          <a href={href('changes/')}>Price changes</a>
+          <a href={href('changes.xml')}>RSS feed</a>
+          <a href={href('about/')}>How we compare plans</a>
+          <a href={href('privacy/')}>Privacy</a>
+        </nav>
       </div>
     </footer>
     <script type="application/json" id="plan-index" set:html={index}></script>
@@ -88,4 +102,6 @@ const links = [
   .foot-inner p { max-width: 820px; }
   .site-foot a { color: #FFFFFF; }
   .foot-brand { color: #FFFFFF; font-size: 22px; }
+  .foot-links { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+  .foot-links a { display: inline-flex; align-items: center; min-height: 36px; }
 </style>

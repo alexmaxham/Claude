@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import { getData, planTitle } from '../../lib/data';
 import { formatPrice } from '../../lib/model';
 import { href } from '../../lib/site';
+import AdSlot from '../../components/AdSlot.astro';
 
 const { plans, carriers } = await getData();
 ---
@@ -59,6 +60,7 @@ const { plans, carriers } = await getData();
       <button type="submit" class="btn btn-primary">Add</button>
     </form>
     <noscript><p>The comparison needs JavaScript turned on.</p></noscript>
+    <AdSlot name="compare-bottom" />
   </div>
 </Base>
 

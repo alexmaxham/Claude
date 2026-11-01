@@ -62,6 +62,9 @@ async function load() {
       multiLine: data.multiLine,
       taxesIncluded: data.taxesIncluded,
       autopayDiscount: data.priceWithoutAutopay ? Math.round((data.priceWithoutAutopay - data.price) * 100) / 100 : 0,
+      monthlyFee: carrierInfo.fees.monthlyPerLine,
+      oneTimeFee: carrierInfo.fees.oneTimePerLine,
+      firstMonthExtra: carrierInfo.autopayStartsMonth2 && data.priceWithoutAutopay ? Math.round((data.priceWithoutAutopay - data.price) * 100) / 100 : 0,
       verified: data.lastVerified !== null,
     };
     return { ...data, slug: id, url, carrierInfo, lite, autopayTerms: data.autopayTerms ?? carrierInfo.autopayTerms };

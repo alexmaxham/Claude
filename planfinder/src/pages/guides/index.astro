@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import { href } from '../../lib/site';
+const guides = [
+  { href: href('savings/'), title: 'How much could you save?', text: 'Enter your current bill and see cheaper plans that fit, with a full year of costs.' },
+  { href: href('discounts/'), title: 'Discounts you may qualify for', text: 'Military, first responders, nurses, teachers, students, 55+, employers and Lifeline.' },
+  { href: href('guides/how-much-data/'), title: 'How much data do you use?', text: 'Check your real usage on iPhone or Android before you pay for more than you need.' },
+  { href: href('guides/coverage/'), title: 'Check coverage where you live', text: 'Which network each carrier uses, and the coverage maps to check your address.' },
+  { href: href('guides/switching/'), title: 'Switching carriers checklist', text: 'Keep your number, avoid surprise bills and make the move in the right order.' },
+  { href: href('guides/phone-deals/'), title: 'Phone deals vs. bringing your own', text: 'Work out what a "free" phone really costs over the life of the deal.' },
+  { href: href('guides/glossary/'), title: 'Phone plan glossary', text: 'Premium data, deprioritization, MVNO, eSIM and other terms in plain words.' },
+  { href: href('vs/'), title: 'Head-to-head comparisons', text: 'Popular plans compared side by side, like Mint vs Visible.' },
+  { href: href('changes/'), title: 'Price changes', text: 'What changed in our plan data, and when. Also available as an RSS feed.' },
+];
+---
+<Base title="Guides" description="Guides to help you pick a phone plan, save money and switch carriers." nav="guides">
+  <div class="wrap page">
+    <h1 class="display">Guides</h1>
+    <p class="lede">Everything you need to pick a plan with confidence and pay less.</p>
+    <ul class="grid">
+      {guides.map((g) => <li><a href={g.href}><span class="t">{g.title}</span><span class="muted">{g.text}</span></a></li>)}
+    </ul>
+  </div>
+</Base>
+<style>
+  .page { padding-block: 24px 64px; display: flex; flex-direction: column; gap: 16px; }
+  h1 { font-size: clamp(36px, 5vw, 48px); }
+  .lede { font-size: 18px; color: var(--muted); }
+  .grid { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+  .grid a { height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); text-decoration: none; }
+  .grid a:hover { border-color: var(--ink); }
+  .t { font-size: 19px; font-weight: 700; }
+</style>

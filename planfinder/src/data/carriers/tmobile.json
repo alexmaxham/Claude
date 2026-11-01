@@ -10,5 +10,12 @@
   "logo": "tmobile.svg",
   "website": "https://www.t-mobile.com/",
   "summary": "One of the three national networks. Plans are postpaid and billed monthly.",
-  "autopayTerms": "T-Mobile takes $5 off each line every month when you use AutoPay with an eligible payment method. AutoPay is optional."
+  "autopayTerms": "T-Mobile takes $5 off each line every month when you use AutoPay with an eligible payment method. AutoPay is optional.",
+  "coverageUrl": "https://www.t-mobile.com/coverage/coverage-map",
+  "fees": {
+    "monthlyPerLine": 5.49,
+    "monthlyNote": "T-Mobile adds a $5.49 fee per line every month.",
+    "oneTimePerLine": 35,
+    "oneTimeNote": "$35 device connection charge per line."
+  }
 }

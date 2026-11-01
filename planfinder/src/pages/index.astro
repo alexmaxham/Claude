@@ -5,11 +5,15 @@ import CarrierLogo from '../components/CarrierLogo.astro';
 import { getData } from '../lib/data';
 import { DEFAULT_ANSWERS, QUESTIONS, rankPlans } from '../lib/score';
 import { href, SITE_NAME } from '../lib/site';
+import AdSlot from '../components/AdSlot.astro';
+import { discounts, GROUP_LABEL } from '../lib/extras';
+import { DISCOUNT_GROUPS } from '../lib/schema';
 
 const { plans, carriers } = await getData();
 // Pre-rank with the default answers so the page reads right before (and without) JavaScript.
 const order = rankPlans(plans.map((p) => p.lite), DEFAULT_ANSWERS).map((r) => r.plan.slug);
 const ranked = order.map((slug) => plans.find((p) => p.slug === slug)!);
+const carrierName = new Map(carriers.map((c) => [c.slug, c.name]));
 ---
 <Base title={SITE_NAME} description="Answer four questions and compare phone plans from Verizon, AT&T, T-Mobile, MVNOs and prepaid carriers side by side." nav="find">
   <section class="hero wrap">
@@ -37,6 +41,12 @@ const ranked = order.map((slug) => plans.find((p) => p.slug === slug)!);
           </div>
         </fieldset>
       ))}
+      <fieldset class="extra">
+        <legend><span class="num" aria-hidden="true">+</span>Do any of these apply to you? <span class="opt-tag">Optional</span></legend>
+        <div class="checks">
+          {DISCOUNT_GROUPS.map((g) => <label class="check"><input type="checkbox" name="group" value={g} />{GROUP_LABEL[g]}</label>)}
+        </div>
+      </fieldset>
     </form>
   </section>
 
@@ -46,6 +56,16 @@ const ranked = order.map((slug) => plans.find((p) => p.slug === slug)!);
       <p class="small muted" id="match-status" aria-live="polite"></p>
     </div>
     <noscript><p class="muted">Turn on JavaScript to rank plans by your answers. All plans are listed below.</p></noscript>
+    <div id="discount-callout" class="callout" hidden>
+      <h3>Discounts you may qualify for</h3>
+      <p class="small muted">These aren't included in the prices below, so they're extra savings.</p>
+      <ul>
+        {discounts.map((d) => (
+          <li data-groups={d.groups.join(' ')} hidden><strong>{d.carrier ? carrierName.get(d.carrier) : 'All carriers'}: {d.title}.</strong> {d.details}</li>
+        ))}
+      </ul>
+      <p class="small"><a href={href('discounts/')}>All discounts and how to qualify</a></p>
+    </div>
     <ol class="card-grid" id="results">
       {ranked.map((p) => <PlanCard plan={p} finder />)}
     </ol>
@@ -53,6 +73,11 @@ const ranked = order.map((slug) => plans.find((p) => p.slug === slug)!);
       <button type="button" class="btn btn-ghost" id="show-all" hidden>Show all {plans.length} plans</button>
       <a class="btn btn-ghost" href={href('plans/')}>Browse and filter every plan</a>
     </div>
+    <div class="save-cta">
+      <div><p class="display">How much could you save?</p><p class="muted">Enter your current bill to see your yearly savings, fees included.</p></div>
+      <a class="btn btn-dark" href={href('savings/')}>Open the savings calculator</a>
+    </div>
+    <AdSlot name="home-mid" />
   </section>
 
   <section id="shortlist" class="shortlist on-dark" aria-labelledby="sl-h">
@@ -75,6 +100,21 @@ const ranked = order.map((slug) => plans.find((p) => p.slug === slug)!);
 <script>
   import { initFinder } from '../scripts/finder';
   initFinder();
+  // Optional "Do any of these apply?" step: shows matching discount programs. Doesn't change ranking.
+  const callout = document.getElementById('discount-callout')!;
+  const boxes = [...document.querySelectorAll<HTMLInputElement>('input[name="group"]')];
+  function showDiscounts() {
+    const picked = boxes.filter((b) => b.checked).map((b) => b.value);
+    let shown = 0;
+    callout.querySelectorAll<HTMLElement>('li').forEach((li) => {
+      const ok = li.dataset.groups!.split(' ').some((g) => picked.includes(g));
+      li.hidden = !ok;
+      if (ok) shown++;
+    });
+    callout.hidden = shown === 0;
+  }
+  boxes.forEach((b) => b.addEventListener('change', showDiscounts));
+  showDiscounts();
 </script>
 
 <style>
@@ -98,6 +138,16 @@ const ranked = order.map((slug) => plans.find((p) => p.slug === slug)!);
   .opt:has(input:checked) { background: var(--ink); border-color: var(--ink); color: #FFFFFF; }
   .opt:has(input:checked) .opt-hint { color: #C9D8CF; }
   .opt:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .extra { padding-top: 16px; border-top: 1px solid var(--line-soft); }
+  .opt-tag { margin-left: 8px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .checks { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+  .check { display: flex; align-items: center; gap: 8px; min-height: 40px; font-size: 15px; cursor: pointer; }
+  .check input { width: 20px; height: 20px; accent-color: var(--forest); }
+  .callout { background: var(--mint); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .callout h3 { font-size: 18px; }
+  .callout ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+  .save-cta { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 24px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); }
+  .save-cta .display { font-size: 24px; }
   .matches { padding-block: 8px 48px; display: flex; flex-direction: column; gap: 20px; }
   .sec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
   .sec-head h2 { font-size: 34px; letter-spacing: -0.02em; }

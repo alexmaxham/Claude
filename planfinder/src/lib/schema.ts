@@ -26,6 +26,38 @@ export const carrierSchema = z.object({
   summary: z.string(),
   /** How the carrier's AutoPay discount works: amount, which payment methods qualify, when it starts. */
   autopayTerms: z.string(),
+  /** The carrier's own coverage map. Leave out to use the host network's map. */
+  coverageUrl: z.string().url().optional(),
+  /** True when the AutoPay discount only starts from the second month (the first month is full price). */
+  autopayStartsMonth2: z.boolean().default(false),
+  /** Fees on top of the plan price, as listed on the carrier's site. */
+  fees: z.object({
+    /** Fee added to every line every month (e.g. T-Mobile's $5.49). */
+    monthlyPerLine: z.number().min(0).default(0),
+    monthlyNote: z.string().optional(),
+    /** One-time fee per line (activation, connection), or null when the carrier doesn't list one. */
+    oneTimePerLine: z.number().min(0).nullable(),
+    oneTimeNote: z.string(),
+  }),
+});
+
+export const DISCOUNT_GROUPS = ['military', 'first-responders', 'nurses', 'teachers', 'students', 'seniors', 'employer', 'low-income'] as const;
+export const discountSchema = z.object({
+  id: slug,
+  /** Carrier slug, or null for programs not tied to one carrier (e.g. Lifeline). */
+  carrier: slug.nullable(),
+  groups: z.array(z.enum(DISCOUNT_GROUPS)).min(1),
+  title: z.string(),
+  details: z.string(),
+  sourceUrl: z.string().url(),
+  checked: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+export const changeSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  title: z.string(),
+  details: z.string(),
+  plans: z.array(slug).default([]),
 });
 
 export const planSchema = z.object({

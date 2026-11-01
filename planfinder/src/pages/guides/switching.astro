@@ -1,0 +1,31 @@
+---
+import Article from '../../components/Article.astro';
+import { href } from '../../lib/site';
+---
+<Article title="Switching carriers checklist" description="How to switch phone carriers and keep your number: check your phone is paid off and unlocked, get your transfer PIN, and cancel in the right order." lede="Switching usually takes under an hour. Doing it in the right order keeps your number and avoids a surprise final bill.">
+  <h2>Before you switch</h2>
+  <ol>
+    <li><strong>Check what you still owe on your phone.</strong> If you're paying off a phone through your carrier, leaving usually means paying the rest at once. If you got the phone with a deal paid as monthly bill credits, those credits stop when you leave, so you'd pay the full remaining balance. Your account page shows both.</li>
+    <li><strong>Make sure your phone is unlocked.</strong> A locked phone only works with its carrier. Carriers unlock phones once they're paid off and the account has been active long enough. Ask your carrier, or check in your phone's settings.</li>
+    <li><strong>Check your phone works on the new network.</strong> Most new carriers have a compatibility checker on their site. You'll need your phone's IMEI number: dial <code>*#06#</code> to see it.</li>
+    <li><strong>Check for eSIM.</strong> Most recent phones support eSIM, which lets you switch online without waiting for a SIM card in the mail.</li>
+    <li><strong>Check coverage</strong> at home and work. <a href={href('guides/coverage/')}>Here's how</a>.</li>
+  </ol>
+  <h2>Keep your number</h2>
+  <ol>
+    <li><strong>Get your account number and a number transfer PIN</strong> from your current carrier. Most let you create the PIN in their app or account page. Some call it a "port-out PIN".</li>
+    <li><strong>Sign up with the new carrier and choose "bring my number".</strong> Enter your old account number, PIN and the billing ZIP code.</li>
+    <li><strong>Don't cancel your old plan first.</strong> Cancelling can release your number. The transfer cancels your old service for that line automatically.</li>
+  </ol>
+  <h2>After you switch</h2>
+  <ul>
+    <li>Make a call and send a text to check the number moved.</li>
+    <li>Set up AutoPay the way the new carrier requires for its discount. Some only give the full discount for a bank account. Each plan page explains how to qualify.</li>
+    <li>Watch for a final bill from your old carrier. It may include part of a month and any phone balance.</li>
+    <li>Moving a family plan? Transfer every line before the old account closes.</li>
+  </ul>
+  <div class="box warn">
+    <p><strong>Switching deals often need a number transfer.</strong> Offers like "$30/line when you switch" usually only count when you bring a number from another carrier, so don't start with a new number if you want the deal.</p>
+  </div>
+  <p><a class="btn btn-primary" href={href()}>Find your new plan</a></p>
+</Article>

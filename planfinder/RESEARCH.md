@@ -107,6 +107,23 @@ Assumption: the AutoPay discount applies to every line, so the "without AutoPay"
 - `deals` holds limited-time offers seen on 1 November 2026 (listed under "Promotions seen" above). They appear in each plan page's Deals section and are never included in prices. The AT&T BYOD credit moved from `terms` to `deals`.
 - Metro $40 Period: added `multiLine` at a flat $40 per line, from its Broadband Facts label ($40 / $80 / $120 / $160). Other Metro plans' multi-line prices are still not listed.
 
+## Fees, discounts and coverage (checked 1 November 2026)
+
+**Fees** (from the carriers' plan pages):
+- T-Mobile: $5.49 per line monthly, and a $35 device connection charge per line ([plans](https://www.t-mobile.com/cell-phone-plans)).
+- AT&T: activation fee up to $50 per line ([plans legal text](https://www.att.com/plans/wireless/)). We count the full $50.
+- Metro: no activation fee when you order online ([phone plans](https://www.metrobyt-mobile.com/phone-plans)).
+- Cricket and Metro: the first month is charged at the full price, and AutoPay savings start in month two.
+- Verizon, Visible, Google Fi, US Mobile, Cricket and Boost: no activation fee is listed on their plan pages, so `oneTimePerLine` is null and the site says "+ any activation fee". Third-party sources say Verizon dropped its fee in June 2026, Cricket charges $25 in store (free online) and Boost charges $10 for used phones. Not confirmed on the carriers' sites.
+
+**Discounts** (`src/data/discounts.json`):
+- Verizon: Those Who Serve, 10% off each line (military, first responders, nurses, teachers). Students 10% ([first responders](https://www.verizon.com/featured/first-responders/), [teachers](https://www.verizon.com/featured/teachers/), [nurses](https://www.verizon.com/featured/nurses/), [students](https://www.verizon.com/featured/students/)). Employer discounts ([discounts](https://www.verizon.com/discounts/)).
+- AT&T Appreciation Savings: 20% / 15% / 10% off Premium / Extra / Value 2.0 ([appreciation](https://www.att.com/offers/discount-program/appreciation/), [support article](https://www.att.com/support/article/wireless/KM1436361)).
+- T-Mobile: 55+ two lines at $30 each ([55+](https://www.t-mobile.com/cell-phone-plans/unlimited-55-senior-discount-plans)), military savings ([military](https://www.t-mobile.com/cell-phone-plans/military-discount-plans)), and 15% Work Perks (plans page). The first responder page wasn't found.
+- Lifeline ([Verizon Lifeline](https://www.verizon.com/support/lifeline/)). fcc.gov wasn't reachable, so no dollar amount is given.
+
+**Coverage maps:** each carrier's `coverageUrl` was opened and loads. Boost's coverage page returned 404, so Boost plans link to the AT&T map. Mint couldn't be checked, so it links to the T-Mobile map.
+
 ## Still unverified
 
 | Plan | Why |

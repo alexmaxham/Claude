@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { compareRows, parsePlanList } from '../src/lib/compare';
-import { formatAmount, formatHotspot, parseLines, priceFor, type PlanLite } from '../src/lib/model';
+import { costOver } from '../src/lib/cost';
+import { verdict } from '../src/lib/versus';
+import { formatAmount, formatHotspot, formatPrice, parseLines, priceFor, type PlanLite } from '../src/lib/model';
 import { DEFAULT_ANSWERS, parseAnswers, rankPlans } from '../src/lib/score';
 
 function plan(slug: string, o: Partial<PlanLite> & { kind?: PlanLite['carrier']['kind'] } = {}): PlanLite {
@@ -9,7 +11,7 @@ function plan(slug: string, o: Partial<PlanLite> & { kind?: PlanLite['carrier'][
     slug, name: slug, url: `/plans/${slug}/`,
     carrier: { slug: `${slug}-c`, name: `${slug} Carrier`, kind, color: '#000000', textOnColor: '#FFFFFF', monogram: 'X', logoUrl: null },
     price: 50, networks: ['T-Mobile'], premiumData: 0, data: 'unlimited', hotspot: 0, perks: [],
-    international: 'None', billing: 'prepaid', taxesIncluded: false, autopayDiscount: 0, verified: false, ...rest,
+    international: 'None', billing: 'prepaid', taxesIncluded: false, autopayDiscount: 0, monthlyFee: 0, oneTimeFee: 0, firstMonthExtra: 0, verified: false, ...rest,
   };
 }
 
@@ -113,5 +115,47 @@ describe('AutoPay transparency', () => {
     const without = plan('none', { price: 25 });
     const row = compareRows([withDiscount, without]).find((r) => r.label === 'AutoPay discount')!;
     expect(row.cells.map((c) => c.text)).toEqual(['$10/line, included in price', 'None (same price either way)']);
+  });
+});
+
+describe('real total cost', () => {
+  it('adds monthly fees, one-time fees and a full-price first month', () => {
+    const p = plan('fees', { price: 60, monthlyFee: 5.49, oneTimeFee: 35, firstMonthExtra: 5, multiLine: { '2': 45 } });
+    // (45 + 5.49) * 2 lines * 12 months + 35 * 2 + 5 * 2
+    expect(costOver(p, 2, 12).total).toBe(1291.76);
+    expect(costOver(p, 2, 12).perMonth).toBe(107.65);
+  });
+  it('flags when one-time fees are unknown', () => {
+    const p = plan('unknown', { price: 30, oneTimeFee: null });
+    expect(costOver(p, 1, 12)).toMatchObject({ total: 360, oneTimeKnown: false });
+  });
+  it('ranks a plan with a monthly fee by its real price', () => {
+    const cheapSticker = plan('sticker', { price: 40, monthlyFee: 10 });
+    const honest = plan('honest', { price: 45 });
+    expect(rankPlans([cheapSticker, honest], DEFAULT_ANSWERS)[0].plan.slug).toBe('honest');
+  });
+  it('marks the cheapest first-year cost as best', () => {
+    const rows = compareRows([plan('a', { price: 30 }), plan('b', { price: 25, oneTimeFee: 100 })]);
+    const first = rows.find((r) => r.label === 'First-year cost')!;
+    expect(first.cells.map((c) => c.best)).toEqual([true, false]);
+  });
+});
+
+describe('head-to-head summary', () => {
+  it('says which plan is cheaper over a year and which has more hotspot', () => {
+    const a = plan('a', { price: 30, hotspot: 10 });
+    const b = plan('b', { price: 35, hotspot: 'unlimited', hotspotNote: 'Unlimited at 10 Mbps', taxesIncluded: true });
+    const lines = verdict(a, b);
+    expect(lines[0]).toBe('For one line, a Carrier a costs $60 less over a year than b Carrier b.');
+    expect(lines.some((l) => l.startsWith('b Carrier b has more hotspot'))).toBe(true);
+    expect(lines.some((l) => l.includes('includes taxes and fees'))).toBe(true);
+  });
+});
+
+describe('price formatting', () => {
+  it('adds thousands separators and snaps split totals', () => {
+    expect(formatPrice(1120.88)).toBe('$1,120.88');
+    expect(formatPrice(2400)).toBe('$2,400');
+    expect(priceFor(plan('t', { price: 85, multiLine: { '3': 56.67 } }), 3).total).toBe(170);
   });
 });

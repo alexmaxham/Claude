@@ -1,0 +1,93 @@
+---
+import Base from '../../layouts/Base.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import CarrierLogo from '../../components/CarrierLogo.astro';
+import ShortlistButton from '../../components/ShortlistButton.astro';
+import { getData, planTitle, type Plan } from '../../lib/data';
+import { versusPairs } from '../../lib/extras';
+import { compareRows } from '../../lib/compare';
+import { verdict } from '../../lib/versus';
+import { href } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const { plans } = await getData();
+  const by = new Map(plans.map((p) => [p.slug, p]));
+  return versusPairs.map(([x, y]) => {
+    const a = by.get(x);
+    const b = by.get(y);
+    if (!a || !b) throw new Error(`src/data/versus.json names a plan that doesn't exist: ${x} or ${y}`);
+    return { params: { pair: `${x}-vs-${y}` }, props: { a, b } };
+  });
+}
+const { a, b } = Astro.props as { a: Plan; b: Plan };
+const rows = compareRows([a.lite, b.lite]);
+const rows4 = compareRows([a.lite, b.lite], 4).slice(0, 4);
+const points = verdict(a.lite, b.lite);
+const title = `${planTitle(a)} vs ${planTitle(b)}`;
+---
+<Base title={title} description={`${title}: price, fees, premium data, hotspot, network and perks compared side by side. ${points[0] ?? ''}`} nav="plans">
+  <div class="wrap page">
+    <nav aria-label="Breadcrumb" class="small"><a href={href('vs/')}>Head-to-head</a></nav>
+    <h1 class="display">{planTitle(a)} <span class="vs">vs</span> {planTitle(b)}</h1>
+    <section class="box" aria-labelledby="short-h">
+      <h2 id="short-h">The short answer</h2>
+      <ul>{points.map((p) => <li>{p}</li>)}</ul>
+    </section>
+    <div class="table-box">
+      <table>
+        <caption class="sr-only">{title}, one line</caption>
+        <thead>
+          <tr>
+            <th scope="col"><span class="sr-only">Detail</span></th>
+            {[a, b].map((p) => (
+              <th scope="col" style={`background:${p.carrierInfo.color};color:${p.carrierInfo.textOnColor}`}>
+                <span class="th-in"><CarrierLogo carrier={p.carrierInfo.lite} size={36} mode="white" /><span><span class="small">{p.carrierInfo.name}</span><br /><a href={p.url} style="color:inherit">{p.name}</a></span></span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <th scope="row">{r.label}</th>
+              {r.cells.map((c) => <td class:list={[c.best && 'best']}>{c.text}{c.best && <span class="tag-best">BEST</span>}</td>)}
+            </tr>
+          ))}
+          {rows4.map((r) => (
+            <tr>
+              <th scope="row">{r.label}</th>
+              {r.cells.map((c) => <td class:list={[c.best && 'best']}>{c.text}{c.best && <span class="tag-best">BEST</span>}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">Prices include AutoPay discounts where offered. Costs include listed fees; taxes are extra unless included. {(!a.lastVerified || !b.lastVerified) && 'At least one of these plans hasn\'t been checked against the carrier\'s site yet.'}</p>
+    <AdSlot name="vs-mid" />
+    <div class="actions">
+      {[a, b].map((p) => <div class="act"><ShortlistButton slug={p.slug} name={planTitle(p)} /><a class="btn btn-ghost" href={p.url}>{planTitle(p)} details</a></div>)}
+    </div>
+    <p><a href={`${href('compare/')}?plans=${a.slug},${b.slug}`}>Open in the comparison tool</a> to add more plans or change the number of lines.</p>
+  </div>
+</Base>
+<style>
+  .page { padding-block: 24px 64px; display: flex; flex-direction: column; gap: 20px; }
+  nav a { color: var(--muted); }
+  h1 { font-size: clamp(30px, 4.5vw, 44px); }
+  .vs { color: var(--accent); }
+  .box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; max-width: 900px; }
+  .box h2 { font-size: 20px; }
+  .box ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+  .table-box { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+  table { width: 100%; min-width: 560px; border-collapse: collapse; }
+  th, td { text-align: left; padding: 12px 16px; border-top: 1px solid var(--line-soft); vertical-align: top; }
+  thead th { border-top: 0; }
+  tbody th { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); width: 26%; }
+  td { font-weight: 600; }
+  td.best { background: var(--best); }
+  td .tag-best { margin-left: 8px; }
+  .th-in { display: flex; align-items: center; gap: 10px; font-size: 17px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 16px; }
+  .act { flex: 1 1 300px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .act > * { flex: 1 1 140px; }
+</style>

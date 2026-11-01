@@ -6,6 +6,9 @@ import PlanCard from '../../components/PlanCard.astro';
 import { getData, planTitle, type Plan } from '../../lib/data';
 import { formatAmount, formatHotspot, formatNetworks, formatPerks, formatPrice, KIND_LONG, LINE_OPTIONS, priceFor } from '../../lib/model';
 import { href } from '../../lib/site';
+import AdSlot from '../../components/AdSlot.astro';
+import { costOver, feeSummary } from '../../lib/cost';
+import { changes, discounts } from '../../lib/extras';
 
 export async function getStaticPaths() {
   const { plans } = await getData();
@@ -34,10 +37,19 @@ const pricing = LINE_OPTIONS.map((n) => {
     perLine: lp.perLine,
     total: lp.total,
     withoutPerLine,
-    withoutTotal: Math.round(withoutPerLine * n * 100) / 100,
+    withoutTotal: Math.abs(withoutPerLine * n - Math.round(withoutPerLine * n)) < 0.02 ? Math.round(withoutPerLine * n) : Math.round(withoutPerLine * n * 100) / 100,
   };
 });
 const anyUnlisted = pricing.some((r) => !r.listed);
+const costs = LINE_OPTIONS.map((n) => ({ n, year: costOver(plan.lite, n, 12), two: costOver(plan.lite, n, 24) }));
+const fees = c.fees;
+const networkMaps: Record<string, string> = {
+  Verizon: 'https://www.verizon.com/coverage-map/',
+  'AT&T': 'https://www.att.com/maps/wireless-coverage.html',
+  'T-Mobile': 'https://www.t-mobile.com/coverage/coverage-map',
+};
+const carrierDiscounts = discounts.filter((d) => d.carrier === plan.carrier);
+const planChanges = changes.filter((ch) => ch.plans.includes(plan.slug));
 
 const details: { heading: string; rows: [string, string][] }[] = [
   {
@@ -111,9 +123,12 @@ const verifiedText = plan.lastVerified
       <nav class="toc" aria-label="On this page">
         <p class="eyebrow">On this page</p>
         <a href="#pricing">Pricing</a>
+        <a href="#cost">Real cost</a>
         <a href="#autopay">AutoPay discount</a>
+        <a href="#coverage">Coverage</a>
         <a href="#details">Plan details</a>
         <a href="#deals">Deals{plan.deals.length > 0 && ` (${plan.deals.length})`}</a>
+        <div class="side-ad"><AdSlot name="plan-sidebar" format="rectangle" /></div>
       </nav>
     </section>
 
@@ -151,6 +166,33 @@ const verifiedText = plan.lastVerified
       </ul>
     </section>
 
+    <section id="cost" class="sec" aria-labelledby="cost-h">
+      <h2 id="cost-h" class="display">Real cost</h2>
+      <p class="muted">What you'd actually pay, including fees the monthly price leaves out.</p>
+      <div class="table-box">
+        <table>
+          <caption class="sr-only">{title} cost over one and two years</caption>
+          <thead><tr><th scope="col">Lines</th><th scope="col">First year</th><th scope="col">Average per month</th><th scope="col">Two years</th></tr></thead>
+          <tbody>
+            {costs.map((r) => (
+              <tr>
+                <th scope="row">{r.n} {r.n === 1 ? 'line' : 'lines'}</th>
+                <td><strong>{formatPrice(r.year.total)}</strong></td>
+                <td>{formatPrice(r.year.perMonth)}</td>
+                <td>{formatPrice(r.two.total)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <ul class="notes small muted">
+        <li>{feeSummary(plan.lite)}</li>
+        {fees.monthlyNote && <li>{fees.monthlyNote}</li>}
+        <li>One-time fees: {fees.oneTimeNote}{fees.oneTimePerLine === null && ' If there is one, add it to the first year.'}</li>
+        <li>{plan.taxesIncluded ? 'Taxes and fees are included.' : 'Taxes and government fees are extra and depend on where you live.'}</li>
+      </ul>
+    </section>
+
     <section id="autopay" class="sec" aria-labelledby="autopay-h">
       <h2 id="autopay-h" class="display">AutoPay discount</h2>
       <div class="autopay">
@@ -161,6 +203,18 @@ const verifiedText = plan.lastVerified
         </p>
         <p>{plan.autopayTerms}</p>
         {discount > 0 && <p class="muted small">Our prices include this discount. If you don't use AutoPay, or pay in a way that doesn't qualify, you pay {formatPrice(plan.price + discount)} per line instead of {formatPrice(plan.price)}.</p>}
+      </div>
+    </section>
+
+    <section id="coverage" class="sec" aria-labelledby="coverage-h">
+      <h2 id="coverage-h" class="display">Coverage</h2>
+      <div class="autopay">
+        <p>This plan runs on the <strong>{formatNetworks(plan.networks)}</strong> network{plan.networks.length > 1 && 's (you choose when you sign up)'}. Check the map for your home and work before you switch.</p>
+        <p class="map-links">
+          {c.coverageUrl && <a class="btn btn-ghost" href={c.coverageUrl} rel="noopener" target="_blank">{c.name} coverage map<span class="sr-only"> (opens in a new tab)</span></a>}
+          {plan.networks.filter((n) => networkMaps[n] && networkMaps[n] !== c.coverageUrl).map((n) => <a class="btn btn-ghost" href={networkMaps[n]} rel="noopener" target="_blank">{n} network map<span class="sr-only"> (opens in a new tab)</span></a>)}
+        </p>
+        <p class="small muted"><a href={href('guides/coverage/')}>Tips for checking coverage</a></p>
       </div>
     </section>
 
@@ -193,8 +247,25 @@ const verifiedText = plan.lastVerified
       ) : (
         <p class="muted">No limited-time deals listed for this plan right now.</p>
       )}
+      {carrierDiscounts.length > 0 && (
+        <div class="discounts">
+          <h3>Discounts {c.name} offers</h3>
+          <ul>{carrierDiscounts.map((d) => <li><strong>{d.title}.</strong> {d.details}</li>)}</ul>
+          <p class="small"><a href={href('discounts/')}>All discounts</a></p>
+        </div>
+      )}
       <p class="small muted">Deals change often and come with conditions. They aren't included in the prices above.{plan.lastVerified && ` Last checked ${fmtDate(plan.lastVerified)}.`} Confirm with {c.name} before you sign up.</p>
     </section>
+
+    {planChanges.length > 0 && (
+      <section class="sec" aria-labelledby="changes-h">
+        <h2 id="changes-h" class="display">Recent changes</h2>
+        <ul class="notes">{planChanges.map((ch) => <li><strong>{fmtDate(ch.date)}: {ch.title}.</strong> {ch.details}</li>)}</ul>
+        <p class="small"><a href={href('changes/')}>All price changes</a></p>
+      </section>
+    )}
+
+    <AdSlot name="plan-bottom" />
 
     {sameCarrier.length > 0 && (
       <section class="sec" aria-labelledby="same-h">
@@ -251,4 +322,9 @@ const verifiedText = plan.lastVerified
   .deals { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; }
   .deals li { background: var(--surface); border: 1px solid var(--line); border-left-width: 1px; border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 8px; }
   .deals h3 { font-size: 18px; }
+  .side-ad { margin-top: 16px; }
+  .map-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .discounts { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .discounts h3 { font-size: 18px; }
+  .discounts ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
 </style>
