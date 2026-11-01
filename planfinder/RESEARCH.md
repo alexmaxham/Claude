@@ -136,7 +136,15 @@ xfinity.com, spectrum.com and straighttalk.com weren't reachable from this envir
 ## More logos (1 November 2026)
 
 - **Cricket** (`cricket.png`), **Metro** (`metro.svg`) and **US Mobile** (`us-mobile.svg`) come from the logo in each carrier's website header. US Mobile's logo is made for dark backgrounds, so its carrier file sets `logoBackground` to a dark tile instead of recoloring the logo.
-- **Still missing:** Google Fi (hosted on www.gstatic.com) and Visible (hosted on s7d1.scene7.com), both blocked here. Mint is behind a Cloudflare check (challenges.cloudflare.com). Xfinity, Spectrum and Straight Talk sites are blocked too.
+- **Google Fi** (`google-fi.svg`) is the official Fi Wireless logo from gstatic.com, cropped to the Fi symbol only (the left 21×21 of the lockup), which is what Fi uses as its app icon. The full wordmark was unreadable in a small tile.
+- **Visible** (`visible.png`): the "visible by Verizon" logo from Visible's image server (scene7), with empty space trimmed.
+- **Straight Talk** (`straight-talk.svg`): from straighttalk.com. Its brand color, lime green #BEE81E, came from the site's buttons.
+- **Still missing:** Mint, Xfinity Mobile and Spectrum Mobile. Their sites block automated browsers with bot protection (Cloudflare for Mint, 403 for Xfinity and Spectrum). We didn't try to get around it. Options: download the logos from each company's press or brand page by hand, or allow their corporate newsroom domains (corporate.comcast.com, corporate.charter.com).
+
+## Verifying Xfinity, Spectrum and Straight Talk (1 November 2026, second attempt)
+
+- **Straight Talk:** straighttalk.com loads, but the plan cards are fetched from `webapigateway.tracfone.com`, which isn't allowed, so prices couldn't be read. The page's fine print confirms the Silver, Gold and Platinum Unlimited names, Walmart+ on Gold and Platinum, and Silver at $25/line with four lines. Plans stay unverified until `webapigateway.tracfone.com` is allowed.
+- **Xfinity and Spectrum:** both sites return 403 to automated browsers (bot protection), so their plans stay unverified.
 
 ## Still unverified
 
