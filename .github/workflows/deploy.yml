@@ -26,9 +26,20 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            planfinder/package-lock.json
       - run: npm ci
       - run: npm test
       - run: npm run build
+      # Phone plan comparison site, published at /plans/ (source in planfinder/).
+      - name: Build plan finder
+        working-directory: planfinder
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - run: cp -r planfinder/dist dist/plans
       - run: node scripts/fetch-deals.mjs dist/deals/deals.json
         env:
           SLICKDEALS_FEED_URL: ${{ vars.SLICKDEALS_FEED_URL }}

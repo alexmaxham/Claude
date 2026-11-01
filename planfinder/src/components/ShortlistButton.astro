@@ -1,0 +1,15 @@
+---
+interface Props {
+  slug: string;
+  name: string;
+  /** Extra classes, e.g. "btn-ghost" for a quieter look. */
+  class?: string;
+}
+const { slug, name, class: cls = 'btn-primary' } = Astro.props;
+---
+<button type="button" class:list={['btn', 'sl-btn', cls]} data-shortlist-toggle={slug} aria-pressed="false">
+  <span class="when-off">Add to shortlist</span>
+  <span class="when-on">On your shortlist ✓</span>
+  <span class="when-full">Shortlist full (4/4)</span>
+  <span class="sr-only">: {name}</span>
+</button>

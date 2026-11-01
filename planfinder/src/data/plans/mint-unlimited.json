@@ -1,0 +1,20 @@
+{
+  "carrier": "mint",
+  "name": "Unlimited",
+  "price": 30,
+  "networks": [
+    "T-Mobile"
+  ],
+  "premiumData": 35,
+  "data": "unlimited",
+  "hotspot": 10,
+  "perks": [],
+  "international": "Calling to Mexico & Canada",
+  "billing": "prepaid",
+  "terms": "This price needs 12 months paid upfront",
+  "highlights": [
+    "Lowest monthly cost"
+  ],
+  "sourceUrl": "https://www.mintmobile.com/plans/",
+  "lastVerified": null
+}

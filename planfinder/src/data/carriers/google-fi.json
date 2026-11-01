@@ -1,0 +1,12 @@
+{
+  "name": "Google Fi",
+  "kind": "mvno",
+  "networks": [
+    "T-Mobile"
+  ],
+  "color": "#1A73E8",
+  "textOnColor": "#FFFFFF",
+  "monogram": "Fi",
+  "website": "https://fi.google.com/",
+  "summary": "Runs on the T-Mobile network, with data in many countries abroad."
+}

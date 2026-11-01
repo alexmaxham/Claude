@@ -1,0 +1,12 @@
+{
+  "name": "Cricket Wireless",
+  "kind": "prepaid",
+  "networks": [
+    "AT&T"
+  ],
+  "color": "#60A830",
+  "textOnColor": "#0E2005",
+  "monogram": "CK",
+  "website": "https://www.cricketwireless.com/",
+  "summary": "Prepaid brand owned by AT&T, running on its network."
+}

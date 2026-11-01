@@ -1,0 +1,12 @@
+{
+  "name": "T-Mobile",
+  "kind": "big3",
+  "networks": [
+    "T-Mobile"
+  ],
+  "color": "#E20074",
+  "textOnColor": "#FFFFFF",
+  "monogram": "T",
+  "website": "https://www.t-mobile.com/",
+  "summary": "One of the three national networks. Plans are postpaid and billed monthly."
+}

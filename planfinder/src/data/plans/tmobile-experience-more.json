@@ -1,0 +1,23 @@
+{
+  "carrier": "tmobile",
+  "name": "Experience More",
+  "price": 85,
+  "priceWithoutAutopay": 90,
+  "networks": [
+    "T-Mobile"
+  ],
+  "premiumData": "unlimited",
+  "data": "unlimited",
+  "hotspot": 60,
+  "perks": [
+    "Netflix",
+    "Apple TV"
+  ],
+  "international": "Texting and data in 215+ countries",
+  "billing": "postpaid",
+  "highlights": [
+    "Streaming included"
+  ],
+  "sourceUrl": "https://www.t-mobile.com/cell-phone-plans",
+  "lastVerified": null
+}

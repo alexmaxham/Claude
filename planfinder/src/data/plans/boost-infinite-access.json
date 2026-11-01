@@ -1,0 +1,19 @@
+{
+  "carrier": "boost",
+  "name": "Infinite Access",
+  "price": 65,
+  "networks": [
+    "AT&T"
+  ],
+  "premiumData": "unlimited",
+  "data": "unlimited",
+  "hotspot": 30,
+  "perks": [
+    "Yearly phone upgrade"
+  ],
+  "international": "Mexico & Canada included",
+  "billing": "prepaid",
+  "highlights": [],
+  "sourceUrl": "https://www.boostmobile.com/plans",
+  "lastVerified": null
+}

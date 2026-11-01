@@ -1,0 +1,12 @@
+{
+  "name": "Visible",
+  "kind": "mvno",
+  "networks": [
+    "Verizon"
+  ],
+  "color": "#1F2BFF",
+  "textOnColor": "#FFFFFF",
+  "monogram": "V",
+  "website": "https://www.visible.com/",
+  "summary": "Runs on the Verizon network. Prepaid, month to month, managed in an app."
+}

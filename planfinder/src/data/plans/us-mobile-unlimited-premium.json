@@ -1,0 +1,22 @@
+{
+  "carrier": "us-mobile",
+  "name": "Unlimited Premium",
+  "price": 44,
+  "networks": [
+    "Verizon",
+    "AT&T"
+  ],
+  "premiumData": 150,
+  "data": "unlimited",
+  "hotspot": 50,
+  "perks": [
+    "One perk of your choice"
+  ],
+  "international": "Select countries included",
+  "billing": "prepaid",
+  "highlights": [
+    "Choose Verizon or AT&T network"
+  ],
+  "sourceUrl": "https://www.usmobile.com/plans",
+  "lastVerified": null
+}

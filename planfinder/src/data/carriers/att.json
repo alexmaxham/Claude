@@ -1,0 +1,12 @@
+{
+  "name": "AT&T",
+  "kind": "big3",
+  "networks": [
+    "AT&T"
+  ],
+  "color": "#009FDB",
+  "textOnColor": "#0B1F2A",
+  "monogram": "AT&T",
+  "website": "https://www.att.com/",
+  "summary": "One of the three national networks. Plans are postpaid and billed monthly."
+}

@@ -1,0 +1,56 @@
+---
+import Base from '../../layouts/Base.astro';
+import CarrierLogo from '../../components/CarrierLogo.astro';
+import { getData } from '../../lib/data';
+import { formatNetworks, formatPrice } from '../../lib/model';
+
+const { carriers, plans } = await getData();
+const groups = [
+  { kind: 'big3', title: 'The big three', text: 'They own the national networks. Their plans usually cost more but get top priority when a tower is busy.' },
+  { kind: 'mvno', title: 'MVNOs', text: 'Mobile virtual network operators rent space on a big three network and resell it, often for much less.' },
+  { kind: 'prepaid', title: 'Prepaid brands', text: 'Pay before each month, with no credit check. Several are owned by the big three.' },
+] as const;
+---
+<Base title="Carriers" description="The carriers we compare: Verizon, AT&T, T-Mobile, plus MVNOs and prepaid brands, and which network each one uses." nav="carriers">
+  <div class="wrap page">
+    <h1 class="display">Carriers</h1>
+    {groups.map((g) => (
+      <section aria-labelledby={`g-${g.kind}`} class="group">
+        <div class="ghead">
+          <h2 id={`g-${g.kind}`} class="display">{g.title}</h2>
+          <p class="muted">{g.text}</p>
+        </div>
+        <ul class="grid">
+          {carriers.filter((c) => c.kind === g.kind).map((c) => {
+            const own = plans.filter((p) => p.carrier === c.slug);
+            const prices = own.map((p) => p.price);
+            return (
+              <li style={`--brand:${c.color}`}>
+                <a href={c.url}>
+                  <CarrierLogo carrier={c.lite} size={56} />
+                  <span class="txt">
+                    <span class="name">{c.name}</span>
+                    <span class="small muted">{formatNetworks(c.networks)} network · {own.length} {own.length === 1 ? 'plan' : 'plans'}{prices.length > 0 && ` · from ${formatPrice(Math.min(...prices))}/mo`}</span>
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    ))}
+  </div>
+</Base>
+
+<style>
+  .page { padding-block: 24px 64px; display: flex; flex-direction: column; gap: 40px; }
+  h1 { font-size: clamp(36px, 5vw, 48px); }
+  .group { display: flex; flex-direction: column; gap: 16px; }
+  .ghead { display: flex; flex-direction: column; gap: 6px; max-width: 720px; }
+  .ghead h2 { font-size: 28px; }
+  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+  .grid a { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); border-top: 6px solid var(--brand); text-decoration: none; color: var(--ink); min-height: 92px; }
+  .grid a:hover { border-color: var(--ink); border-top-color: var(--brand); }
+  .txt { display: flex; flex-direction: column; gap: 2px; }
+  .name { font-size: 18px; font-weight: 700; }
+</style>
