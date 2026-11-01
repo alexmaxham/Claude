@@ -1,6 +1,7 @@
 {
   "carrier": "google-fi",
   "name": "Unlimited Premium",
+  "description": "Google Fi's top plan, with 100GB of high-speed data, 50GB of hotspot and 50GB of data in 200+ destinations. Good for frequent travelers.",
   "price": 65,
   "multiLine": {
     "2": 55,
@@ -25,5 +26,12 @@
     "Works abroad in 200+ destinations"
   ],
   "sourceUrl": "https://fi.google.com/about/plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "50% off for a year with a Pixel",
+      "details": "Half off this plan for 12 months when you bring a Google Pixel.",
+      "ends": "2026-11-10"
+    }
+  ]
 }

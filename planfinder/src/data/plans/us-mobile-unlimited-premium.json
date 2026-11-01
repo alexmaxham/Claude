@@ -1,6 +1,7 @@
 {
   "carrier": "us-mobile",
   "name": "Unlimited Premium",
+  "description": "One price per line on your choice of the Verizon, AT&T or T-Mobile network. Premium data is unlimited and taxes and fees are included. Hotspot depends on the network you pick.",
   "price": 44,
   "multiLine": {
     "2": 44,
@@ -28,5 +29,11 @@
     "Same price for every line"
   ],
   "sourceUrl": "https://www.usmobile.com/plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "$25/mo for 6 months when you switch",
+      "details": "Bring your number from another carrier and pay $25/mo for 6 months with AutoPay."
+    }
+  ]
 }

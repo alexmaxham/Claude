@@ -1,6 +1,7 @@
 {
   "carrier": "cricket",
   "name": "Supreme Unlimited",
+  "description": "Cricket's top plan on the AT&T network, with 50GB of hotspot, HBO Max Basic with Ads and 150GB of cloud storage. Taxes and fees are included.",
   "price": 55,
   "priceWithoutAutopay": 60,
   "multiLine": {
@@ -27,5 +28,6 @@
     "50GB hotspot"
   ],
   "sourceUrl": "https://www.cricketwireless.com/plans/phone",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": []
 }

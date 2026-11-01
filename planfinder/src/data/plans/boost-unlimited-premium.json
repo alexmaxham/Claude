@@ -1,6 +1,7 @@
 {
   "carrier": "boost",
   "name": "Unlimited Premium",
+  "description": "Boost's top plan, with 50GB of premium data, hotspot from your plan data, and calls, texts and 5GB of roaming in Mexico and Canada.",
   "price": 60,
   "priceWithoutAutopay": 65,
   "multiLine": {
@@ -21,5 +22,6 @@
   "taxesIncluded": false,
   "highlights": [],
   "sourceUrl": "https://www.boostmobile.com/plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": []
 }

@@ -1,6 +1,7 @@
 {
   "carrier": "verizon",
   "name": "Unlimited Ultimate",
+  "description": "Verizon's top myPlan plan, with unlimited premium data, 200GB of hotspot and talk, text and 15GB of data in 210+ countries. Includes Verizon Family Plus and Identity Secure.",
   "price": 95,
   "priceWithoutAutopay": 105,
   "multiLine": {
@@ -30,5 +31,11 @@
     "Works abroad in 210+ countries"
   ],
   "sourceUrl": "https://www.verizon.com/plans/unlimited/myplan",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "$10/mo off with 3+ new lines",
+      "details": "Verizon gives a $10/mo account credit for 36 months when you add 3 or more new lines (Unlimited Welcome shows as $27.50/line with 4 new lines)."
+    }
+  ]
 }

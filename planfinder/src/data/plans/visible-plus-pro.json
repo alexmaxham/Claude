@@ -1,6 +1,7 @@
 {
   "carrier": "visible",
   "name": "Visible+ Pro",
+  "description": "Visible's top plan. Like Visible+, but the hotspot is faster (15 Mbps) and you get more international extras, including 2 Global Pass days a month.",
   "price": 45,
   "networks": [
     "Verizon"
@@ -17,5 +18,11 @@
     "Faster hotspot than Visible+"
   ],
   "sourceUrl": "https://www.visible.com/plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "$39/mo with a promo code",
+      "details": "With promo code HOLIDAYHACK, Visible+ Pro is $39/mo."
+    }
+  ]
 }

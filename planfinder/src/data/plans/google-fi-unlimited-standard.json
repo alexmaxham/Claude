@@ -1,6 +1,7 @@
 {
   "carrier": "google-fi",
   "name": "Unlimited Standard",
+  "description": "Google Fi's middle plan on the T-Mobile network, with 50GB of high-speed data and 25GB of hotspot. Use in Canada and Mexico is included. Much cheaper per line with more people.",
   "price": 50,
   "multiLine": {
     "2": 40,
@@ -22,5 +23,12 @@
     "Cheaper per line with more people"
   ],
   "sourceUrl": "https://fi.google.com/about/plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "50% off for a year with a Pixel",
+      "details": "Half off this plan for 12 months when you bring a Google Pixel.",
+      "ends": "2026-11-10"
+    }
+  ]
 }

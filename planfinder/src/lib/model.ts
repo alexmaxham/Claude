@@ -34,6 +34,8 @@ export interface PlanLite {
   /** Price per line with 2, 3 or 4 lines, where the carrier lists one. */
   multiLine?: Partial<Record<'2' | '3' | '4', number>>;
   taxesIncluded: boolean;
+  /** AutoPay discount per line per month that is already taken off `price` (0 if none). */
+  autopayDiscount: number;
   verified: boolean;
 }
 
