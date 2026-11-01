@@ -84,6 +84,29 @@ No plan files were deleted: every existing plan is still sold.
 - **Boost Unlimited:** $10/mo for the first 6 months for new customers (needs AutoPay).
 - **US Mobile:** port-in offer, Unlimited Premium $25 and Unlimited Starter $15 for 6 months. The page also mentions a $15/mo perk credit "for a year" with 3 Premium lines, but the FAQ describes it as ongoing.
 
+## AutoPay discounts (checked 1 November 2026)
+
+Every price on the site includes the AutoPay discount where a carrier offers one. Each plan page now shows the discount, how to qualify, and a pricing table with and without AutoPay. The terms are stored in each carrier's `autopayTerms`, and the per-line amount is `priceWithoutAutopay − price`.
+
+| Carrier | Discount per line | How to qualify | Source |
+| --- | --- | --- | --- |
+| Verizon | $10 (labels say "up to $10") | Auto Pay and paper-free billing from a bank account or Verizon Visa Card. Debit and other credit cards don't qualify, except debit cards enrolled before 14 Feb 2024. | [Auto Pay FAQs](https://www.verizon.com/support/auto-pay-faqs/), [myPlan](https://www.verizon.com/plans/unlimited/myplan) |
+| AT&T | $10 | AutoPay and paperless billing from a bank account or AT&T Points Plus Card. $5 with a debit card, $0 with other credit cards. Starts within 2 bills. | [Plans page legal text](https://www.att.com/plans/wireless/) |
+| T-Mobile | $5 | AutoPay with an eligible payment method. Optional. | [Plans page](https://www.t-mobile.com/cell-phone-plans) |
+| Cricket | $5 | Auto Pay. The first month is charged at the full price. | [Phone plans](https://www.cricketwireless.com/plans/phone) |
+| Metro | $5 ($0 on $40 Period) | AutoPay. The first month is charged at the full price. | [Phone plans](https://www.metrobyt-mobile.com/phone-plans) |
+| Boost | $5 | AutoPay. Turning it off adds $5. | [Plans](https://www.boostmobile.com/plans) |
+| Google Fi, Visible, US Mobile | None | No AutoPay discount on their plan pages. US Mobile's AutoPay only renews the plan, though its port-in deals need it. | Plan pages |
+| Mint | Unknown | Not checked: Cloudflare blocks the site from this environment. | — |
+
+Assumption: the AutoPay discount applies to every line, so the "without AutoPay" multi-line prices add the per-line discount to each line. Verizon, AT&T, T-Mobile, Cricket, Metro and Boost all describe it as per line.
+
+## Plan descriptions and deals
+
+- `description` is a short, plain summary written from the verified plan details.
+- `deals` holds limited-time offers seen on 1 November 2026 (listed under "Promotions seen" above). They appear in each plan page's Deals section and are never included in prices. The AT&T BYOD credit moved from `terms` to `deals`.
+- Metro $40 Period: added `multiLine` at a flat $40 per line, from its Broadband Facts label ($40 / $80 / $120 / $160). Other Metro plans' multi-line prices are still not listed.
+
 ## Still unverified
 
 | Plan | Why |

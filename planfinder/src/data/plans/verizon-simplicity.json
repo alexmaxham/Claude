@@ -1,6 +1,7 @@
 {
   "carrier": "verizon",
   "name": "Simplicity Plan",
+  "description": "One flat price per line no matter how many lines you have. Data slows to 4 Mbps only after 500GB in a month, and you get 10GB of hotspot, satellite texting and 3% back in Verizon Dollars.",
   "price": 45,
   "priceWithoutAutopay": 55,
   "multiLine": {
@@ -28,5 +29,11 @@
     "$30/line when you switch"
   ],
   "sourceUrl": "https://www.verizon.com/plans/unlimited/",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "$30/line when you switch",
+      "details": "A $15/mo per-line discount when you bring your number from another carrier, so each line costs $30/mo with AutoPay."
+    }
+  ]
 }

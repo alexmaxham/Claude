@@ -2,7 +2,7 @@
 
 A site for comparing phone plans from Verizon, AT&T and T-Mobile plus MVNOs and prepaid carriers. Visitors answer three questions, get a ranked list, and shortlist up to four plans to compare side by side.
 
-Built with [Astro](https://astro.build) as a fully static site. Live at https://alexmaxham.github.io/Claude/plans/ once merged (the repo's GitHub Pages deploy builds it into `/plans/`).
+Built with [Astro](https://astro.build) as a fully static site. Live at https://alexmaxham.github.io/Claude/ (published by `.github/workflows/deploy.yml` on every push to the default branch).
 
 ## Commands
 
@@ -11,7 +11,7 @@ Run these from the `planfinder/` folder.
 | Command | What it does |
 | --- | --- |
 | `npm install` | Install dependencies |
-| `npm run dev` | Local server at http://localhost:4321/Claude/plans/ |
+| `npm run dev` | Local server at http://localhost:4321/Claude/ |
 | `npm test` | Unit tests for ranking and comparison |
 | `npm run build` | Type-check, check every data file against the schema, build into `dist/` |
 | `npm run preview` | Serve the built site |
@@ -20,7 +20,7 @@ Run these from the `planfinder/` folder.
 
 - `/` guided finder: four questions (lines, data, priority, hotspot) rank every plan, with a "why it fits" line. Answers are kept in the URL so a ranking can be shared.
 - `/plans/` every plan, filterable by carrier type, network and price. Accepts `?kind=mvno` and `?network=Verizon`.
-- `/plans/<slug>/` one plan: full details, source link, when it was last checked, similar plans.
+- `/plans/<slug>/` one plan: description, a pricing table for 1–4 lines with and without AutoPay, the AutoPay discount and how to qualify, plan details, current deals, source link, when it was last checked, and similar plans.
 - `/carriers/` and `/carriers/<slug>/` carriers grouped by type, with their plans.
 - `/compare/` the shortlist side by side, best value in each row marked, priced for 1–4 lines. `?plans=a,b,c&lines=4` opens a shared comparison.
 - `/about/` how plans are ranked and compared.

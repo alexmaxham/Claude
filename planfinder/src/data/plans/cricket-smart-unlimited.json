@@ -1,6 +1,7 @@
 {
   "carrier": "cricket",
   "name": "Smart Unlimited",
+  "description": "Cricket's middle plan on the AT&T network, with 15GB of hotspot and 100GB of cloud storage. Taxes and fees are included.",
   "price": 45,
   "priceWithoutAutopay": 50,
   "multiLine": {
@@ -26,5 +27,6 @@
     "15GB hotspot"
   ],
   "sourceUrl": "https://www.cricketwireless.com/plans/phone",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": []
 }

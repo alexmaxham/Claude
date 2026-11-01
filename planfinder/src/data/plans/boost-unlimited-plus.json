@@ -1,6 +1,7 @@
 {
   "carrier": "boost",
   "name": "Unlimited+",
+  "description": "Boost's middle plan, with 40GB of premium data, hotspot from your plan data, and calls to 100+ countries.",
   "price": 50,
   "priceWithoutAutopay": 55,
   "multiLine": {
@@ -21,5 +22,6 @@
   "taxesIncluded": false,
   "highlights": [],
   "sourceUrl": "https://www.boostmobile.com/plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": []
 }

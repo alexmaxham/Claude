@@ -1,6 +1,7 @@
 {
   "carrier": "us-mobile",
   "name": "Unlimited Starter",
+  "description": "US Mobile's low-cost unlimited plan, one price per line on your choice of network. Taxes and fees are included. No premium data allowance, so data may slow when the network is busy.",
   "price": 25,
   "multiLine": {
     "2": 25,
@@ -25,5 +26,11 @@
     "Same price for every line"
   ],
   "sourceUrl": "https://www.usmobile.com/plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "$15/mo for 6 months when you switch",
+      "details": "Bring your number from another carrier and pay $15/mo for 6 months with AutoPay."
+    }
+  ]
 }

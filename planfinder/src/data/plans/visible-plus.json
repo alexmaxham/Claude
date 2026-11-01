@@ -1,6 +1,7 @@
 {
   "carrier": "visible",
   "name": "Visible+",
+  "description": "Visible's plan with unlimited premium data on the Verizon network and unlimited hotspot at 10 Mbps. Taxes and fees are included in the price.",
   "price": 35,
   "networks": [
     "Verizon"
@@ -18,5 +19,11 @@
     "Unlimited premium data"
   ],
   "sourceUrl": "https://www.visible.com/plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "$29/mo with a promo code",
+      "details": "With promo code HOLIDAYHACK, Visible+ is $29/mo."
+    }
+  ]
 }

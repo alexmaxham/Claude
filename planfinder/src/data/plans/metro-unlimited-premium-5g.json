@@ -1,6 +1,7 @@
 {
   "carrier": "metro",
   "name": "Unlimited Premium 5G Data",
+  "description": "Metro's top plan, with unlimited premium data, 25GB of hotspot, HD video and 100GB of Google One storage. Taxes and fees are included.",
   "price": 55,
   "priceWithoutAutopay": 60,
   "networks": [
@@ -21,5 +22,6 @@
     "Unlimited premium data"
   ],
   "sourceUrl": "https://www.metrobyt-mobile.com/phone-plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": []
 }

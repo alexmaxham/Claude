@@ -1,6 +1,7 @@
 {
   "carrier": "verizon",
   "name": "Unlimited Plus",
+  "description": "Verizon's middle myPlan plan, with unlimited premium data and 30GB of hotspot. Includes 50% off one watch or tablet plan.",
   "price": 80,
   "priceWithoutAutopay": 90,
   "multiLine": {
@@ -25,5 +26,11 @@
     "Unlimited premium data"
   ],
   "sourceUrl": "https://www.verizon.com/plans/unlimited/myplan",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": [
+    {
+      "title": "$10/mo off with 3+ new lines",
+      "details": "Verizon gives a $10/mo account credit for 36 months when you add 3 or more new lines (Unlimited Welcome shows as $27.50/line with 4 new lines)."
+    }
+  ]
 }

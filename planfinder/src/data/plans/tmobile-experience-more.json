@@ -1,6 +1,7 @@
 {
   "carrier": "tmobile",
   "name": "Experience More 2.0",
+  "description": "T-Mobile's most popular plan, with unlimited premium data, 60GB of hotspot and Netflix Standard with ads. Includes texting and 5GB of data in 215+ countries, and a 5-year price guarantee.",
   "price": 85,
   "priceWithoutAutopay": 90,
   "multiLine": {
@@ -26,5 +27,6 @@
     "60GB hotspot"
   ],
   "sourceUrl": "https://www.t-mobile.com/cell-phone-plans",
-  "lastVerified": "2026-11-01"
+  "lastVerified": "2026-11-01",
+  "deals": []
 }
