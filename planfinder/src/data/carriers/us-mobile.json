@@ -1,0 +1,13 @@
+{
+  "name": "US Mobile",
+  "kind": "mvno",
+  "networks": [
+    "Verizon",
+    "AT&T"
+  ],
+  "color": "#FF6B35",
+  "textOnColor": "#2A0E02",
+  "monogram": "US",
+  "website": "https://www.usmobile.com/",
+  "summary": "Lets you pick the Verizon or AT&T network, and switch later."
+}

@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/site';
+---
+<Base title="Page not found" description="This page doesn't exist." noindex>
+  <div class="wrap box">
+    <h1 class="display">We can't find that page.</h1>
+    <p class="muted">The plan may have been retired, or the link is mistyped.</p>
+    <p><a class="btn btn-primary" href={href()}>Find a plan</a></p>
+  </div>
+</Base>
+<style>
+  .box { padding-block: 80px; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+  h1 { font-size: clamp(36px, 5vw, 48px); }
+</style>

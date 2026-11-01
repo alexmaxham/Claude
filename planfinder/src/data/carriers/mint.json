@@ -1,0 +1,12 @@
+{
+  "name": "Mint Mobile",
+  "kind": "mvno",
+  "networks": [
+    "T-Mobile"
+  ],
+  "color": "#6FBE44",
+  "textOnColor": "#10240A",
+  "monogram": "MM",
+  "website": "https://www.mintmobile.com/",
+  "summary": "Runs on the T-Mobile network. The lowest prices come from paying for several months upfront."
+}

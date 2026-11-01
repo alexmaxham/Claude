@@ -1,0 +1,17 @@
+{
+  "carrier": "cricket",
+  "name": "Unlimited",
+  "price": 55,
+  "networks": [
+    "AT&T"
+  ],
+  "premiumData": 0,
+  "data": "unlimited",
+  "hotspot": 15,
+  "perks": [],
+  "international": "Mexico & Canada included",
+  "billing": "prepaid",
+  "highlights": [],
+  "sourceUrl": "https://www.cricketwireless.com/cell-phone-plans",
+  "lastVerified": null
+}

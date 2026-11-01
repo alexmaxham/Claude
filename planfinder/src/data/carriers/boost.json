@@ -1,0 +1,12 @@
+{
+  "name": "Boost Mobile",
+  "kind": "prepaid",
+  "networks": [
+    "AT&T"
+  ],
+  "color": "#F7931E",
+  "textOnColor": "#2A1500",
+  "monogram": "B",
+  "website": "https://www.boostmobile.com/",
+  "summary": "Runs on its own network, with AT&T coverage where it has none."
+}

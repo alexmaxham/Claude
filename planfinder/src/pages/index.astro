@@ -1,0 +1,109 @@
+---
+import Base from '../layouts/Base.astro';
+import PlanCard from '../components/PlanCard.astro';
+import CarrierLogo from '../components/CarrierLogo.astro';
+import { getData } from '../lib/data';
+import { DEFAULT_ANSWERS, QUESTIONS, rankPlans } from '../lib/score';
+import { href, SITE_NAME } from '../lib/site';
+
+const { plans, carriers } = await getData();
+// Pre-rank with the default answers so the page reads right before (and without) JavaScript.
+const order = rankPlans(plans.map((p) => p.lite), DEFAULT_ANSWERS).map((r) => r.plan.slug);
+const ranked = order.map((slug) => plans.find((p) => p.slug === slug)!);
+---
+<Base title={SITE_NAME} description="Answer three questions and compare phone plans from Verizon, AT&T, T-Mobile, MVNOs and prepaid carriers side by side." nav="find">
+  <section class="hero wrap">
+    <div class="intro">
+      <h1 class="display">Find a plan that fits how you actually use your phone.</h1>
+      <p class="lede">Three quick questions. We rank plans from the big three, MVNOs and prepaid carriers, then you shortlist up to four to see side by side.</p>
+      <ul class="carriers" aria-label="Carriers we compare">
+        {carriers.map((c) => (
+          <li><a href={c.url} style={`background:${c.color};color:${c.textOnColor}`}><CarrierLogo carrier={c.lite} size={26} mode="white" />{c.name}</a></li>
+        ))}
+      </ul>
+    </div>
+    <form id="finder" class="quiz" aria-label="Plan finder">
+      {QUESTIONS.map((q, qi) => (
+        <fieldset>
+          <legend><span class="num" aria-hidden="true">{qi + 1}</span>{q.label}</legend>
+          <div class="opts">
+            {q.options.map((o) => (
+              <label class="opt">
+                <input type="radio" name={q.key} value={o.value} checked={DEFAULT_ANSWERS[q.key] === o.value} />
+                <span class="opt-label">{o.label}</span>
+                <span class="opt-hint">{o.hint}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ))}
+    </form>
+  </section>
+
+  <section class="matches wrap" aria-labelledby="matches-h">
+    <div class="sec-head">
+      <h2 id="matches-h" class="display">Your top matches</h2>
+      <p class="small muted" id="match-status" aria-live="polite"></p>
+    </div>
+    <noscript><p class="muted">Turn on JavaScript to rank plans by your answers. All plans are listed below.</p></noscript>
+    <ol class="card-grid" id="results">
+      {ranked.map((p) => <PlanCard plan={p} finder />)}
+    </ol>
+    <div class="more">
+      <button type="button" class="btn btn-ghost" id="show-all" hidden>Show all {plans.length} plans</button>
+      <a class="btn btn-ghost" href={href('plans/')}>Browse and filter every plan</a>
+    </div>
+  </section>
+
+  <section id="shortlist" class="shortlist on-dark" aria-labelledby="sl-h">
+    <div class="wrap sl-inner">
+      <div class="sec-head">
+        <div>
+          <h2 id="sl-h" class="display">Your shortlist, side by side</h2>
+          <p id="sl-hint" class="sl-hint">Add up to four plans from your matches to compare them here.</p>
+        </div>
+        <div class="sl-actions">
+          <a class="btn btn-primary" id="sl-open" href={href('compare/')}>Open full comparison</a>
+          <button type="button" class="btn btn-ghost-light" id="sl-clear">Clear shortlist</button>
+        </div>
+      </div>
+      <div class="cmp" id="home-compare"></div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { initFinder } from '../scripts/finder';
+  initFinder();
+</script>
+
+<style>
+  .hero { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; padding-block: 32px 40px; }
+  .intro { flex: 1 1 380px; display: flex; flex-direction: column; gap: 16px; }
+  h1 { font-size: clamp(40px, 6vw, 58px); line-height: 1.02; letter-spacing: -0.035em; }
+  .lede { font-size: 18px; line-height: 1.55; color: var(--muted); }
+  .carriers { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .carriers a { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px 0 7px; border-radius: 999px; font-size: 13px; font-weight: 700; text-decoration: none; }
+  .carriers a:hover { filter: brightness(1.08); }
+  .quiz { flex: 1 1 520px; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  legend { padding: 0; margin-bottom: 12px; font-size: 17px; font-weight: 700; display: flex; align-items: center; }
+  .num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin-right: 10px; border-radius: 999px; background: var(--mint); color: var(--forest); font-size: 14px; }
+  .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .opt { position: relative; flex: 1 1 140px; min-height: 60px; padding: 10px 16px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; display: flex; flex-direction: column; justify-content: center; }
+  .opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .opt-label { font-size: 15px; font-weight: 700; }
+  .opt-hint { font-size: 13px; color: var(--muted); }
+  .opt:hover { border-color: var(--forest); }
+  .opt:has(input:checked) { background: var(--ink); border-color: var(--ink); color: #FFFFFF; }
+  .opt:has(input:checked) .opt-hint { color: #C9D8CF; }
+  .opt:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .matches { padding-block: 8px 48px; display: flex; flex-direction: column; gap: 20px; }
+  .sec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .sec-head h2 { font-size: 34px; letter-spacing: -0.02em; }
+  .more { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .shortlist { background: var(--ink); color: #FFFFFF; scroll-margin-top: 16px; }
+  .sl-inner { padding-block: 48px 64px; display: flex; flex-direction: column; gap: 24px; }
+  .sl-hint { margin-top: 6px; color: #C9D8CF; }
+  .sl-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+</style>

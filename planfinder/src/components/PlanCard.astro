@@ -1,0 +1,79 @@
+---
+import CarrierLogo from './CarrierLogo.astro';
+import ShortlistButton from './ShortlistButton.astro';
+import { formatAmount, formatHotspot, formatNetworks, formatPrice, KIND_LABEL, amountValue } from '../lib/model';
+import type { Plan } from '../lib/data';
+import { planTitle } from '../lib/data';
+
+interface Props {
+  plan: Plan;
+  /** Shows the rank and "why it fits" slots the finder fills in. */
+  finder?: boolean;
+  headingLevel?: 'h2' | 'h3';
+}
+const { plan, finder = false, headingLevel = 'h3' } = Astro.props;
+const c = plan.carrierInfo;
+const H = headingLevel;
+const netColor = (n: string) => (n === 'Verizon' ? '#CD040B' : n === 'AT&T' ? '#009FDB' : '#E20074');
+const hotspot = amountValue(plan.hotspot);
+---
+<li
+  class="plan-card"
+  style={`--brand:${c.color}`}
+  data-slug={plan.slug}
+  data-kind={c.kind}
+  data-networks={plan.networks.join('|')}
+  data-price={plan.price}
+  data-hotspot={hotspot === Infinity ? 9999 : hotspot}
+  data-carrier={c.name}
+>
+  <div class="top">
+    <div class="who">
+      <CarrierLogo carrier={c.lite} size={52} />
+      <div>
+        <p class="meta">{finder && <span class="rank" data-rank></span>}<a href={c.url}>{c.name}</a> · {KIND_LABEL[c.kind]}</p>
+        <H class="name"><a href={plan.url}>{plan.name}<span class="sr-only"> from {c.name}</span></a></H>
+      </div>
+    </div>
+    <div class="price">
+      <span class="display">{formatPrice(plan.price)}</span>
+      <span class="muted small">per month</span>
+    </div>
+  </div>
+  {finder && <span class="tag-match" data-best-match hidden>BEST MATCH</span>}
+  {finder && <p class="why" data-why hidden></p>}
+  <div class="pills">
+    {plan.networks.map((n) => <span class="pill"><span class="dot" style={`background:${netColor(n)}`} aria-hidden="true"></span>{n} network</span>)}
+    <span class="pill">{formatHotspot(plan)} hotspot</span>
+    <span class="pill">{formatAmount(plan.premiumData)} premium data</span>
+    {plan.perks.length > 0 && <span class="pill">{plan.perks.join(', ')}</span>}
+  </div>
+  {plan.terms && <p class="small muted">{plan.terms}</p>}
+  {!plan.lite.verified && <span class="tag-unverified" title="We haven't checked this plan against the carrier's site yet.">Price not yet verified</span>}
+  <div class="actions">
+    <ShortlistButton slug={plan.slug} name={planTitle(plan)} />
+    <a class="btn btn-ghost" href={plan.url}>Details<span class="sr-only"> for {planTitle(plan)}, {formatNetworks(plan.networks)} network</span></a>
+  </div>
+</li>
+
+<style>
+  .plan-card { display: flex; flex-direction: column; gap: 14px; padding: 22px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); border-top: 6px solid var(--brand); }
+  .plan-card.is-top { border-color: var(--ink); border-width: 2px; border-top: 6px solid var(--brand); }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .meta { font-size: 14px; color: var(--muted); font-weight: 500; }
+  .meta a { color: inherit; }
+  .rank { font-weight: 700; color: var(--ink); margin-right: 4px; }
+  .rank:empty { display: none; }
+  .name { font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .name a { color: var(--ink); text-decoration: none; }
+  .name a:hover { text-decoration: underline; }
+  .price { text-align: right; flex: none; }
+  .price .display { display: block; font-size: 32px; line-height: 1; }
+  .tag-match { align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: var(--ink); color: #FFFFFF; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+  .why { padding: 12px 14px; border-radius: 12px; background: var(--ground); font-size: 15px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+  .actions :global(.sl-btn) { flex: 1 1 200px; }
+  .tag-unverified { align-self: flex-start; }
+</style>

@@ -1,0 +1,19 @@
+{
+  "carrier": "google-fi",
+  "name": "Unlimited Standard",
+  "price": 50,
+  "networks": [
+    "T-Mobile"
+  ],
+  "premiumData": 35,
+  "data": "unlimited",
+  "hotspot": 15,
+  "perks": [],
+  "international": "Data in 200+ destinations",
+  "billing": "postpaid",
+  "highlights": [
+    "Works abroad"
+  ],
+  "sourceUrl": "https://fi.google.com/about/plans",
+  "lastVerified": null
+}

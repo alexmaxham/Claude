@@ -1,0 +1,25 @@
+{
+  "carrier": "tmobile",
+  "name": "Experience Beyond",
+  "price": 100,
+  "priceWithoutAutopay": 105,
+  "networks": [
+    "T-Mobile"
+  ],
+  "premiumData": "unlimited",
+  "data": "unlimited",
+  "hotspot": 250,
+  "perks": [
+    "Netflix",
+    "Apple TV",
+    "Hulu"
+  ],
+  "international": "Texting and data in 215+ countries",
+  "billing": "postpaid",
+  "highlights": [
+    "Most hotspot data",
+    "Three streaming services"
+  ],
+  "sourceUrl": "https://www.t-mobile.com/cell-phone-plans",
+  "lastVerified": null
+}

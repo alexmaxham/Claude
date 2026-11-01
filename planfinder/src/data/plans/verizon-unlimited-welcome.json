@@ -1,0 +1,20 @@
+{
+  "carrier": "verizon",
+  "name": "Unlimited Welcome",
+  "price": 65,
+  "priceWithoutAutopay": 75,
+  "networks": [
+    "Verizon"
+  ],
+  "premiumData": 0,
+  "data": "unlimited",
+  "hotspot": 0,
+  "perks": [],
+  "international": "Mexico & Canada as an add-on",
+  "billing": "postpaid",
+  "highlights": [
+    "Lowest-priced Verizon unlimited plan"
+  ],
+  "sourceUrl": "https://www.verizon.com/plans/",
+  "lastVerified": null
+}

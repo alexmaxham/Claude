@@ -1,0 +1,12 @@
+{
+  "name": "Metro by T-Mobile",
+  "kind": "prepaid",
+  "networks": [
+    "T-Mobile"
+  ],
+  "color": "#6E2C91",
+  "textOnColor": "#FFFFFF",
+  "monogram": "MT",
+  "website": "https://www.metrobyt-mobile.com/",
+  "summary": "Prepaid brand owned by T-Mobile, running on its network."
+}
