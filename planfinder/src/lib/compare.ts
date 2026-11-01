@@ -7,6 +7,7 @@ import {
   formatPerks,
   formatPrice,
   KIND_LONG,
+  priceFor,
   type PlanLite,
 } from './model';
 
@@ -18,8 +19,27 @@ interface RowDef {
   better?: 1 | -1;
 }
 
+function rowsFor(lines: number): RowDef[] {
+  const price: RowDef[] =
+    lines <= 1
+      ? [{ label: 'Monthly price', text: (p) => `${formatPrice(p.price)}/mo`, value: (p) => p.price, better: -1 }]
+      : [
+          {
+            label: `Per line (${lines} lines)`,
+            text: (p) => {
+              const lp = priceFor(p, lines);
+              return `${formatPrice(lp.perLine)}/mo${lp.listed ? '' : ' (no multi-line price listed)'}`;
+            },
+            value: (p) => priceFor(p, lines).perLine,
+            better: -1,
+          },
+          { label: `Total for ${lines} lines`, text: (p) => `${formatPrice(priceFor(p, lines).total)}/mo`, value: (p) => priceFor(p, lines).total, better: -1 },
+        ];
+  return [...price, ...ROWS];
+}
+
 const ROWS: RowDef[] = [
-  { label: 'Monthly price', text: (p) => `${formatPrice(p.price)}/mo`, value: (p) => p.price, better: -1 },
+  { label: 'Taxes & fees', text: (p) => (p.taxesIncluded ? 'Included in price' : 'Extra') },
   { label: 'Network', text: (p) => formatNetworks(p.networks) },
   { label: 'Carrier type', text: (p) => KIND_LONG[p.carrier.kind] },
   { label: 'Premium data', text: (p) => formatAmount(p.premiumData), value: (p) => amountValue(p.premiumData), better: 1 },
@@ -40,8 +60,8 @@ export interface CompareRow {
   same: boolean;
 }
 
-export function compareRows(plans: PlanLite[]): CompareRow[] {
-  return ROWS.map((r) => {
+export function compareRows(plans: PlanLite[], lines = 1): CompareRow[] {
+  return rowsFor(lines).map((r) => {
     const texts = plans.map(r.text);
     const same = texts.every((t) => t === texts[0]);
     let best: number | null = null;

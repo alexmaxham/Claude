@@ -1,17 +1,22 @@
 {
   "carrier": "cricket",
-  "name": "Unlimited",
-  "price": 55,
+  "name": "Smart Unlimited",
+  "price": 45,
+  "priceWithoutAutopay": 50,
   "networks": [
     "AT&T"
   ],
   "premiumData": 0,
-  "data": "unlimited",
-  "hotspot": 15,
-  "perks": [],
+  "hotspot": 0,
+  "hotspotNote": "Not listed",
   "international": "Mexico & Canada included",
   "billing": "prepaid",
-  "highlights": [],
+  "taxesIncluded": true,
+  "highlights": [
+    "Taxes and fees included"
+  ],
+  "perks": [],
+  "data": "unlimited",
   "sourceUrl": "https://www.cricketwireless.com/cell-phone-plans",
   "lastVerified": null
 }

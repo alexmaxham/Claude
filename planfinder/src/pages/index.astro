@@ -11,11 +11,11 @@ const { plans, carriers } = await getData();
 const order = rankPlans(plans.map((p) => p.lite), DEFAULT_ANSWERS).map((r) => r.plan.slug);
 const ranked = order.map((slug) => plans.find((p) => p.slug === slug)!);
 ---
-<Base title={SITE_NAME} description="Answer three questions and compare phone plans from Verizon, AT&T, T-Mobile, MVNOs and prepaid carriers side by side." nav="find">
+<Base title={SITE_NAME} description="Answer four questions and compare phone plans from Verizon, AT&T, T-Mobile, MVNOs and prepaid carriers side by side." nav="find">
   <section class="hero wrap">
     <div class="intro">
       <h1 class="display">Find a plan that fits how you actually use your phone.</h1>
-      <p class="lede">Three quick questions. We rank plans from the big three, MVNOs and prepaid carriers, then you shortlist up to four to see side by side.</p>
+      <p class="lede">Four quick questions. We rank plans from the big three, MVNOs and prepaid carriers, then you shortlist up to four to see side by side.</p>
       <ul class="carriers" aria-label="Carriers we compare">
         {carriers.map((c) => (
           <li><a href={c.url} style={`background:${c.color};color:${c.textOnColor}`}><CarrierLogo carrier={c.lite} size={26} mode="white" />{c.name}</a></li>

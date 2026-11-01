@@ -2,21 +2,28 @@
   "carrier": "us-mobile",
   "name": "Unlimited Premium",
   "price": 44,
+  "multiLine": {
+    "2": 44,
+    "3": 44,
+    "4": 44
+  },
   "networks": [
     "Verizon",
     "AT&T"
   ],
   "premiumData": 150,
-  "data": "unlimited",
   "hotspot": 50,
   "perks": [
     "One perk of your choice"
   ],
-  "international": "Select countries included",
+  "international": "20GB roaming in 180+ countries",
   "billing": "prepaid",
+  "taxesIncluded": true,
   "highlights": [
-    "Choose Verizon or AT&T network"
+    "Choose Verizon or AT&T network",
+    "Same price for every line"
   ],
+  "data": "unlimited",
   "sourceUrl": "https://www.usmobile.com/plans",
   "lastVerified": null
 }

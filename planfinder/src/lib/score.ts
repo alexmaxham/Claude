@@ -1,5 +1,5 @@
 // Ranks plans for the guided finder from three answers. Pure, so it runs in the browser and in tests.
-import { amountValue, formatAmount, formatHotspot, formatPrice, type PlanLite } from './model';
+import { amountValue, formatAmount, formatHotspot, formatPrice, priceFor, type PlanLite } from './model';
 
 export type DataUse = 'light' | 'average' | 'heavy';
 export type Priority = 'price' | 'coverage' | 'perks';
@@ -9,11 +9,22 @@ export interface Answers {
   data: DataUse;
   priority: Priority;
   hotspot: HotspotUse;
+  lines: '1' | '2' | '3' | '4';
 }
 
-export const DEFAULT_ANSWERS: Answers = { data: 'average', priority: 'price', hotspot: 'sometimes' };
+export const DEFAULT_ANSWERS: Answers = { lines: '1', data: 'average', priority: 'price', hotspot: 'sometimes' };
 
 export const QUESTIONS = [
+  {
+    key: 'lines',
+    label: 'How many lines do you need?',
+    options: [
+      { value: '1', label: '1 line', hint: 'Just me' },
+      { value: '2', label: '2 lines', hint: 'Me plus one' },
+      { value: '3', label: '3 lines', hint: 'Small family' },
+      { value: '4', label: '4 lines', hint: 'Family plan' },
+    ],
+  },
   {
     key: 'data',
     label: 'How much data do you use?',
@@ -62,12 +73,18 @@ export interface Ranked {
 export function scorePlan(p: PlanLite, a: Answers): Ranked {
   const premium = amountValue(p.premiumData);
   const hotspot = amountValue(p.hotspot);
-  let s = 100 - p.price;
+  const lines = Number(a.lines);
+  // Rank on what each line actually costs for the number of lines asked for.
+  const lp = priceFor(p, lines);
+  const price = lp.perLine;
+  let s = 100 - price;
   const why: string[] = [];
 
   if (a.priority === 'price') {
-    s += 100 - p.price;
-    if (p.price <= 45) why.push(`one of the lowest prices at ${formatPrice(p.price)}/mo`);
+    s += 100 - price;
+    if (price <= 45) {
+      why.push(lines > 1 && lp.listed ? `just ${formatPrice(price)} per line with ${lines} lines` : `one of the lowest prices at ${formatPrice(price)}/mo`);
+    }
   } else if (a.priority === 'coverage') {
     if (p.carrier.kind === 'big3') {
       s += 35;
@@ -83,7 +100,7 @@ export function scorePlan(p: PlanLite, a: Answers): Ranked {
     s += premium === Infinity ? 30 : premium >= 50 ? 15 : -15;
     if (premium >= 50) why.push(`${p.premiumData === 'unlimited' ? 'unlimited' : formatAmount(p.premiumData)} premium data for streaming`);
   } else if (a.data === 'light') {
-    if (p.price <= 45) {
+    if (price <= 45) {
       s += 15;
       if (a.priority !== 'price') why.push('you won’t pay for data you don’t use');
     }
@@ -109,5 +126,5 @@ export function scorePlan(p: PlanLite, a: Answers): Ranked {
 export function rankPlans(plans: PlanLite[], a: Answers): Ranked[] {
   return plans
     .map((p) => scorePlan(p, a))
-    .sort((x, y) => y.score - x.score || x.plan.price - y.plan.price || x.plan.slug.localeCompare(y.plan.slug));
+    .sort((x, y) => y.score - x.score || priceFor(x.plan, Number(a.lines)).perLine - priceFor(y.plan, Number(a.lines)).perLine || x.plan.slug.localeCompare(y.plan.slug));
 }

@@ -5,16 +5,17 @@
   "networks": [
     "T-Mobile"
   ],
-  "premiumData": 35,
-  "data": "unlimited",
-  "hotspot": 10,
-  "perks": [],
+  "premiumData": 50,
+  "hotspot": 20,
   "international": "Calling to Mexico & Canada",
   "billing": "prepaid",
-  "terms": "This price needs 12 months paid upfront",
+  "taxesIncluded": false,
+  "terms": "This price needs 12 months paid upfront ($40/mo on 3 months)",
   "highlights": [
     "Lowest monthly cost"
   ],
+  "perks": [],
+  "data": "unlimited",
   "sourceUrl": "https://www.mintmobile.com/plans/",
   "lastVerified": null
 }

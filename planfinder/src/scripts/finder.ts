@@ -1,9 +1,10 @@
 // Home page: ranks the plan cards from the quiz answers and shows the shortlist side by side.
-import { MAX_COMPARE } from '../lib/model';
+import { formatPrice, MAX_COMPARE, parseLines, priceFor } from '../lib/model';
 import { parseAnswers, rankPlans, type Answers } from '../lib/score';
 import { href } from '../lib/site';
 import { onShortlistChange, planBySlug, readIndex, setShortlist } from './shortlist';
 import { renderCompare } from './render';
+import { getLines, setLines } from './lines';
 
 const TOP = 6;
 
@@ -16,7 +17,10 @@ export function initFinder() {
   let showAll = false;
 
   // Answers come from the URL so a ranked list can be shared or bookmarked.
-  const initial = parseAnswers(new URLSearchParams(location.search));
+  const params = new URLSearchParams(location.search);
+  // Without a lines value in the URL, use the number of lines chosen last time.
+  if (!params.has('lines')) params.set('lines', String(getLines()));
+  const initial = parseAnswers(params);
   for (const [k, v] of Object.entries(initial)) {
     const input = form.querySelector<HTMLInputElement>(`input[name="${k}"][value="${v}"]`);
     if (input) input.checked = true;
@@ -34,6 +38,8 @@ export function initFinder() {
       for (const [k, v] of Object.entries(a)) url.searchParams.set(k, v);
       history.replaceState(null, '', url);
     }
+    const lines = Number(a.lines);
+    setLines(parseLines(a.lines));
     const ranked = rankPlans(plans, a);
     const cards = new Map([...results.children].map((li) => [(li as HTMLElement).dataset.slug!, li as HTMLElement]));
     ranked.forEach((r, i) => {
@@ -49,6 +55,13 @@ export function initFinder() {
       why.innerHTML = `<strong>Why it fits:</strong> `;
       why.append(r.why);
       li.querySelector<HTMLElement>('[data-best-match]')!.hidden = i !== 0;
+      const lp = priceFor(r.plan, lines);
+      li.querySelector('[data-price-main]')!.textContent = formatPrice(lp.perLine);
+      li.querySelector('[data-price-sub]')!.textContent =
+        lines === 1 ? 'per month' : `per line · ${formatPrice(lp.total)} total`;
+      const note = li.querySelector<HTMLElement>('[data-price-note]')!;
+      note.hidden = lines === 1 || lp.listed;
+      note.textContent = `${r.plan.carrier.name} doesn't list a ${lines}-line price, so this uses the 1-line price. Ask them about multi-line discounts.`;
     });
     showAllBtn.hidden = plans.length <= TOP;
     showAllBtn.textContent = showAll ? `Show top ${TOP} only` : `Show all ${plans.length} plans`;
@@ -57,7 +70,10 @@ export function initFinder() {
     status.textContent = top ? `Best match: ${top.plan.carrier.name} ${top.plan.name}` : '';
   }
 
-  form.addEventListener('change', () => apply(true));
+  form.addEventListener('change', () => {
+    apply(true);
+    drawShortlist();
+  });
   showAllBtn.addEventListener('click', () => {
     showAll = !showAll;
     apply(false);
@@ -70,10 +86,13 @@ export function initFinder() {
   const open = document.getElementById('sl-open') as HTMLAnchorElement;
   const clear = document.getElementById('sl-clear') as HTMLButtonElement;
   clear.addEventListener('click', () => setShortlist([]));
-  onShortlistChange((slugs) => {
+  let lastSlugs: string[] = [];
+  function drawShortlist(slugs = lastSlugs) {
+    lastSlugs = slugs;
     const map = planBySlug();
     const chosen = slugs.map((s) => map.get(s)!).filter(Boolean);
     renderCompare(compare, chosen, {
+      lines: getLines(),
       removable: true,
       showEmptySlots: true,
       emptyHtml: (n) => `<strong>Slot ${n} is open</strong><span class="small">Choose “Add to shortlist” on any plan above.</span>`,
@@ -87,5 +106,6 @@ export function initFinder() {
           : `${n} of ${MAX_COMPARE} added. The best value in each row is marked.`;
     open.href = n ? `${href('compare/')}?plans=${slugs.join(',')}` : href('compare/');
     clear.hidden = n === 0;
-  });
+  }
+  onShortlistChange((slugs) => drawShortlist(slugs));
 }

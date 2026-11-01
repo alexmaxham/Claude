@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compareRows, parsePlanList } from '../src/lib/compare';
-import { formatAmount, formatHotspot, type PlanLite } from '../src/lib/model';
+import { formatAmount, formatHotspot, parseLines, priceFor, type PlanLite } from '../src/lib/model';
 import { DEFAULT_ANSWERS, parseAnswers, rankPlans } from '../src/lib/score';
 
 function plan(slug: string, o: Partial<PlanLite> & { kind?: PlanLite['carrier']['kind'] } = {}): PlanLite {
@@ -9,7 +9,7 @@ function plan(slug: string, o: Partial<PlanLite> & { kind?: PlanLite['carrier'][
     slug, name: slug, url: `/plans/${slug}/`,
     carrier: { slug: `${slug}-c`, name: `${slug} Carrier`, kind, color: '#000000', textOnColor: '#FFFFFF', monogram: 'X', logoUrl: null },
     price: 50, networks: ['T-Mobile'], premiumData: 0, data: 'unlimited', hotspot: 0, perks: [],
-    international: 'None', billing: 'prepaid', verified: false, ...rest,
+    international: 'None', billing: 'prepaid', taxesIncluded: false, verified: false, ...rest,
   };
 }
 
@@ -33,11 +33,11 @@ describe('finder ranking', () => {
     expect(rankPlans([big, perky, cheap], DEFAULT_ANSWERS)[0].plan.slug).toBe('cheap');
   });
   it('favors major carriers for coverage with heavy data and daily hotspot', () => {
-    const top = rankPlans([cheap, big, perky], { data: 'heavy', priority: 'coverage', hotspot: 'daily' })[0];
+    const top = rankPlans([cheap, big, perky], { lines: '1', data: 'heavy', priority: 'coverage', hotspot: 'daily' })[0];
     expect(top.plan.carrier.kind).toBe('big3');
   });
   it('favors perks when perks matter most', () => {
-    const top = rankPlans([cheap, big, perky], { data: 'average', priority: 'perks', hotspot: 'never' })[0];
+    const top = rankPlans([cheap, big, perky], { lines: '1', data: 'average', priority: 'perks', hotspot: 'never' })[0];
     expect(top.plan.slug).toBe('perky');
     expect(top.why).toMatch(/Netflix/);
   });
@@ -72,5 +72,37 @@ describe('comparison', () => {
     const known = new Set(['a', 'b', 'c', 'd', 'e']);
     expect(parsePlanList('a,zzz,b,a,c,d,e', known)).toEqual(['a', 'b', 'c', 'd']);
     expect(parsePlanList(null, known)).toEqual([]);
+  });
+});
+
+describe('multi-line pricing', () => {
+  const family = plan('family', { price: 65, multiLine: { '2': 55, '4': 30 } });
+  const flat = plan('flat', { price: 40 });
+
+  it('uses the listed price per line and multiplies for the total', () => {
+    expect(priceFor(family, 4)).toEqual({ perLine: 30, total: 120, listed: true });
+    expect(priceFor(family, 1)).toEqual({ perLine: 65, total: 65, listed: true });
+  });
+  it('falls back to the one-line price when no multi-line price is listed', () => {
+    expect(priceFor(family, 3)).toEqual({ perLine: 65, total: 195, listed: false });
+  });
+  it('re-ranks by the price for the chosen number of lines', () => {
+    const one = rankPlans([family, flat], DEFAULT_ANSWERS)[0].plan.slug;
+    const four = rankPlans([family, flat], { ...DEFAULT_ANSWERS, lines: '4' })[0];
+    expect(one).toBe('flat');
+    expect(four.plan.slug).toBe('family');
+    expect(four.why).toMatch(/\$30 per line with 4 lines/);
+  });
+  it('compares per-line and total prices for several lines', () => {
+    const rows = compareRows([family, flat], 4);
+    expect(rows[0].label).toBe('Per line (4 lines)');
+    expect(rows[0].cells.map((c) => c.text)).toEqual(['$30/mo', '$40/mo (no multi-line price listed)']);
+    expect(rows[1].label).toBe('Total for 4 lines');
+    expect(rows[1].cells.map((c) => c.best)).toEqual([true, false]);
+  });
+  it('reads the number of lines safely', () => {
+    expect(parseLines('3')).toBe(3);
+    expect(parseLines('9')).toBe(1);
+    expect(parseLines(null)).toBe(1);
   });
 });

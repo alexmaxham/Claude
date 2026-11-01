@@ -1,0 +1,23 @@
+{
+  "carrier": "metro",
+  "name": "Unlimited Premium 5G Data",
+  "price": 55,
+  "priceWithoutAutopay": 60,
+  "networks": [
+    "T-Mobile"
+  ],
+  "premiumData": 0,
+  "hotspot": 0,
+  "hotspotNote": "Not listed",
+  "international": "Mexico & Canada included",
+  "billing": "prepaid",
+  "taxesIncluded": true,
+  "terms": "5-year price guarantee",
+  "highlights": [
+    "Taxes and fees included"
+  ],
+  "perks": [],
+  "data": "unlimited",
+  "sourceUrl": "https://www.metrobyt-mobile.com/cell-phone-plans",
+  "lastVerified": null
+}

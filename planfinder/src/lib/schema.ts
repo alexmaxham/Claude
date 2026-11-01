@@ -50,6 +50,8 @@ export const planSchema = z.object({
   perks: z.array(z.string()),
   international: z.string(),
   billing: z.enum(['postpaid', 'prepaid']),
+  /** True when the price already includes taxes and fees (common for prepaid). */
+  taxesIncluded: z.boolean().default(false),
   /** e.g. "Pay for 12 months upfront for this price". */
   terms: z.string().optional(),
   highlights: z.array(z.string()).max(4).default([]),

@@ -16,6 +16,8 @@ const c = plan.carrierInfo;
 const H = headingLevel;
 const netColor = (n: string) => (n === 'Verizon' ? '#CD040B' : n === 'AT&T' ? '#009FDB' : '#E20074');
 const hotspot = amountValue(plan.hotspot);
+const hotspotPill = plan.hotspotNote === 'Not listed' ? 'Hotspot not listed' : plan.hotspotNote ? `${plan.hotspotNote} hotspot` : hotspot > 0 ? `${formatHotspot(plan)} hotspot` : 'No hotspot';
+const premiumPill = amountValue(plan.premiumData) > 0 ? `${formatAmount(plan.premiumData)} premium data` : 'No premium data';
 ---
 <li
   class="plan-card"
@@ -36,17 +38,19 @@ const hotspot = amountValue(plan.hotspot);
       </div>
     </div>
     <div class="price">
-      <span class="display">{formatPrice(plan.price)}</span>
-      <span class="muted small">per month</span>
+      <span class="display" data-price-main>{formatPrice(plan.price)}</span>
+      <span class="muted small" data-price-sub>per month</span>
     </div>
   </div>
   {finder && <span class="tag-match" data-best-match hidden>BEST MATCH</span>}
+  {finder && <p class="small muted" data-price-note hidden></p>}
   {finder && <p class="why" data-why hidden></p>}
   <div class="pills">
     {plan.networks.map((n) => <span class="pill"><span class="dot" style={`background:${netColor(n)}`} aria-hidden="true"></span>{n} network</span>)}
-    <span class="pill">{formatHotspot(plan)} hotspot</span>
-    <span class="pill">{formatAmount(plan.premiumData)} premium data</span>
+    <span class="pill">{hotspotPill}</span>
+    <span class="pill">{premiumPill}</span>
     {plan.perks.length > 0 && <span class="pill">{plan.perks.join(', ')}</span>}
+    {plan.taxesIncluded && <span class="pill">Taxes &amp; fees included</span>}
   </div>
   {plan.terms && <p class="small muted">{plan.terms}</p>}
   {!plan.lite.verified && <span class="tag-unverified" title="We haven't checked this plan against the carrier's site yet.">Price not yet verified</span>}

@@ -59,6 +59,8 @@ async function load() {
       international: data.international,
       billing: data.billing,
       terms: data.terms,
+      multiLine: data.multiLine,
+      taxesIncluded: data.taxesIncluded,
       verified: data.lastVerified !== null,
     };
     return { ...data, slug: id, url, carrierInfo, lite };
