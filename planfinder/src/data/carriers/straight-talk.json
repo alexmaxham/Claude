@@ -4,9 +4,10 @@
   "networks": [
     "Verizon"
   ],
-  "color": "#1B3A6B",
-  "textOnColor": "#FFFFFF",
+  "color": "#BEE81E",
+  "textOnColor": "#111111",
   "monogram": "ST",
+  "logo": "straight-talk.svg",
   "website": "https://www.straighttalk.com/",
   "summary": "Prepaid brand owned by Verizon, sold online and at Walmart. Runs on the Verizon network.",
   "autopayTerms": "We haven't checked Straight Talk's AutoPay terms on its site yet.",

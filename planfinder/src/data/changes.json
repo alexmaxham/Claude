@@ -1,6 +1,12 @@
 [
   {
     "date": "2026-11-01",
+    "title": "Logos added for Google Fi, Visible and Straight Talk",
+    "details": "From each carrier's own website. Google Fi shows its Fi symbol, which reads better at small sizes than the full wordmark.",
+    "plans": []
+  },
+  {
+    "date": "2026-11-01",
     "title": "3 carriers added: Xfinity Mobile, Spectrum Mobile and Straight Talk",
     "details": "Added Xfinity Mobile Plus, Spectrum Unlimited Plus and Straight Talk Silver, Gold and Platinum Unlimited. Xfinity and Spectrum plans need their home internet. Prices are not yet verified on the carriers' sites.",
     "plans": [
