@@ -1,24 +1,27 @@
 {
   "carrier": "att",
   "name": "Unlimited Value 2.0",
-  "price": 40,
-  "priceWithoutAutopay": 50,
+  "price": 55,
+  "priceWithoutAutopay": 65,
   "multiLine": {
-    "4": 30
+    "2": 50,
+    "3": 40,
+    "4": 35
   },
   "networks": [
     "AT&T"
   ],
   "premiumData": 5,
+  "data": "unlimited",
   "hotspot": 3,
+  "perks": [],
   "international": "Mexico & Canada included",
   "billing": "postpaid",
   "taxesIncluded": false,
+  "terms": "$5/line less for up to 36 months on a new line when you bring your own phone. Full AutoPay discount needs a bank account or AT&T Points Plus card.",
   "highlights": [
     "Lowest-priced AT&T unlimited plan"
   ],
-  "perks": [],
-  "data": "unlimited",
   "sourceUrl": "https://www.att.com/plans/wireless/",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }

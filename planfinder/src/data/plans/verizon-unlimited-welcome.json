@@ -5,21 +5,23 @@
   "priceWithoutAutopay": 75,
   "multiLine": {
     "2": 55,
+    "3": 40,
     "4": 30
   },
   "networks": [
     "Verizon"
   ],
   "premiumData": 0,
+  "data": "unlimited",
   "hotspot": 0,
-  "international": "Mexico & Canada as an add-on",
+  "perks": [],
+  "international": "Calls to Mexico & Canada; talk, text & data in Mexico & Canada; texts to 200+ countries",
   "billing": "postpaid",
   "taxesIncluded": false,
+  "terms": "3-year price guarantee",
   "highlights": [
     "Lowest-priced Verizon unlimited plan"
   ],
-  "perks": [],
-  "data": "unlimited",
-  "sourceUrl": "https://www.verizon.com/plans/unlimited/",
-  "lastVerified": null
+  "sourceUrl": "https://www.verizon.com/plans/unlimited/myplan",
+  "lastVerified": "2026-11-01"
 }

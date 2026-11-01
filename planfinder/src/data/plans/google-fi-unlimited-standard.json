@@ -2,19 +2,25 @@
   "carrier": "google-fi",
   "name": "Unlimited Standard",
   "price": 50,
+  "multiLine": {
+    "2": 40,
+    "3": 30,
+    "4": 25
+  },
   "networks": [
     "T-Mobile"
   ],
-  "premiumData": 35,
-  "hotspot": 15,
-  "international": "Data in 200+ destinations",
+  "premiumData": 50,
+  "data": "unlimited",
+  "hotspot": 25,
+  "perks": [],
+  "international": "Calls, texts & data in Canada & Mexico; free calls to Canada & Mexico",
   "billing": "postpaid",
   "taxesIncluded": false,
+  "terms": "Data slows to 256 kbps after 50GB",
   "highlights": [
-    "Works abroad"
+    "Cheaper per line with more people"
   ],
-  "perks": [],
-  "data": "unlimited",
   "sourceUrl": "https://fi.google.com/about/plans",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }

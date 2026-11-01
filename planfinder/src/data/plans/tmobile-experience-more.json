@@ -1,25 +1,30 @@
 {
   "carrier": "tmobile",
-  "name": "Experience More",
+  "name": "Experience More 2.0",
   "price": 85,
   "priceWithoutAutopay": 90,
+  "multiLine": {
+    "2": 70,
+    "3": 56.67,
+    "4": 50
+  },
   "networks": [
     "T-Mobile"
   ],
   "premiumData": "unlimited",
+  "data": "unlimited",
   "hotspot": 60,
   "perks": [
-    "Netflix",
-    "Apple TV"
+    "Netflix Standard with ads"
   ],
-  "international": "Texting and data in 215+ countries",
+  "international": "Texting and 5GB data in 215+ countries; 15GB in Canada & Mexico",
   "billing": "postpaid",
   "taxesIncluded": false,
-  "terms": "Plus a $5.49 per line fee",
+  "terms": "Plus a $5.49 per line fee. 5-year price guarantee.",
   "highlights": [
-    "Streaming included"
+    "Netflix included",
+    "60GB hotspot"
   ],
-  "data": "unlimited",
   "sourceUrl": "https://www.t-mobile.com/cell-phone-plans",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }

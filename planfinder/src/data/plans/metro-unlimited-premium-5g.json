@@ -6,18 +6,20 @@
   "networks": [
     "T-Mobile"
   ],
-  "premiumData": 0,
-  "hotspot": 0,
-  "hotspotNote": "Not listed",
-  "international": "Mexico & Canada included",
+  "premiumData": "unlimited",
+  "data": "unlimited",
+  "hotspot": 25,
+  "perks": [
+    "100GB Google One storage"
+  ],
+  "international": "Texts to 210+ countries",
   "billing": "prepaid",
   "taxesIncluded": true,
   "terms": "5-year price guarantee",
   "highlights": [
-    "Taxes and fees included"
+    "Taxes and fees included",
+    "Unlimited premium data"
   ],
-  "perks": [],
-  "data": "unlimited",
-  "sourceUrl": "https://www.metrobyt-mobile.com/cell-phone-plans",
-  "lastVerified": null
+  "sourceUrl": "https://www.metrobyt-mobile.com/phone-plans",
+  "lastVerified": "2026-11-01"
 }

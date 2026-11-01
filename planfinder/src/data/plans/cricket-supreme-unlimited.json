@@ -3,20 +3,29 @@
   "name": "Supreme Unlimited",
   "price": 55,
   "priceWithoutAutopay": 60,
+  "multiLine": {
+    "2": 45,
+    "3": 36.67,
+    "4": 32.5
+  },
   "networks": [
     "AT&T"
   ],
   "premiumData": 0,
+  "data": "unlimited",
   "hotspot": 50,
-  "international": "Mexico & Canada included",
+  "perks": [
+    "HBO Max Basic with Ads",
+    "150GB cloud storage"
+  ],
+  "international": "Use in Mexico & Canada; calls & texts to Mexico & Canada; texts to 200+ countries",
   "billing": "prepaid",
   "taxesIncluded": true,
+  "terms": "First month is $5 more; the AutoPay price starts after that",
   "highlights": [
     "Taxes and fees included",
     "50GB hotspot"
   ],
-  "perks": [],
-  "data": "unlimited",
-  "sourceUrl": "https://www.cricketwireless.com/cell-phone-plans",
-  "lastVerified": null
+  "sourceUrl": "https://www.cricketwireless.com/plans/phone",
+  "lastVerified": "2026-11-01"
 }

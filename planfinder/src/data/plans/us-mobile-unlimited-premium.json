@@ -9,21 +9,24 @@
   },
   "networks": [
     "Verizon",
-    "AT&T"
+    "AT&T",
+    "T-Mobile"
   ],
-  "premiumData": 150,
-  "hotspot": 50,
+  "premiumData": "unlimited",
+  "data": "unlimited",
+  "hotspot": "unlimited",
+  "hotspotNote": "Unlimited on Dark Star; varies by network",
   "perks": [
-    "One perk of your choice"
+    "Free smartwatch plan on Warp",
+    "One streaming perk with 3+ lines"
   ],
   "international": "20GB roaming in 180+ countries",
   "billing": "prepaid",
   "taxesIncluded": true,
   "highlights": [
-    "Choose Verizon or AT&T network",
+    "Choose from 3 networks",
     "Same price for every line"
   ],
-  "data": "unlimited",
   "sourceUrl": "https://www.usmobile.com/plans",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }

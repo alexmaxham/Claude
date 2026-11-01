@@ -1,21 +1,31 @@
 {
   "carrier": "att",
   "name": "Unlimited Elite 2.0",
-  "price": 100,
-  "priceWithoutAutopay": 110,
+  "price": 115,
+  "priceWithoutAutopay": 125,
+  "multiLine": {
+    "2": 105,
+    "3": 90,
+    "4": 75
+  },
   "networks": [
     "AT&T"
   ],
   "premiumData": "unlimited",
+  "data": "unlimited",
   "hotspot": 250,
-  "international": "Mexico & Canada included",
+  "perks": [
+    "Free tablet and smartwatch line",
+    "AT&T Turbo"
+  ],
+  "international": "Talk, text & 20GB data in 210+ destinations; Mexico, Canada & 20 Latin American countries included",
   "billing": "postpaid",
   "taxesIncluded": false,
+  "terms": "$5/line less for up to 36 months on a new line when you bring your own phone. Full AutoPay discount needs a bank account or AT&T Points Plus card.",
   "highlights": [
-    "250GB hotspot"
+    "250GB hotspot",
+    "Works abroad in 210+ destinations"
   ],
-  "perks": [],
-  "data": "unlimited",
   "sourceUrl": "https://www.att.com/plans/wireless/",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }

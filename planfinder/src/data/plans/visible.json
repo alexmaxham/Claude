@@ -1,0 +1,22 @@
+{
+  "carrier": "visible",
+  "name": "Visible",
+  "price": 25,
+  "networks": [
+    "Verizon"
+  ],
+  "premiumData": 0,
+  "data": "unlimited",
+  "hotspot": "unlimited",
+  "hotspotNote": "Unlimited at 5 Mbps",
+  "perks": [],
+  "international": "Calls & texts to Mexico & Canada",
+  "billing": "prepaid",
+  "taxesIncluded": true,
+  "highlights": [
+    "Taxes and fees included",
+    "Lowest-priced Visible plan"
+  ],
+  "sourceUrl": "https://www.visible.com/plans",
+  "lastVerified": "2026-11-01"
+}

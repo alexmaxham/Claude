@@ -1,0 +1,29 @@
+{
+  "carrier": "google-fi",
+  "name": "Unlimited Premium",
+  "price": 65,
+  "multiLine": {
+    "2": 55,
+    "3": 45,
+    "4": 40
+  },
+  "networks": [
+    "T-Mobile"
+  ],
+  "premiumData": 100,
+  "data": "unlimited",
+  "hotspot": 50,
+  "perks": [
+    "100GB Google One storage",
+    "YouTube Premium for 6 months"
+  ],
+  "international": "50GB data in 200+ destinations; free calls to 50+ countries",
+  "billing": "postpaid",
+  "taxesIncluded": false,
+  "terms": "Data slows to 256 kbps after 100GB",
+  "highlights": [
+    "Works abroad in 200+ destinations"
+  ],
+  "sourceUrl": "https://fi.google.com/about/plans",
+  "lastVerified": "2026-11-01"
+}

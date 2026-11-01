@@ -4,21 +4,26 @@
   "price": 80,
   "priceWithoutAutopay": 90,
   "multiLine": {
+    "2": 70,
+    "3": 55,
     "4": 45
   },
   "networks": [
     "Verizon"
   ],
   "premiumData": "unlimited",
+  "data": "unlimited",
   "hotspot": 30,
-  "international": "Calling and texting to Mexico & Canada",
+  "perks": [
+    "50% off one watch or tablet plan"
+  ],
+  "international": "Calls to Mexico & Canada; talk, text & data in Mexico & Canada; texts to 200+ countries",
   "billing": "postpaid",
   "taxesIncluded": false,
+  "terms": "3-year price guarantee",
   "highlights": [
     "Unlimited premium data"
   ],
-  "perks": [],
-  "data": "unlimited",
-  "sourceUrl": "https://www.verizon.com/plans/unlimited/",
-  "lastVerified": null
+  "sourceUrl": "https://www.verizon.com/plans/unlimited/myplan",
+  "lastVerified": "2026-11-01"
 }

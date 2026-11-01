@@ -3,18 +3,23 @@
   "name": "Unlimited+",
   "price": 50,
   "priceWithoutAutopay": 55,
+  "multiLine": {
+    "2": 40,
+    "3": 36.67,
+    "4": 30
+  },
   "networks": [
     "AT&T"
   ],
-  "premiumData": 0,
+  "premiumData": 40,
+  "data": "unlimited",
   "hotspot": 0,
-  "hotspotNote": "Not listed",
-  "international": "Mexico & Canada included",
+  "hotspotNote": "Included (uses plan data)",
+  "perks": [],
+  "international": "Calls to 100+ countries and texts to 191+ countries",
   "billing": "prepaid",
   "taxesIncluded": false,
-  "perks": [],
-  "data": "unlimited",
   "highlights": [],
   "sourceUrl": "https://www.boostmobile.com/plans",
-  "lastVerified": null
+  "lastVerified": "2026-11-01"
 }
