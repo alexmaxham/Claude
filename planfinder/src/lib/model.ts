@@ -31,10 +31,35 @@ export interface PlanLite {
   international: string;
   billing: 'postpaid' | 'prepaid';
   terms?: string;
+  /** Price per line with 2, 3 or 4 lines, where the carrier lists one. */
+  multiLine?: Partial<Record<'2' | '3' | '4', number>>;
+  taxesIncluded: boolean;
   verified: boolean;
 }
 
 export const MAX_COMPARE = 4;
+export const LINE_OPTIONS = [1, 2, 3, 4] as const;
+export type Lines = (typeof LINE_OPTIONS)[number];
+
+export interface LinePrice {
+  perLine: number;
+  total: number;
+  /** False when the carrier lists no price for this many lines, so the one-line price is used. */
+  listed: boolean;
+}
+
+/** Price per line and in total for a number of lines. Falls back to the one-line price when no multi-line price is listed. */
+export function priceFor(p: Pick<PlanLite, 'price' | 'multiLine'>, lines: number): LinePrice {
+  if (lines <= 1) return { perLine: p.price, total: p.price, listed: true };
+  const listedPrice = p.multiLine?.[String(lines) as '2' | '3' | '4'];
+  const perLine = listedPrice ?? p.price;
+  return { perLine, total: Math.round(perLine * lines * 100) / 100, listed: listedPrice !== undefined };
+}
+
+export function parseLines(v: string | null | undefined): Lines {
+  const n = Number(v);
+  return (LINE_OPTIONS as readonly number[]).includes(n) ? (n as Lines) : 1;
+}
 
 export const KIND_LABEL: Record<Kind, string> = { big3: 'Big 3', mvno: 'MVNO', prepaid: 'Prepaid' };
 export const KIND_LONG: Record<Kind, string> = {

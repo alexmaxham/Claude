@@ -1,0 +1,21 @@
+{
+  "carrier": "att",
+  "name": "Unlimited Elite 2.0",
+  "price": 100,
+  "priceWithoutAutopay": 110,
+  "networks": [
+    "AT&T"
+  ],
+  "premiumData": "unlimited",
+  "hotspot": 250,
+  "international": "Mexico & Canada included",
+  "billing": "postpaid",
+  "taxesIncluded": false,
+  "highlights": [
+    "250GB hotspot"
+  ],
+  "perks": [],
+  "data": "unlimited",
+  "sourceUrl": "https://www.att.com/plans/wireless/",
+  "lastVerified": null
+}

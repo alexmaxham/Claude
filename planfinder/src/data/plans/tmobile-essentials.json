@@ -7,12 +7,14 @@
     "T-Mobile"
   ],
   "premiumData": 50,
-  "data": "unlimited",
   "hotspot": 0,
   "hotspotNote": "Unlimited at 3G speeds",
-  "perks": [],
   "international": "Mexico & Canada included",
   "billing": "postpaid",
+  "taxesIncluded": false,
+  "terms": "Plus a $5.49 per line fee",
+  "perks": [],
+  "data": "unlimited",
   "highlights": [],
   "sourceUrl": "https://www.t-mobile.com/cell-phone-plans",
   "lastVerified": null

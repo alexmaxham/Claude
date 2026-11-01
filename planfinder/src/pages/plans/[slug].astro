@@ -22,6 +22,7 @@ const similar = plans
   .slice(0, 3);
 const specs: [string, string][] = [
   ['Price per line', `${formatPrice(plan.price)}/mo${plan.priceWithoutAutopay ? ` with autopay (${formatPrice(plan.priceWithoutAutopay)} without)` : ''}`],
+  ['Taxes & fees', plan.taxesIncluded ? 'Included in the price' : 'Extra, on top of the price'],
   ['Network', formatNetworks(plan.networks)],
   ['Carrier type', KIND_LONG[c.kind]],
   ['Data', formatAmount(plan.data)],

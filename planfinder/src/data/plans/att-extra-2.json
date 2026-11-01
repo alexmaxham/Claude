@@ -1,0 +1,25 @@
+{
+  "carrier": "att",
+  "name": "Unlimited Extra 2.0",
+  "price": 60,
+  "priceWithoutAutopay": 70,
+  "multiLine": {
+    "4": 40
+  },
+  "networks": [
+    "AT&T"
+  ],
+  "premiumData": 100,
+  "hotspot": 50,
+  "international": "Mexico & Canada included",
+  "billing": "postpaid",
+  "taxesIncluded": false,
+  "highlights": [
+    "100GB premium data",
+    "50GB hotspot"
+  ],
+  "perks": [],
+  "data": "unlimited",
+  "sourceUrl": "https://www.att.com/plans/wireless/",
+  "lastVerified": null
+}

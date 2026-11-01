@@ -1,0 +1,22 @@
+{
+  "carrier": "cricket",
+  "name": "Supreme Unlimited",
+  "price": 55,
+  "priceWithoutAutopay": 60,
+  "networks": [
+    "AT&T"
+  ],
+  "premiumData": 0,
+  "hotspot": 50,
+  "international": "Mexico & Canada included",
+  "billing": "prepaid",
+  "taxesIncluded": true,
+  "highlights": [
+    "Taxes and fees included",
+    "50GB hotspot"
+  ],
+  "perks": [],
+  "data": "unlimited",
+  "sourceUrl": "https://www.cricketwireless.com/cell-phone-plans",
+  "lastVerified": null
+}

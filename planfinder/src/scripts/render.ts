@@ -1,7 +1,7 @@
 // Browser-side markup for the side-by-side comparison, shared by the home page and the compare page.
 import { compareRows } from '../lib/compare';
 import { logoTile } from '../lib/logo';
-import { formatPrice, MAX_COMPARE, type PlanLite } from '../lib/model';
+import { formatPrice, MAX_COMPARE, priceFor, type PlanLite } from '../lib/model';
 
 export function esc(s: string): string {
   return s.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]!);
@@ -20,10 +20,13 @@ export interface RenderOptions {
   emptyHtml?: (slot: number) => string;
   /** Show the remove button on each card (it removes from the shortlist). */
   removable?: boolean;
+  /** Number of lines to price for (default 1). */
+  lines?: number;
 }
 
 export function renderCompare(container: HTMLElement, plans: PlanLite[], opts: RenderOptions = {}) {
-  const rows = compareRows(plans);
+  const lines = opts.lines ?? 1;
+  const rows = compareRows(plans, lines);
   const cards = plans.map((p, i) => {
     const title = `${p.carrier.name} ${p.name}`;
     const cells = rows
@@ -42,7 +45,7 @@ export function renderCompare(container: HTMLElement, plans: PlanLite[], opts: R
         <a class="cmp-name" href="${esc(p.url)}">${esc(p.name)}</a>
       </div>
       <dl class="cmp-rows">${cells}</dl>
-      <div class="cmp-foot">${unverified}<a class="btn btn-primary" href="${esc(p.url)}">${esc(formatPrice(p.price))}/mo · See plan<span class="sr-only"> ${esc(title)}</span></a></div>
+      <div class="cmp-foot">${unverified}<a class="btn btn-primary" href="${esc(p.url)}">${esc(formatPrice(priceFor(p, lines).perLine))}/mo${lines > 1 ? ' per line' : ''} · See plan<span class="sr-only"> ${esc(title)}</span></a></div>
     </article>`;
   });
   if (opts.showEmptySlots) {

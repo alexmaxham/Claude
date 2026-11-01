@@ -1,9 +1,10 @@
 // Compare page. Shows the shortlist, or a shared list from ?plans=a,b,c when it differs from it.
 import { parsePlanList } from '../lib/compare';
-import { MAX_COMPARE } from '../lib/model';
+import { MAX_COMPARE, parseLines } from '../lib/model';
 import { href } from '../lib/site';
 import { getShortlist, onShortlistChange, planBySlug, setShortlist, toggle } from './shortlist';
 import { renderCompare } from './render';
+import { getLines, setLines } from './lines';
 
 export function initCompare() {
   const box = document.getElementById('compare')!;
@@ -14,7 +15,11 @@ export function initCompare() {
   const copy = document.getElementById('copy-link') as HTMLButtonElement;
   const addForm = document.getElementById('add-form') as HTMLFormElement;
   const addSelect = document.getElementById('add-plan') as HTMLSelectElement;
+  const linesSelect = document.getElementById('lines') as HTMLSelectElement;
   const map = planBySlug();
+  const urlLines = new URLSearchParams(location.search).get('lines');
+  if (urlLines) setLines(parseLines(urlLines));
+  linesSelect.value = String(getLines());
 
   const fromUrl = parsePlanList(new URLSearchParams(location.search).get('plans'), new Set(map.keys()), MAX_COMPARE);
   const mine = getShortlist();
@@ -22,7 +27,11 @@ export function initCompare() {
   let current: string[] = [];
 
   function linkFor(slugs: string[]) {
-    return new URL(`${href('compare/')}${slugs.length ? `?plans=${slugs.join(',')}` : ''}`, location.origin).href;
+    const q = new URLSearchParams();
+    if (slugs.length) q.set('plans', slugs.join(','));
+    if (getLines() > 1) q.set('lines', String(getLines()));
+    const qs = q.toString().replace(/%2C/g, ',');
+    return new URL(`${href('compare/')}${qs ? `?${qs}` : ''}`, location.origin).href;
   }
 
   function render(slugs: string[]) {
@@ -34,7 +43,7 @@ export function initCompare() {
     copy.hidden = plans.length === 0;
     addForm.hidden = isShared || plans.length >= MAX_COMPARE;
     for (const opt of addSelect.options) if (opt.value) opt.disabled = slugs.includes(opt.value);
-    renderCompare(box, plans, { removable: !isShared });
+    renderCompare(box, plans, { removable: !isShared, lines: getLines() });
     box.classList.toggle('diff-only', diffOnly.checked);
     status.textContent = plans.length
       ? `${plans.length} of ${MAX_COMPARE} plans. The best value in each row is marked.`
@@ -51,6 +60,10 @@ export function initCompare() {
     const list = sharedList!;
     sharedList = null;
     setShortlist(list);
+  });
+  linesSelect.addEventListener('change', () => {
+    setLines(parseLines(linesSelect.value));
+    render(current);
   });
   diffOnly.addEventListener('change', () => box.classList.toggle('diff-only', diffOnly.checked));
   copy.addEventListener('click', async () => {

@@ -6,14 +6,15 @@
     "T-Mobile"
   ],
   "premiumData": 35,
-  "data": "unlimited",
   "hotspot": 15,
-  "perks": [],
   "international": "Data in 200+ destinations",
   "billing": "postpaid",
+  "taxesIncluded": false,
   "highlights": [
     "Works abroad"
   ],
+  "perks": [],
+  "data": "unlimited",
   "sourceUrl": "https://fi.google.com/about/plans",
   "lastVerified": null
 }

@@ -1,0 +1,20 @@
+{
+  "carrier": "boost",
+  "name": "Unlimited",
+  "price": 25,
+  "priceWithoutAutopay": 30,
+  "networks": [
+    "AT&T"
+  ],
+  "premiumData": 0,
+  "hotspot": 0,
+  "hotspotNote": "Not listed",
+  "international": "Mexico & Canada included",
+  "billing": "prepaid",
+  "taxesIncluded": false,
+  "perks": [],
+  "data": "unlimited",
+  "highlights": [],
+  "sourceUrl": "https://www.boostmobile.com/plans",
+  "lastVerified": null
+}

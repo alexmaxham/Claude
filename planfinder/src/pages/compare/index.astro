@@ -14,6 +14,14 @@ const { plans, carriers } = await getData();
         <p id="status" class="muted" aria-live="polite">Loading your shortlist…</p>
       </div>
       <div class="tools">
+        <label class="lines">Lines
+          <select id="lines">
+            <option value="1">1 line</option>
+            <option value="2">2 lines</option>
+            <option value="3">3 lines</option>
+            <option value="4">4 lines</option>
+          </select>
+        </label>
         <label class="check"><input type="checkbox" id="diff-only" />Only show differences</label>
         <button type="button" class="btn btn-ghost" id="copy-link">Copy link to this comparison</button>
       </div>
@@ -64,6 +72,8 @@ const { plans, carriers } = await getData();
   .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
   h1 { font-size: clamp(36px, 5vw, 48px); margin-bottom: 6px; }
   .tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .lines { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+  .lines select { min-height: 44px; padding: 0 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); font-size: 15px; font-weight: 600; }
   .check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 500; cursor: pointer; }
   .check input { width: 20px; height: 20px; accent-color: var(--forest); }
   .shared { padding: 16px 20px; border-radius: var(--radius); background: var(--mint); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }

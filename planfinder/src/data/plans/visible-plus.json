@@ -1,20 +1,22 @@
 {
   "carrier": "visible",
   "name": "Visible+",
-  "price": 45,
+  "price": 35,
   "networks": [
     "Verizon"
   ],
-  "premiumData": 50,
-  "data": "unlimited",
+  "premiumData": "unlimited",
   "hotspot": "unlimited",
-  "hotspotNote": "Unlimited at 5 Mbps",
-  "perks": [],
+  "hotspotNote": "Unlimited at 10 Mbps",
   "international": "Mexico & Canada included",
   "billing": "prepaid",
+  "taxesIncluded": true,
   "highlights": [
-    "Unlimited hotspot (5 Mbps)"
+    "Taxes and fees included",
+    "Unlimited premium data"
   ],
+  "perks": [],
+  "data": "unlimited",
   "sourceUrl": "https://www.visible.com/plans",
   "lastVerified": null
 }

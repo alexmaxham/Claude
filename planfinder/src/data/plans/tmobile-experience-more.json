@@ -7,7 +7,6 @@
     "T-Mobile"
   ],
   "premiumData": "unlimited",
-  "data": "unlimited",
   "hotspot": 60,
   "perks": [
     "Netflix",
@@ -15,9 +14,12 @@
   ],
   "international": "Texting and data in 215+ countries",
   "billing": "postpaid",
+  "taxesIncluded": false,
+  "terms": "Plus a $5.49 per line fee",
   "highlights": [
     "Streaming included"
   ],
+  "data": "unlimited",
   "sourceUrl": "https://www.t-mobile.com/cell-phone-plans",
   "lastVerified": null
 }
