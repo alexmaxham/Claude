@@ -1,6 +1,6 @@
-# Phone plan comparison
+# SwitchWise
 
-A site for comparing phone plans from Verizon, AT&T and T-Mobile plus MVNOs and prepaid carriers. Visitors answer four questions, get a ranked list, and compare up to four plans side by side, priced for 1–4 lines.
+SwitchWise is a site for comparing phone plans from Verizon, AT&T and T-Mobile plus MVNOs and prepaid carriers. Visitors answer four questions, get a ranked list, and compare up to four plans side by side, priced for 1–4 lines.
 
 **Live site:** https://alexmaxham.github.io/Claude/
 
