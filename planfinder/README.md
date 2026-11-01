@@ -1,4 +1,4 @@
-# Plan finder
+# SwitchWise (plan finder)
 
 A site for comparing phone plans from Verizon, AT&T and T-Mobile plus MVNOs and prepaid carriers. Visitors answer four questions, get a ranked list, and shortlist up to four plans to compare side by side. A savings calculator, real total costs, discounts, coverage links and buying guides help them pay less.
 
@@ -71,6 +71,7 @@ Until then, each carrier shows its monogram on its brand color. Check each carri
 
 ## Settings
 
-- Site name: `SITE_NAME` in `src/lib/site.ts` (currently the placeholder "bars.").
+- Site name, tagline and brand colors: `src/lib/site.ts`. The logo is `src/components/BrandLogo.astro`; the favicon is `public/favicon.svg`.
+- App icons and the social share image (`public/*.png`) are generated from the logo: run `node scripts/brand-assets.mjs` after changing it (needs Playwright with Chromium).
 - Colors and fonts: `src/styles/global.css`.
 - Hosting somewhere else, e.g. a custom domain: build with `SITE_URL=https://example.com BASE_PATH=/ npm run build`.
