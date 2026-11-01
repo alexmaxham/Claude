@@ -33,6 +33,7 @@ async function load() {
       textOnColor: data.textOnColor,
       monogram: data.monogram,
       logoUrl: data.logo ? href(`logos/${data.logo}`) : null,
+      logoBackground: data.logoBackground ?? '#FFFFFF',
     };
     return { ...data, slug: id, url: href(`carriers/${id}/`), lite };
   });
@@ -63,6 +64,7 @@ async function load() {
       taxesIncluded: data.taxesIncluded,
       autopayDiscount: data.priceWithoutAutopay ? Math.round((data.priceWithoutAutopay - data.price) * 100) / 100 : 0,
       monthlyFee: carrierInfo.fees.monthlyPerLine,
+      requires: carrierInfo.requires ?? null,
       oneTimeFee: carrierInfo.fees.oneTimePerLine,
       firstMonthExtra: carrierInfo.autopayStartsMonth2 && data.priceWithoutAutopay ? Math.round((data.priceWithoutAutopay - data.price) * 100) / 100 : 0,
       verified: data.lastVerified !== null,

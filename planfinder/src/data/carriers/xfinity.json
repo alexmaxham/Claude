@@ -1,0 +1,19 @@
+{
+  "name": "Xfinity Mobile",
+  "kind": "mvno",
+  "networks": [
+    "Verizon"
+  ],
+  "color": "#6138F5",
+  "textOnColor": "#FFFFFF",
+  "monogram": "X",
+  "website": "https://www.xfinity.com/mobile/",
+  "summary": "Comcast's mobile service. Runs on the Verizon network plus Xfinity WiFi hotspots, and is only for Xfinity Internet customers.",
+  "requires": "Requires Xfinity Internet at home",
+  "autopayTerms": "We haven't checked Xfinity Mobile's AutoPay terms on its site yet.",
+  "fees": {
+    "monthlyPerLine": 0,
+    "oneTimePerLine": null,
+    "oneTimeNote": "Not checked on Xfinity's site yet."
+  }
+}

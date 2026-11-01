@@ -31,6 +31,7 @@ const sameNetwork = carriers.filter((o) => o.slug !== c.slug && o.networks.some(
         </div>
       </div>
       <p class="summary">{c.summary}</p>
+      {c.requires && <p class="req">{c.requires}.</p>}
     </div>
   </div>
   <div class="wrap page">
@@ -75,6 +76,7 @@ const sameNetwork = carriers.filter((o) => o.slug !== c.slug && o.networks.some(
   .kind { font-weight: 700; }
   h1 { font-size: clamp(36px, 5vw, 54px); }
   .summary { max-width: 680px; font-size: 18px; }
+  .req { align-self: flex-start; padding: 8px 12px; border-radius: 10px; background: #FDF3D7; color: #6B4A00; font-weight: 700; }
   .page { padding-block: 32px 64px; display: flex; flex-direction: column; gap: 40px; }
   .sec { display: flex; flex-direction: column; gap: 16px; }
   .sec h2 { font-size: 28px; }

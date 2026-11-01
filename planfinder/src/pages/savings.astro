@@ -3,6 +3,10 @@ import Base from '../layouts/Base.astro';
 import AdSlot from '../components/AdSlot.astro';
 import { href } from '../lib/site';
 import { NETWORKS } from '../lib/schema';
+import { getData } from '../lib/data';
+
+const { carriers } = await getData();
+const internetCarriers = carriers.filter((c) => c.requires);
 ---
 <Base title="How much could you save on your phone bill?" description="Enter what you pay now and see plans that fit how you use your phone, with what you'd pay over a year, fees included." nav="savings">
   <div class="wrap page">
@@ -38,6 +42,11 @@ import { NETWORKS } from '../lib/schema';
           <label><input type="radio" name="hotspot" value="no" checked /><span>No</span></label>
           <label><input type="radio" name="hotspot" value="yes" /><span>Yes</span></label>
         </div>
+      </fieldset>
+      <fieldset class="field">
+        <legend>Home internet you already have</legend>
+        {internetCarriers.map((c) => <label class="check"><input type="checkbox" name="owns" value={c.slug} />{c.name.replace(' Mobile', '')} Internet</label>)}
+        <p class="hint">{internetCarriers.map((c) => c.name).join(' and ')} plans are only sold to their internet customers.</p>
       </fieldset>
       <div class="field">
         <label for="network">Network</label>
@@ -86,6 +95,8 @@ import { NETWORKS } from '../lib/schema';
   .field > label, legend { font-weight: 700; padding: 0; }
   legend { margin-bottom: 8px; }
   .hint { font-size: 13px; color: var(--muted); }
+  .check { display: flex; align-items: center; gap: 10px; min-height: 36px; cursor: pointer; }
+  .check input { width: 20px; height: 20px; accent-color: var(--forest); }
   .money { display: flex; align-items: center; gap: 6px; border: 2px solid var(--line); border-radius: 12px; padding: 0 12px; background: var(--surface); }
   .money:focus-within { border-color: var(--forest); }
   .money input { border: 0; outline: none; min-height: 44px; width: 100%; font-size: 20px; font-weight: 700; background: transparent; }

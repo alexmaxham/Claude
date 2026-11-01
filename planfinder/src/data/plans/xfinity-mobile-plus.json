@@ -1,0 +1,29 @@
+{
+  "carrier": "xfinity",
+  "name": "Mobile Plus",
+  "description": "Xfinity's unlimited plan with unlimited premium data on the Verizon network, 4K streaming and a Global Travel Pass. Only available with Xfinity Internet at home.",
+  "price": 45,
+  "networks": [
+    "Verizon"
+  ],
+  "premiumData": "unlimited",
+  "hotspot": 30,
+  "hotspotNote": "30GB (sources disagree; not yet checked)",
+  "international": "Global Travel Pass included",
+  "billing": "postpaid",
+  "highlights": [
+    "Unlimited premium data",
+    "Needs Xfinity Internet"
+  ],
+  "deals": [
+    {
+      "title": "$15/line for 12 months",
+      "details": "Reported promotion for new lines. Not yet confirmed on Xfinity's site."
+    }
+  ],
+  "perks": [],
+  "data": "unlimited",
+  "taxesIncluded": false,
+  "sourceUrl": "https://www.xfinity.com/mobile/plans",
+  "lastVerified": null
+}

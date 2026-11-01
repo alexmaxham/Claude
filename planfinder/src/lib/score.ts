@@ -124,8 +124,17 @@ export function scorePlan(p: PlanLite, a: Answers): Ranked {
 }
 
 /** All plans, best match first. Ties go to the cheaper plan, then by name, so the order is stable. */
-export function rankPlans(plans: PlanLite[], a: Answers): Ranked[] {
+/** True when the visitor can buy the plan: it needs nothing extra, or they have what it needs. */
+export function canBuy(p: PlanLite, owned: string[] = []): boolean {
+  return p.requires === null || owned.includes(p.carrier.slug);
+}
+
+/**
+ * Plans whose requirements the visitor doesn't meet (e.g. Xfinity Mobile without Xfinity Internet)
+ * are kept but always sorted after the ones they can buy.
+ */
+export function rankPlans(plans: PlanLite[], a: Answers, owned: string[] = []): Ranked[] {
   return plans
     .map((p) => scorePlan(p, a))
-    .sort((x, y) => y.score - x.score || priceFor(x.plan, Number(a.lines)).perLine + x.plan.monthlyFee - (priceFor(y.plan, Number(a.lines)).perLine + y.plan.monthlyFee) || x.plan.slug.localeCompare(y.plan.slug));
+    .sort((x, y) => Number(canBuy(y.plan, owned)) - Number(canBuy(x.plan, owned)) || y.score - x.score || priceFor(x.plan, Number(a.lines)).perLine + x.plan.monthlyFee - (priceFor(y.plan, Number(a.lines)).perLine + y.plan.monthlyFee) || x.plan.slug.localeCompare(y.plan.slug));
 }
