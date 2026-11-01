@@ -1,6 +1,6 @@
 # Plan finder
 
-A site for comparing phone plans from Verizon, AT&T and T-Mobile plus MVNOs and prepaid carriers. Visitors answer three questions, get a ranked list, and shortlist up to four plans to compare side by side.
+A site for comparing phone plans from Verizon, AT&T and T-Mobile plus MVNOs and prepaid carriers. Visitors answer four questions, get a ranked list, and shortlist up to four plans to compare side by side. A savings calculator, real total costs, discounts, coverage links and buying guides help them pay less.
 
 Built with [Astro](https://astro.build) as a fully static site. Live at https://alexmaxham.github.io/Claude/ (published by `.github/workflows/deploy.yml` on every push to the default branch).
 
@@ -23,7 +23,12 @@ Run these from the `planfinder/` folder.
 - `/plans/<slug>/` one plan: description, a pricing table for 1–4 lines with and without AutoPay, the AutoPay discount and how to qualify, plan details, current deals, source link, when it was last checked, and similar plans.
 - `/carriers/` and `/carriers/<slug>/` carriers grouped by type, with their plans.
 - `/compare/` the shortlist side by side, best value in each row marked, priced for 1–4 lines. `?plans=a,b,c&lines=4` opens a shared comparison.
-- `/about/` how plans are ranked and compared.
+- `/savings/` savings calculator: current bill, lines and needs → plans that fit, first-year cost and yearly savings.
+- `/discounts/` discount programs (military, first responders, nurses, teachers, students, 55+, employer, Lifeline), filterable with `?for=military` etc.
+- `/guides/` how much data you use, checking coverage, switching carriers, phone deals vs bringing your own (with a calculator), and a glossary.
+- `/vs/` head-to-head pages for popular pairs (list in `src/data/versus.json`).
+- `/changes/` and `/changes.xml` (RSS): log of plan data changes (`src/data/changes.json`).
+- `/about/` how plans are ranked and compared. `/privacy/` privacy page.
 
 The shortlist (max 4) and the number of lines are stored in the browser's localStorage, so they follow the visitor across pages.
 
@@ -38,6 +43,21 @@ Every plan is one JSON file in `src/data/plans/`, every carrier one file in `src
 **The current plan data is researched but not checked against the carriers' own sites.** Every plan has `"lastVerified": null`, which shows a "Price not yet verified" label on the site. [RESEARCH.md](RESEARCH.md) lists where each figure came from and what to check first. To verify a plan, check it against the carrier page in its `sourceUrl`, fix anything that's different, and set `lastVerified` to today's date (`"2026-11-01"`).
 
 To add a plan, copy a file in `src/data/plans/`, rename it (the file name becomes the URL), and edit it.
+
+## Real cost and fees
+
+Each carrier file has `fees` (`monthlyPerLine`, `oneTimePerLine` or null if not listed, plus notes) and `autopayStartsMonth2`. First-year and two-year costs (`src/lib/cost.ts`) add these to the plan price; the finder ranks on price plus monthly fees. Taxes are left out unless a plan includes them.
+
+## Discounts and price changes
+
+- `src/data/discounts.json`: one entry per program, with the groups it covers, a source link and the date it was checked.
+- `src/data/changes.json`: add an entry whenever plan data changes. It shows on `/changes/`, in the RSS feed and on the plan's page.
+
+## Ads
+
+Ad slots are placed on the home, plans, plan, carrier, compare, savings, discounts, head-to-head and guide pages. They render nothing until you turn ads on in `src/lib/ads.ts` (AdSense publisher ID plus one ad unit ID per slot). To see where they are, run `npm run dev` or build with `PUBLIC_AD_PLACEHOLDERS=true`.
+
+Before turning ads on: update `/privacy/` if needed (it switches to an ads notice automatically), and note that AdSense needs `ads.txt` at the root of your domain, which requires a custom domain rather than the github.io project URL.
 
 ## Carrier logos
 

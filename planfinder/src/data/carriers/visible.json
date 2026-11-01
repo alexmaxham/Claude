@@ -9,5 +9,11 @@
   "monogram": "V",
   "website": "https://www.visible.com/",
   "summary": "Runs on the Verizon network. Prepaid, month to month, managed in an app.",
-  "autopayTerms": "Visible's plan page lists no AutoPay discount: the price is the same however you pay."
+  "autopayTerms": "Visible's plan page lists no AutoPay discount: the price is the same however you pay.",
+  "coverageUrl": "https://www.visible.com/plans/coverage",
+  "fees": {
+    "monthlyPerLine": 0,
+    "oneTimePerLine": null,
+    "oneTimeNote": "Visible's plan page doesn't list an activation fee."
+  }
 }

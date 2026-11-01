@@ -1,0 +1,59 @@
+[
+  {
+    "date": "2026-11-01",
+    "title": "AT&T prices corrected",
+    "details": "AT&T's 2.0 plans are $15 higher at 1 line than our first figures: Value 2.0 $55, Extra 2.0 $75, Premium 2.0 $95, Elite 2.0 $115 (with AutoPay).",
+    "plans": [
+      "att-value-2",
+      "att-extra-2",
+      "att-premium-2",
+      "att-elite-2"
+    ]
+  },
+  {
+    "date": "2026-11-01",
+    "title": "T-Mobile plans renamed to 2.0",
+    "details": "Essentials, Experience More and Experience Beyond are now the 2.0 versions. Apple TV is now $3/mo, no longer included.",
+    "plans": [
+      "tmobile-essentials",
+      "tmobile-experience-more",
+      "tmobile-experience-beyond"
+    ]
+  },
+  {
+    "date": "2026-11-01",
+    "title": "Verizon Unlimited Ultimate hotspot raised",
+    "details": "Hotspot is 200GB (then unlimited at 6 Mbps), up from the 60GB we first listed.",
+    "plans": [
+      "verizon-unlimited-ultimate"
+    ]
+  },
+  {
+    "date": "2026-11-01",
+    "title": "Google Fi Unlimited Standard data raised",
+    "details": "50GB of high-speed data and 25GB of hotspot.",
+    "plans": [
+      "google-fi-unlimited-standard"
+    ]
+  },
+  {
+    "date": "2026-11-01",
+    "title": "7 plans added",
+    "details": "Verizon Simplicity, Google Fi Unlimited Premium, Visible, Cricket Select Unlimited, Boost Unlimited Premium, Metro $40 Period and US Mobile Unlimited Starter.",
+    "plans": [
+      "verizon-simplicity",
+      "google-fi-unlimited-premium",
+      "visible",
+      "cricket-select-unlimited",
+      "boost-unlimited-premium",
+      "metro-40-period",
+      "us-mobile-unlimited-starter"
+    ]
+  },
+  {
+    "date": "2026-11-01",
+    "title": "Prices checked on carrier sites",
+    "details": "27 of 28 plans were checked against the carriers' own websites. Mint couldn't be checked.",
+    "plans": []
+  }
+]

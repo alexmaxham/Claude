@@ -1,0 +1,29 @@
+---
+import Article from '../../components/Article.astro';
+import { href } from '../../lib/site';
+---
+<Article title="How much data do you use?" description="How to check your mobile data use on iPhone and Android, and what light, average and heavy use mean when picking a plan." lede="Most people guess, and many pay for more data than they use. It takes a minute to check.">
+  <h2>Check on an iPhone</h2>
+  <ol>
+    <li>Open <strong>Settings</strong> and tap <strong>Cellular</strong> (or <strong>Mobile Data</strong>).</li>
+    <li>Look at <strong>Current Period</strong>. It counts from the last time the stats were reset, which may not match your billing month.</li>
+    <li>Scroll down to see which apps use the most.</li>
+  </ol>
+  <h2>Check on Android</h2>
+  <ol>
+    <li>Open <strong>Settings</strong> and go to <strong>Network &amp; internet</strong> (or <strong>Connections</strong> on Samsung).</li>
+    <li>Tap <strong>Data usage</strong> or <strong>Mobile data usage</strong>. Menu names vary by phone maker.</li>
+    <li>Set the cycle to start on your bill date to see a full month.</li>
+  </ol>
+  <h2>The most accurate number: your carrier</h2>
+  <p>Your carrier's app or account page shows data used per line for each bill. Look at the last 3 months and go by the highest.</p>
+  <h2>What the finder's answers mean</h2>
+  <div class="box">
+    <p><strong>Light: under about 15GB a month.</strong> Mostly on Wi-Fi at home and work. Messaging, email, maps and some social media on the go.</p>
+    <p><strong>Average: about 15–50GB a month.</strong> Regular social media, music streaming and some video away from Wi-Fi.</p>
+    <p><strong>Heavy: over about 50GB a month.</strong> Lots of video on mobile data, or using your phone as a hotspot for a laptop.</p>
+  </div>
+  <h2>Why "premium data" matters more than "unlimited"</h2>
+  <p>Almost every plan here has unlimited data. The difference is <strong>premium data</strong>: how much you can use before the carrier may slow you down when a tower is busy. If you're a heavy user, look for a plan whose premium data covers your monthly usage. <a href={href('guides/glossary/')}>More in the glossary</a>.</p>
+  <p><a class="btn btn-primary" href={href()}>Find a plan for how you use data</a></p>
+</Article>

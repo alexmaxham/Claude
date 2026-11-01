@@ -1,0 +1,38 @@
+---
+// One ad position. Renders nothing until ads are turned on in src/lib/ads.ts (or a dashed
+// placeholder in dev / with PUBLIC_AD_PLACEHOLDERS=true, so you can see the layout).
+import { ADS, adsLive, showAdPlaceholders } from '../lib/ads';
+
+interface Props {
+  name: string;
+  /** banner: wide strip. rectangle: about 300×250, for sidebars. */
+  format?: 'banner' | 'rectangle';
+}
+const { name, format = 'banner' } = Astro.props;
+const unit = ADS.slots[name] ?? '';
+const live = adsLive() && unit !== '';
+const placeholder = !live && showAdPlaceholders();
+---
+{live && (
+  <aside class:list={['ad', format]} aria-label="Advertisement">
+    <span class="ad-label">Advertisement</span>
+    <ins class="adsbygoogle" style="display:block" data-ad-client={ADS.adsenseClient} data-ad-slot={unit} data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script is:inline>(window.adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+)}
+{placeholder && (
+  <aside class:list={['ad', 'ad-placeholder', format]} aria-label={`Ad slot: ${name}`}>
+    <span class="ad-label">Ad slot</span>
+    <code>{name}</code>
+    <span class="small">{format === 'banner' ? 'Responsive banner' : 'Rectangle, about 300×250'}</span>
+  </aside>
+)}
+
+<style>
+  .ad { display: flex; flex-direction: column; gap: 6px; margin-inline: auto; width: 100%; }
+  .ad.banner { min-height: 90px; }
+  .ad.rectangle { max-width: 336px; min-height: 250px; }
+  .ad-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .ad-placeholder { align-items: center; justify-content: center; text-align: center; border: 2px dashed var(--line); border-radius: 14px; padding: 16px; color: var(--muted); background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(19, 38, 30, 0.03) 10px, rgba(19, 38, 30, 0.03) 20px); }
+  .ad-placeholder code { font-size: 14px; color: var(--ink); }
+</style>

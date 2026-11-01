@@ -9,5 +9,10 @@
   "monogram": "MM",
   "website": "https://www.mintmobile.com/",
   "summary": "Runs on the T-Mobile network. The lowest prices come from paying for several months upfront.",
-  "autopayTerms": "We haven't been able to check Mint's AutoPay terms on its site yet."
+  "autopayTerms": "We haven't been able to check Mint's AutoPay terms on its site yet.",
+  "fees": {
+    "monthlyPerLine": 0,
+    "oneTimePerLine": null,
+    "oneTimeNote": "Not checked: Mint's site couldn't be read."
+  }
 }

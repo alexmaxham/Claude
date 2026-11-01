@@ -1,0 +1,43 @@
+---
+import Article from '../../components/Article.astro';
+import CarrierLogo from '../../components/CarrierLogo.astro';
+import { getData } from '../../lib/data';
+import { formatNetworks } from '../../lib/model';
+
+const { carriers } = await getData();
+const networkMap: Record<string, string> = {
+  Verizon: 'https://www.verizon.com/coverage-map/',
+  'AT&T': 'https://www.att.com/maps/wireless-coverage.html',
+  'T-Mobile': 'https://www.t-mobile.com/coverage/coverage-map',
+};
+---
+<Article title="Check coverage where you live" description="Which network each carrier runs on, and links to the coverage maps to check your address before you switch." lede="The cheapest plan is no deal if your phone has no signal at home or work. Check the network first.">
+  <h2>Start with the three networks</h2>
+  <p>Every plan on this site runs on Verizon's, AT&amp;T's or T-Mobile's network. MVNOs and prepaid brands rent space on one of them, so their coverage usually matches that network's map. Check the three maps for your home, work and places you travel often.</p>
+  <ul>
+    {Object.entries(networkMap).map(([n, u]) => <li><a href={u} rel="noopener" target="_blank">{n} coverage map<span class="sr-only"> (opens in a new tab)</span></a></li>)}
+  </ul>
+  <p>For an independent view, the FCC's <a href="https://broadbandmap.fcc.gov/" rel="noopener" target="_blank">National Broadband Map<span class="sr-only"> (opens in a new tab)</span></a> shows mobile coverage that carriers report to the government, by address.</p>
+  <h2>Each carrier's network and map</h2>
+  <div class="box">
+    <ul class="carriers">
+      {carriers.map((c) => (
+        <li>
+          <CarrierLogo carrier={c.lite} size={32} />
+          <span><strong>{c.name}</strong> uses {formatNetworks(c.networks)}. {c.coverageUrl ? <a href={c.coverageUrl} rel="noopener" target="_blank">{c.name}'s coverage map<span class="sr-only"> (opens in a new tab)</span></a> : <>Use the {formatNetworks(c.networks)} map above.</>}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+  <h2>Tips</h2>
+  <ul>
+    <li>Maps show where a network says it has signal outdoors. Indoors, especially in basements or large buildings, signal can be weaker.</li>
+    <li>Ask neighbors or coworkers which carrier works best for them. It's the most reliable test.</li>
+    <li>Many carriers let you try their network free for a while, often with an eSIM on the phone you already have. Check each carrier's site for a free trial.</li>
+    <li>MVNO and prepaid customers can be slowed before the carrier's own customers when a tower is busy. If that matters to you, look at plans with premium data.</li>
+  </ul>
+</Article>
+<style>
+  .carriers { list-style: none; padding: 0 !important; }
+  .carriers li { display: flex; align-items: center; gap: 12px; }
+</style>

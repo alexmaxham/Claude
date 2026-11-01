@@ -36,6 +36,12 @@ export interface PlanLite {
   taxesIncluded: boolean;
   /** AutoPay discount per line per month that is already taken off `price` (0 if none). */
   autopayDiscount: number;
+  /** Fee added to each line every month on top of the price (0 if none). */
+  monthlyFee: number;
+  /** One-time fee per line, or null when the carrier doesn't list one. */
+  oneTimeFee: number | null;
+  /** Extra charged per line in the first month (when AutoPay savings start from month two). */
+  firstMonthExtra: number;
   verified: boolean;
 }
 
@@ -55,7 +61,10 @@ export function priceFor(p: Pick<PlanLite, 'price' | 'multiLine'>, lines: number
   if (lines <= 1) return { perLine: p.price, total: p.price, listed: true };
   const listedPrice = p.multiLine?.[String(lines) as '2' | '3' | '4'];
   const perLine = listedPrice ?? p.price;
-  return { perLine, total: Math.round(perLine * lines * 100) / 100, listed: listedPrice !== undefined };
+  // Per-line prices like $56.67 are a carrier's round total split three ways, so snap to it.
+  const raw = perLine * lines;
+  const total = Math.abs(raw - Math.round(raw)) < 0.02 ? Math.round(raw) : Math.round(raw * 100) / 100;
+  return { perLine, total, listed: listedPrice !== undefined };
 }
 
 export function parseLines(v: string | null | undefined): Lines {
@@ -86,7 +95,9 @@ export function formatHotspot(p: Pick<PlanLite, 'hotspot' | 'hotspotNote'>): str
 }
 
 export function formatPrice(n: number): string {
-  return Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`;
+  return Number.isInteger(n)
+    ? `$${n.toLocaleString('en-US')}`
+    : `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export function formatNetworks(networks: string[]): string {
