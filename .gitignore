@@ -1,6 +1,5 @@
 node_modules
-dist
+_site
 *.local
 .DS_Store
-*.tsbuildinfo
 *-debug.log
