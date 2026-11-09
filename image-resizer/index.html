@@ -17,7 +17,7 @@
   <img src="assets/ah-logo-white.png" alt="Android Headlines" class="masthead-logo">
   <span class="masthead-rule" aria-hidden="true"></span>
   <h1 class="masthead-title">Image Resizer</h1>
-  <p class="masthead-note">Your images stay on this computer. Nothing is uploaded.</p>
+  <p class="masthead-note">Your images stay on this computer, unless you ask Claude to write alt text.</p>
 </header>
 
 <main class="layout">
@@ -79,6 +79,18 @@
       <span class="quiet" id="name-from"></span>
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
       <strong id="name-to"></strong>
+    </div>
+    <div class="card" id="alt-card" hidden>
+      <div class="card-head">
+        <label class="label" for="alt-text">Alt text for this image</label>
+        <span class="quiet small" id="alt-source"></span>
+      </div>
+      <textarea id="alt-text" rows="2" maxlength="300" placeholder="One sentence that says what is in the image."></textarea>
+      <div class="alt-foot">
+        <span class="quiet small" id="alt-count"></span>
+        <button type="button" class="btn btn-outline btn-small" id="alt-copy">Copy</button>
+        <button type="button" class="btn btn-outline btn-small" id="alt-one">Write from the image</button>
+      </div>
     </div>
   </section>
 
@@ -158,6 +170,26 @@
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-head">
+        <h2><span class="num">4</span> Alt text</h2>
+        <label class="toggle"><input type="checkbox" id="alt-on"> On</label>
+      </div>
+      <div id="alt-body">
+        <p class="quiet small">Every image gets alt text. It starts as a draft from the topic or file name, and you can edit it under the preview. It is saved inside each JPG and PNG, and listed in <strong>alt-text.csv</strong> in the ZIP.</p>
+        <div class="note-box">
+          <div class="label">Write it from the picture with Claude</div>
+          <p class="quiet small">This sends a small copy of each image to Anthropic, using your own API key. Use of the key is billed to its owner.</p>
+          <label class="field">Anthropic API key
+            <input type="password" id="alt-key" autocomplete="off" spellcheck="false" placeholder="sk-ant-...">
+          </label>
+          <label class="radio"><input type="checkbox" id="alt-remember"> Remember the key in this browser</label>
+          <button type="button" class="btn btn-solid btn-small" id="alt-all" disabled>Write alt text for all images</button>
+          <p class="quiet small" id="alt-status" role="status" hidden></p>
+        </div>
+      </div>
+    </div>
+
   </section>
 </main>
 
@@ -178,6 +210,8 @@
 
 <script src="assets.js"></script>
 <script src="zip.js"></script>
+<script src="meta.js"></script>
+<script src="alt-text.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

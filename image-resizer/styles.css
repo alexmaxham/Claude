@@ -267,7 +267,32 @@ input[type="text"], input[type="number"], select {
 .pos { width: 44px; height: 44px; border-radius: 6px; background: var(--card); border: 1.5px solid var(--rule); }
 .pos[aria-pressed="true"] { background: var(--sel-bg); border-color: var(--sel-bg); }
 .is-off { opacity: 0.45; }
-#rn-body { display: flex; flex-direction: column; gap: 10px; }
+#rn-body, #alt-body { display: flex; flex-direction: column; gap: 10px; }
+.note-box { background: var(--raised); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.note-box .btn { align-self: flex-start; }
+textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--field-line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  width: 100%;
+  min-height: 64px;
+  resize: vertical;
+}
+input[type="password"] {
+  min-height: 44px;
+  border: 1px solid var(--field-line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--card);
+  color: var(--text);
+  font-weight: 400;
+  max-width: 100%;
+}
+.alt-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.alt-foot span { flex: 1 1 120px; }
 
 .bar {
   position: sticky;
