@@ -1,6 +1,7 @@
 name: Deploy to GitHub Pages
 
 # Builds the plan comparison site in planfinder/ and publishes it at https://alexmaxham.github.io/Claude/.
+# The AH Image Resizer (image-resizer/, plain static files) is published alongside it at /Claude/image-resizer/.
 on:
   push:
     branches: [main, claude/gamified-todo-app-wc0pod]
@@ -32,6 +33,10 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Add the AH Image Resizer to the site
+        run: |
+          mkdir -p dist/image-resizer
+          cp -r ../image-resizer/index.html ../image-resizer/styles.css ../image-resizer/app.js ../image-resizer/zip.js ../image-resizer/assets.js ../image-resizer/assets dist/image-resizer/
       - if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
       - if: github.event_name != 'pull_request'
