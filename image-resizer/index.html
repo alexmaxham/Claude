@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AH Image Resizer</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="assets/ah-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <img src="assets/ah-logo-white.png" alt="Android Headlines" class="masthead-logo">
+  <span class="masthead-rule" aria-hidden="true"></span>
+  <h1 class="masthead-title">Image Resizer</h1>
+  <p class="masthead-note">Your images stay on this computer. Nothing is uploaded.</p>
+</header>
+
+<main class="layout">
+
+  <section class="card col-images" aria-labelledby="images-h">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">Your images</div>
+        <h2 id="images-h"><span id="count-label">No images yet</span></h2>
+      </div>
+      <button type="button" class="link-btn" id="clear-all" hidden>Clear all</button>
+    </div>
+    <div class="drop" id="drop">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>
+      <strong>Drop images or a folder here</strong>
+      <span class="quiet">JPG, PNG, WebP, GIF or AVIF</span>
+      <div class="drop-actions">
+        <button type="button" class="btn btn-outline btn-small" id="pick-files">Choose images</button>
+        <button type="button" class="btn btn-outline btn-small" id="pick-folder">Choose a folder</button>
+      </div>
+      <input type="file" id="file-input" accept="image/*" multiple hidden>
+      <input type="file" id="folder-input" webkitdirectory multiple hidden>
+    </div>
+    <p class="notice" id="add-notice" role="status" hidden></p>
+    <ul class="file-list" id="file-list"></ul>
+  </section>
+
+  <section class="col-preview">
+    <div class="card" aria-labelledby="preview-h">
+      <div class="card-head">
+        <div>
+          <div class="eyebrow">Preview</div>
+          <h2 id="preview-h">Add an image to start</h2>
+        </div>
+        <div class="pager">
+          <button type="button" class="icon-btn" id="prev" aria-label="Previous image" disabled>
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+          </button>
+          <span class="quiet" id="pager-label"></span>
+          <button type="button" class="icon-btn" id="next" aria-label="Next image" disabled>
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="stage">
+        <canvas id="preview" class="preview-canvas" role="img" aria-label="Preview of the resized image with its watermark" hidden></canvas>
+        <p class="stage-empty" id="stage-empty">The resized image, with its watermark, shows here.</p>
+      </div>
+      <dl class="facts" id="facts" hidden>
+        <div><dt>Original:</dt><dd id="fact-orig"></dd></div>
+        <div><dt>New size:</dt><dd id="fact-new"></dd></div>
+        <div><dt>Fit:</dt><dd id="fact-fit"></dd></div>
+        <div><dt>Watermark:</dt><dd id="fact-wm"></dd></div>
+      </dl>
+      <p class="chip chip-amber" id="small-warning" hidden></p>
+    </div>
+    <div class="card name-row" id="name-row" hidden>
+      <span class="label">New name</span>
+      <span class="quiet" id="name-from"></span>
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+      <strong id="name-to"></strong>
+    </div>
+  </section>
+
+  <section class="col-settings">
+
+    <div class="card">
+      <h2><span class="num">1</span> Size</h2>
+      <div class="preset-grid" id="presets"></div>
+      <div class="custom-size" id="custom-size" hidden>
+        <label for="custom-w">Width</label>
+        <input type="number" id="custom-w" min="16" max="12000" inputmode="numeric">
+        <span aria-hidden="true">×</span>
+        <label for="custom-h">Height</label>
+        <input type="number" id="custom-h" min="16" max="12000" inputmode="numeric">
+        <span class="quiet">px</span>
+      </div>
+      <label class="field">If the shape doesn't match
+        <select id="fit">
+          <option value="cover">Crop to fill, centred</option>
+          <option value="contain">Fit inside, no crop</option>
+          <option value="width">Set the width only</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2><span class="num">2</span> Watermark</h2>
+        <label class="toggle"><input type="checkbox" id="wm-on"> On</label>
+      </div>
+      <div class="wm-body" id="wm-body">
+        <div>
+          <div class="label">Position</div>
+          <div class="pos-grid" id="positions"></div>
+          <div class="quiet small" id="pos-label"></div>
+        </div>
+        <div class="wm-options">
+          <fieldset>
+            <legend class="label">Mark</legend>
+            <label class="radio"><input type="radio" name="wm-mark" value="icon"> AH icon</label>
+            <label class="radio"><input type="radio" name="wm-mark" value="words"> Icon + androidheadlines.com</label>
+          </fieldset>
+          <label class="field" id="wm-words-field">Words colour
+            <select id="wm-words">
+              <option value="white">White (for dark photos)</option>
+              <option value="ink">Dark (for light photos)</option>
+            </select>
+          </label>
+          <label class="field"><span>Size: <span id="wm-size-out"></span>% of width</span>
+            <input type="range" id="wm-size" min="3" max="25" step="1">
+          </label>
+          <label class="field"><span>Opacity: <span id="wm-opacity-out"></span>%</span>
+            <input type="range" id="wm-opacity" min="20" max="100" step="5">
+          </label>
+          <label class="field"><span>Space from the edge: <span id="wm-margin-out"></span>%</span>
+            <input type="range" id="wm-margin" min="0" max="10" step="1">
+          </label>
+        </div>
+      </div>
+      <p class="quiet small" id="wm-note" hidden></p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2><span class="num">3</span> Rename</h2>
+        <label class="toggle"><input type="checkbox" id="rn-on"> On</label>
+      </div>
+      <div id="rn-body">
+        <label class="field">Topic
+          <input type="text" id="rn-topic" placeholder="pixel-11a-leak" autocomplete="off">
+        </label>
+        <label class="field">Name pattern
+          <input type="text" id="rn-pattern" autocomplete="off" spellcheck="false">
+        </label>
+        <p class="quiet small">You can use {topic}, {platform}, {date}, {number} and {name} (the original name). Numbers count up from 01. The platform comes from the size you pick.</p>
+        <button type="button" class="link-btn" id="rn-reset">Use the AH pattern</button>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<footer class="bar">
+  <img src="assets/ah-icon.png" alt="" class="bar-icon">
+  <p class="bar-summary" id="summary" role="status">Add images to get started.</p>
+  <label class="bar-format">Save as
+    <select id="format">
+      <option value="jpg">JPG (photos)</option>
+      <option value="png">PNG (posts with words)</option>
+      <option value="webp">WebP</option>
+      <option value="same">Same as original</option>
+    </select>
+  </label>
+  <button type="button" class="btn btn-outline" id="dl-one" disabled>Download this one</button>
+  <button type="button" class="btn btn-solid" id="dl-all" disabled>Download all (ZIP)</button>
+</footer>
+
+<script src="assets.js"></script>
+<script src="zip.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

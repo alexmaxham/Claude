@@ -15,3 +15,7 @@ npm run build
 ```
 
 Every push to the default branch runs the tests, builds the site and deploys it to GitHub Pages (`.github/workflows/deploy.yml`). Pull requests run the same tests and build without deploying.
+
+## AH Image Resizer
+
+[`image-resizer/`](image-resizer/) is a separate, standalone tool for AndroidHeadlines: it resizes, watermarks and renames images in bulk, entirely in the browser. Open `image-resizer/index.html` to use it. It is not part of the SwitchWise site or its deploy. See [image-resizer/README.md](image-resizer/README.md).
