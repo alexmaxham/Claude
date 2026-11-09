@@ -6,7 +6,7 @@ Everything runs in the browser. Images are never uploaded anywhere.
 
 ## Run it
 
-Open `index.html` in a browser. There is nothing to install or build.
+Use the live link below, or open `index.html` in a browser. There is nothing to install or build.
 
 The page loads the Archivo and Roboto fonts from Google Fonts, so it looks right when online and falls back to Arial offline.
 
@@ -29,6 +29,8 @@ The page loads the Archivo and Roboto fonts from Google Fonts, so it looks right
 | `assets/` | The real AH logo and icon files from the brand kit |
 | `assets.js` | The AH icon embedded for the watermark; rebuild with `node make-assets.js` after replacing `assets/ah-icon.png` |
 
-## Not yet hosted
+## Hosting
 
-This folder is not part of the GitHub Pages deploy, which only publishes `planfinder/`.
+**Live:** https://alexmaxham.github.io/Claude/image-resizer/
+
+The repo's GitHub Pages deploy (`.github/workflows/deploy.yml`) copies this folder into the published site on every push to the default branch. The page asks search engines not to index it, but anyone with the link can open it.
