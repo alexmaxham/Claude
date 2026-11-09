@@ -1,7 +1,6 @@
 name: Deploy to GitHub Pages
 
-# Builds the plan comparison site in planfinder/ and publishes it at https://alexmaxham.github.io/Claude/.
-# The AH Image Resizer (image-resizer/, plain static files) is published alongside it at /Claude/image-resizer/.
+# Publishes the AH Image Resizer (image-resizer/, plain static files) at https://alexmaxham.github.io/Claude/.
 on:
   push:
     branches: [main, claude/gamified-todo-app-wc0pod]
@@ -20,29 +19,26 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: planfinder
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: planfinder/package-lock.json
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - name: Add the AH Image Resizer to the site
+      - name: Check the scripts parse
         run: |
-          mkdir -p dist/image-resizer
-          cp -r ../image-resizer/index.html ../image-resizer/styles.css ../image-resizer/app.js ../image-resizer/zip.js ../image-resizer/assets.js ../image-resizer/assets dist/image-resizer/
+          node --check image-resizer/app.js
+          node --check image-resizer/zip.js
+          node --check image-resizer/assets.js
+      - name: Assemble the site
+        run: |
+          mkdir -p _site/image-resizer
+          cd image-resizer
+          cp -r index.html styles.css app.js zip.js assets.js assets ../_site/
+          # The tool first lived at /Claude/image-resizer/; send that old link to the new home.
+          cp moved.html ../_site/image-resizer/index.html
       - if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
       - if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4
         with:
-          path: planfinder/dist
+          path: _site
 
   deploy:
     if: github.event_name != 'pull_request'

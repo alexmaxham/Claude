@@ -1,21 +1,11 @@
-# SwitchWise
+# AH Image Resizer
 
-SwitchWise is a site for comparing phone plans from Verizon, AT&T and T-Mobile plus MVNOs and prepaid carriers. Visitors answer four questions, get a ranked list, and compare up to four plans side by side, priced for 1–4 lines.
+A small web app for AndroidHeadlines that resizes images, adds the AH watermark and renames them, one at a time or in bulk. Everything runs in the browser; images are never uploaded.
 
-**Live site:** https://alexmaxham.github.io/Claude/
+**Live:** https://alexmaxham.github.io/Claude/
 
-The site's code and plan data are in [`planfinder/`](planfinder/). See [planfinder/README.md](planfinder/README.md) to run it, edit plans, and add carrier logos, and [planfinder/RESEARCH.md](planfinder/RESEARCH.md) for where each price comes from.
+The code is in [`image-resizer/`](image-resizer/). See [image-resizer/README.md](image-resizer/README.md) for what it does and how the files fit together. There is nothing to install or build: open `image-resizer/index.html` in a browser to run it locally.
 
-```bash
-cd planfinder
-npm install
-npm run dev     # http://localhost:4321/Claude/
-npm test
-npm run build
-```
+Every push to the default branch publishes the tool to GitHub Pages (`.github/workflows/deploy.yml`). Pull requests run the same checks without deploying.
 
-Every push to the default branch runs the tests, builds the site and deploys it to GitHub Pages (`.github/workflows/deploy.yml`). Pull requests run the same tests and build without deploying.
-
-## AH Image Resizer
-
-[`image-resizer/`](image-resizer/) is a separate, standalone tool for AndroidHeadlines: it resizes, watermarks and renames images in bulk, entirely in the browser. It is published with the same deploy at https://alexmaxham.github.io/Claude/image-resizer/, or open `image-resizer/index.html` directly. It is separate from the SwitchWise site. See [image-resizer/README.md](image-resizer/README.md).
+This repo used to hold SwitchWise, a phone plan comparison site, in `planfinder/`. It was removed in November 2026 and is still in the git history.

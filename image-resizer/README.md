@@ -27,10 +27,11 @@ The page loads the Archivo and Roboto fonts from Google Fonts, so it looks right
 | `app.js` | Resizing, watermark, renaming and downloads |
 | `zip.js` | A small ZIP writer (no outside libraries) |
 | `assets/` | The real AH logo and icon files from the brand kit |
+| `moved.html` | The redirect served at the tool's old address |
 | `assets.js` | The AH icon embedded for the watermark; rebuild with `node make-assets.js` after replacing `assets/ah-icon.png` |
 
 ## Hosting
 
-**Live:** https://alexmaxham.github.io/Claude/image-resizer/
+**Live:** https://alexmaxham.github.io/Claude/
 
-The repo's GitHub Pages deploy (`.github/workflows/deploy.yml`) copies this folder into the published site on every push to the default branch. The page asks search engines not to index it, but anyone with the link can open it.
+The repo's GitHub Pages deploy (`.github/workflows/deploy.yml`) publishes this folder as the whole site on every push to the default branch. The old address, `/Claude/image-resizer/`, redirects to the new one (`moved.html`). The page asks search engines not to index it, but anyone with the link can open it.
