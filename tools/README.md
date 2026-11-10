@@ -59,8 +59,8 @@ Puts photos taken on different phones into one image so they can be compared, fo
 - **Photos:** drop one photo from each phone, two or more. The first is on the left; the arrows change the order.
 - **Phone names:** type each phone's name next to its photo. Names go on the photo (bottom or top, left or centre), under it, or off. A file called `xiaomi-18-pro-max.jpg` fills its name in for you; camera names like `IMG_1234` don't.
 - **Layout:** side by side, stacked or a grid, with space between the photos and around the edge.
-- **Cropping:** photos fill their space and are cropped, or are shown whole. Drag a photo in the preview to choose which part shows; double-click to centre it. One zoom slider zooms every photo by the same amount, for close-up comparisons. A warning shows when a photo is enlarged past its real size.
-- **Canvas and saving:** the same sizes, backgrounds, watermark and formats as the Screenshot Framer. Files are named `ah-compare-topic-platform-date`.
+- **Fill the space or show it all:** "Fill the space" uses a set canvas size (Wide 1600 × 900 and the rest) and crops each photo to fill its box. "Show it all" shows every photo whole: you set the width, and the image takes whatever height the photos need, with no bars. Drag a photo in the preview to choose which part shows; double-click to centre it. One zoom slider zooms every photo by the same amount, for close-up comparisons. A warning shows when a photo is enlarged past its real size.
+- **Canvas and saving:** the same sizes, backgrounds, watermark and formats as the Screenshot Framer. Files are named `ah-compare-topic-platform-date`; the platform is left out with "Show it all".
 - Photos longer than 8192 pixels on a side are scaled down to that when added. HEIC photos have to be converted to JPG first.
 
 | File | What it is |
