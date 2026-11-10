@@ -1,6 +1,7 @@
 name: Deploy to GitHub Pages
 
-# Publishes the AH Image Resizer (image-resizer/, plain static files) at https://alexmaxham.github.io/Claude/.
+# Publishes the AH tools in tools/ (plain static files) at https://alexmaxham.github.io/Claude/:
+# the Image Resizer at the root and the Screenshot Framer at /screenshot-framer/.
 on:
   push:
     branches: [main, claude/gamified-todo-app-wc0pod]
@@ -23,17 +24,13 @@ jobs:
       - uses: actions/checkout@v5
       - name: Check the scripts parse
         run: |
-          node --check image-resizer/app.js
-          node --check image-resizer/zip.js
-          node --check image-resizer/assets.js
-          node --check image-resizer/meta.js
-          node --check image-resizer/alt-text.js
+          for file in tools/*.js tools/screenshot-framer/*.js; do node --check "$file"; done
       - name: Assemble the site
         run: |
           mkdir -p _site/image-resizer
-          cd image-resizer
-          cp -r index.html styles.css app.js zip.js meta.js alt-text.js assets.js assets ../_site/
-          # The tool first lived at /Claude/image-resizer/; send that old link to the new home.
+          cd tools
+          cp -r index.html styles.css app.js zip.js meta.js alt-text.js assets.js assets screenshot-framer ../_site/
+          # The resizer first lived at /Claude/image-resizer/; send that old link to the new home.
           cp moved.html ../_site/image-resizer/index.html
       - if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5

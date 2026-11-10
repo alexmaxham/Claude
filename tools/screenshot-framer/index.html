@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AH Screenshot Framer</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="../assets/ah-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="framer.css">
+</head>
+<body>
+
+<header class="masthead">
+  <img src="../assets/ah-logo-white.png" alt="Android Headlines" class="masthead-logo">
+  <span class="masthead-rule" aria-hidden="true"></span>
+  <h1 class="masthead-title">Screenshot Framer</h1>
+  <nav class="masthead-nav" aria-label="AH tools">
+    <a href="../">Image Resizer</a>
+    <a href="./" aria-current="page">Screenshot Framer</a>
+  </nav>
+  <p class="masthead-note">Your screenshots stay on this computer. Nothing is uploaded.</p>
+</header>
+
+<main class="layout">
+
+  <section class="card col-images" aria-labelledby="shots-h">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">Your screenshots</div>
+        <h2 id="shots-h"><span id="count-label">No screenshots yet</span></h2>
+      </div>
+      <button type="button" class="link-btn" id="clear-all" hidden>Clear all</button>
+    </div>
+    <div class="drop" id="drop">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>
+      <strong>Drop screenshots here</strong>
+      <span class="quiet">or paste one. PNG, JPG or WebP.</span>
+      <div class="drop-actions">
+        <button type="button" class="btn btn-outline btn-small" id="pick-files">Choose screenshots</button>
+      </div>
+      <input type="file" id="file-input" accept="image/*" multiple hidden>
+    </div>
+    <p class="notice" id="add-notice" role="status" hidden></p>
+    <ul class="file-list" id="file-list"></ul>
+  </section>
+
+  <section class="col-preview">
+    <div class="card" aria-labelledby="preview-h">
+      <div class="card-head">
+        <div>
+          <div class="eyebrow">Preview</div>
+          <h2 id="preview-h">Add a screenshot to start</h2>
+        </div>
+      </div>
+      <div class="stage">
+        <canvas id="preview" class="preview-canvas" role="img" aria-label="Preview of the framed screenshots" hidden></canvas>
+        <p class="stage-empty" id="stage-empty">Your screenshots, framed and lined up, show here.</p>
+      </div>
+      <dl class="facts" id="facts" hidden>
+        <div><dt>Frame:</dt><dd id="fact-frame"></dd></div>
+        <div><dt>Background:</dt><dd id="fact-bg"></dd></div>
+        <div><dt>Layout:</dt><dd id="fact-layout"></dd></div>
+        <div><dt>Watermark:</dt><dd id="fact-wm"></dd></div>
+      </dl>
+      <p class="chip chip-amber" id="small-warning" hidden></p>
+    </div>
+    <div class="card name-row" id="name-row" hidden>
+      <span class="label">File name</span>
+      <strong id="name-to"></strong>
+    </div>
+  </section>
+
+  <section class="col-settings">
+
+    <div class="card">
+      <h2><span class="num">1</span> Frame</h2>
+      <div class="choice-grid choice-2" id="frames"></div>
+      <div id="frame-options">
+        <div class="swatch-row">
+          <span class="label" id="colour-label">Frame colour</span>
+          <div class="swatches" id="colours" role="group" aria-labelledby="colour-label"></div>
+        </div>
+        <label class="field">Camera dot
+          <select id="camera">
+            <option value="centre">Top centre</option>
+            <option value="left">Top left</option>
+            <option value="none">None</option>
+          </select>
+        </label>
+      </div>
+      <label class="field"><span>Corner roundness: <span id="round-out"></span>%</span>
+        <input type="range" id="round" min="0" max="24" step="1">
+      </label>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">2</span> Layout</h2>
+      <div class="choice-grid choice-3" id="layouts"></div>
+      <label class="field"><span>Size of the phones: <span id="size-out"></span>% of the height</span>
+        <input type="range" id="size" min="40" max="95" step="1">
+      </label>
+      <label class="field"><span>Space between them: <span id="gap-out"></span>%</span>
+        <input type="range" id="gap" min="0" max="12" step="1">
+      </label>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">3</span> Canvas</h2>
+      <div class="label">Background</div>
+      <div class="choice-grid choice-3" id="backgrounds"></div>
+      <label class="field">Size
+        <select id="canvas-size"></select>
+      </label>
+      <div class="custom-size" id="custom-size" hidden>
+        <label for="custom-w">Width</label>
+        <input type="number" id="custom-w" min="200" max="8000" inputmode="numeric">
+        <span aria-hidden="true">×</span>
+        <label for="custom-h">Height</label>
+        <input type="number" id="custom-h" min="200" max="8000" inputmode="numeric">
+        <span class="quiet">px</span>
+      </div>
+      <label class="toggle"><input type="checkbox" id="wm-on"> AH watermark, bottom right</label>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">4</span> File name</h2>
+      <label class="field">Topic
+        <input type="text" id="topic" placeholder="pixel-11a-settings" autocomplete="off">
+      </label>
+      <p class="quiet small">Saved as ah-screens-topic-platform-date. The platform comes from the size you pick.</p>
+    </div>
+
+  </section>
+</main>
+
+<footer class="bar">
+  <img src="../assets/ah-icon.png" alt="" class="bar-icon">
+  <p class="bar-summary" id="summary" role="status">Add screenshots to get started.</p>
+  <label class="bar-format">Save as
+    <select id="format">
+      <option value="png">PNG</option>
+      <option value="jpg">JPG</option>
+      <option value="webp">WebP</option>
+    </select>
+  </label>
+  <button type="button" class="btn btn-outline" id="copy" disabled>Copy image</button>
+  <button type="button" class="btn btn-solid" id="download" disabled>Download</button>
+</footer>
+
+<script src="../assets.js"></script>
+<script src="framer.js"></script>
+</body>
+</html>
