@@ -1,0 +1,16 @@
+/* Extra styles for Photo Compare. The rest comes from ../styles.css and ../screenshot-framer/framer.css. */
+.photo-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-areas: "thumb label" "meta meta" "controls controls";
+  align-items: center;
+  gap: 4px 10px;
+  padding: 10px 0 2px 8px;
+}
+.photo-thumb { grid-area: thumb; }
+.photo-label { grid-area: label; width: 100%; min-width: 0; font-weight: 500; }
+.photo-meta { grid-area: meta; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.photo-row .move { grid-area: controls; justify-content: flex-end; }
+#label-options { display: flex; flex-direction: column; gap: 12px; }
+#preview { cursor: grab; touch-action: none; }
+#preview.is-dragging { cursor: grabbing; }

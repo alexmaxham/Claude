@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AH Photo Compare</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="../assets/ah-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../screenshot-framer/framer.css">
+<link rel="stylesheet" href="compare.css">
+</head>
+<body>
+
+<header class="masthead">
+  <img src="../assets/ah-logo-white.png" alt="Android Headlines" class="masthead-logo">
+  <span class="masthead-rule" aria-hidden="true"></span>
+  <h1 class="masthead-title">Photo Compare</h1>
+  <nav class="masthead-nav" aria-label="AH tools">
+    <a href="../">Image Resizer</a>
+    <a href="../screenshot-framer/">Screenshot Framer</a>
+    <a href="./" aria-current="page">Photo Compare</a>
+  </nav>
+  <p class="masthead-note">Your photos stay on this computer. Nothing is uploaded.</p>
+</header>
+
+<main class="layout">
+
+  <section class="card col-images" aria-labelledby="photos-h">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">Your photos</div>
+        <h2 id="photos-h"><span id="count-label">No photos yet</span></h2>
+      </div>
+      <button type="button" class="link-btn" id="clear-all" hidden>Clear all</button>
+    </div>
+    <div class="drop" id="drop">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>
+      <strong>Drop one photo from each phone</strong>
+      <span class="quiet">or paste one. JPG, PNG or WebP.</span>
+      <div class="drop-actions">
+        <button type="button" class="btn btn-outline btn-small" id="pick-files">Choose photos</button>
+      </div>
+      <input type="file" id="file-input" accept="image/*" multiple hidden>
+    </div>
+    <p class="notice" id="add-notice" role="status" hidden></p>
+    <p class="quiet small">Type each phone's name next to its photo. The first photo goes on the left.</p>
+    <ul class="file-list" id="file-list"></ul>
+  </section>
+
+  <section class="col-preview">
+    <div class="card" aria-labelledby="preview-h">
+      <div class="card-head">
+        <div>
+          <div class="eyebrow">Preview</div>
+          <h2 id="preview-h">Add two photos to start</h2>
+        </div>
+      </div>
+      <div class="stage">
+        <canvas id="preview" class="preview-canvas" role="img" aria-label="Preview of the photos side by side" hidden></canvas>
+        <p class="stage-empty" id="stage-empty">Your photos, side by side with each phone's name, show here.</p>
+      </div>
+      <p class="quiet small" id="drag-hint" hidden>Drag a photo to choose which part of it shows. Double-click to centre it again.</p>
+      <dl class="facts" id="facts" hidden>
+        <div><dt>Layout:</dt><dd id="fact-layout"></dd></div>
+        <div><dt>Photos:</dt><dd id="fact-fit"></dd></div>
+        <div><dt>Names:</dt><dd id="fact-labels"></dd></div>
+        <div><dt>Watermark:</dt><dd id="fact-wm"></dd></div>
+      </dl>
+      <p class="chip chip-amber" id="small-warning" hidden></p>
+    </div>
+    <div class="card name-row" id="name-row" hidden>
+      <span class="label">File name</span>
+      <strong id="name-to"></strong>
+    </div>
+  </section>
+
+  <section class="col-settings">
+
+    <div class="card">
+      <h2><span class="num">1</span> Layout</h2>
+      <div class="choice-grid choice-3" id="layouts"></div>
+      <div class="choice-grid choice-2" id="fits"></div>
+      <label class="field"><span>Zoom in on every photo: <span id="zoom-out"></span>%</span>
+        <input type="range" id="zoom" min="100" max="400" step="5">
+      </label>
+      <label class="field"><span>Space between the photos: <span id="gap-out"></span>%</span>
+        <input type="range" id="gap" min="0" max="5" step="0.5">
+      </label>
+      <label class="field"><span>Space around the edge: <span id="margin-out"></span>%</span>
+        <input type="range" id="margin" min="0" max="8" step="0.5">
+      </label>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">2</span> Phone names</h2>
+      <div class="choice-grid choice-3" id="label-modes"></div>
+      <div id="label-options">
+        <label class="field" id="label-pos-field">Where on the photo
+          <select id="label-pos">
+            <option value="bl">Bottom left</option>
+            <option value="bc">Bottom centre</option>
+            <option value="tl">Top left</option>
+            <option value="tc">Top centre</option>
+          </select>
+        </label>
+        <label class="field"><span>Text size: <span id="label-size-out"></span>%</span>
+          <input type="range" id="label-size" min="2" max="8" step="0.5">
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">3</span> Canvas</h2>
+      <div class="label">Background</div>
+      <div class="choice-grid choice-3" id="backgrounds"></div>
+      <label class="field">Size
+        <select id="canvas-size"></select>
+      </label>
+      <div class="custom-size" id="custom-size" hidden>
+        <label for="custom-w">Width</label>
+        <input type="number" id="custom-w" min="200" max="8000" inputmode="numeric">
+        <span aria-hidden="true">×</span>
+        <label for="custom-h">Height</label>
+        <input type="number" id="custom-h" min="200" max="8000" inputmode="numeric">
+        <span class="quiet">px</span>
+      </div>
+      <label class="toggle"><input type="checkbox" id="wm-on"> AH watermark, bottom right</label>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">4</span> File name</h2>
+      <label class="field">Topic
+        <input type="text" id="topic" placeholder="xiaomi-18-pro-max-vs-find-x10-pro-max" autocomplete="off">
+      </label>
+      <p class="quiet small">Saved as ah-compare-topic-platform-date. The platform comes from the size you pick.</p>
+    </div>
+
+  </section>
+</main>
+
+<footer class="bar">
+  <img src="../assets/ah-icon.png" alt="" class="bar-icon">
+  <p class="bar-summary" id="summary" role="status">Add photos to get started.</p>
+  <label class="bar-format">Save as
+    <select id="format">
+      <option value="jpg">JPG (photos)</option>
+      <option value="png">PNG</option>
+      <option value="webp">WebP</option>
+    </select>
+  </label>
+  <button type="button" class="btn btn-outline" id="copy" disabled>Copy image</button>
+  <button type="button" class="btn btn-solid" id="download" disabled>Download</button>
+</footer>
+
+<script src="../assets.js"></script>
+<script src="compare.js"></script>
+</body>
+</html>
