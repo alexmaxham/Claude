@@ -1,6 +1,6 @@
 # AH tools
 
-Two tools share this folder and its styles: the **Image Resizer** (this folder's `index.html`) and the **Screenshot Framer** (`screenshot-framer/`). Both follow the AH Brand Kit and run entirely in the browser.
+Three tools share this folder and its styles: the **Image Resizer** (this folder's `index.html`), the **Screenshot Framer** (`screenshot-framer/`) and **Photo Compare** (`photo-compare/`). All follow the AH Brand Kit and run entirely in the browser.
 
 # Image Resizer
 
@@ -52,8 +52,24 @@ Puts one or more phone screenshots in a frame, lines them up on an AH background
 | `screenshot-framer/index.html`, `framer.css` | The page, and the few styles it adds to `styles.css` |
 | `screenshot-framer/framer.js` | Layout, drawing and saving |
 
+# Photo Compare
+
+Puts photos taken on different phones into one image so they can be compared, for example the Xiaomi 18 Pro Max on the left and the Oppo Find X10 Pro Max on the right.
+
+- **Photos:** drop one photo from each phone, two or more. The first is on the left; the arrows change the order.
+- **Phone names:** type each phone's name next to its photo. Names go on the photo (bottom or top, left or centre), under it, or off. A file called `xiaomi-18-pro-max.jpg` fills its name in for you; camera names like `IMG_1234` don't.
+- **Layout:** side by side, stacked or a grid, with space between the photos and around the edge.
+- **Cropping:** photos fill their space and are cropped, or are shown whole. Drag a photo in the preview to choose which part shows; double-click to centre it. One zoom slider zooms every photo by the same amount, for close-up comparisons. A warning shows when a photo is enlarged past its real size.
+- **Canvas and saving:** the same sizes, backgrounds, watermark and formats as the Screenshot Framer. Files are named `ah-compare-topic-platform-date`.
+- Photos longer than 8192 pixels on a side are scaled down to that when added. HEIC photos have to be converted to JPG first.
+
+| File | What it is |
+|---|---|
+| `photo-compare/index.html`, `compare.css` | The page, and the few styles it adds to `styles.css` and the framer's `framer.css` |
+| `photo-compare/compare.js` | Layout, drawing, dragging and saving |
+
 ## Hosting
 
-**Live:** https://alexmaxham.github.io/Claude/ (Image Resizer) and https://alexmaxham.github.io/Claude/screenshot-framer/
+**Live:** https://alexmaxham.github.io/Claude/ (Image Resizer), https://alexmaxham.github.io/Claude/screenshot-framer/ and https://alexmaxham.github.io/Claude/photo-compare/
 
 The repo's GitHub Pages deploy (`.github/workflows/deploy.yml`) publishes this folder as the whole site on every push to the default branch. The resizer's first address, `/Claude/image-resizer/`, redirects to the root (`moved.html`). The pages ask search engines not to index them, but anyone with the link can open them.

@@ -6,6 +6,7 @@ Small web tools for AndroidHeadlines, styled with the AH Brand Kit. Everything r
 |---|---|---|
 | Image Resizer | https://alexmaxham.github.io/Claude/ | Resizes, watermarks and renames images in bulk, and adds alt text |
 | Screenshot Framer | https://alexmaxham.github.io/Claude/screenshot-framer/ | Puts phone screenshots in a plain frame on an AH background |
+| Photo Compare | https://alexmaxham.github.io/Claude/photo-compare/ | Puts photos from different phones side by side in one image, each with the phone's name |
 
 The code is in [`tools/`](tools/). See [tools/README.md](tools/README.md) for what each tool does and how the files fit together. There is nothing to install or build: open `tools/index.html` in a browser to run them locally.
 
