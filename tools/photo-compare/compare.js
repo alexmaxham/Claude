@@ -18,7 +18,7 @@
   ];
   var FITS = [
     { id: 'cover', name: 'Fill the space', note: 'Crops the edges' },
-    { id: 'contain', name: 'Show it all', note: 'No cropping' }
+    { id: 'contain', name: 'Show it all', note: 'No cropping, any shape' }
   ];
   var LABELS = [
     { id: 'on', name: 'On the photo' },
@@ -35,9 +35,10 @@
   var DEFAULTS = {
     layout: 'row', fit: 'cover', zoom: 100, gap: 1, margin: 0,
     labels: 'on', labelPos: 'bl', labelSize: 4,
-    bg: 'ink', canvas: 'wide', customW: 1600, customH: 900, wmOn: true,
+    bg: 'ink', canvas: 'wide', customW: 1600, customH: 900, autoW: 1600, wmOn: true,
     topic: '', format: 'jpg'
   };
+  var MAX_OUT = 8000; // the longest side of a saved image
   var MAX_SIDE = 8192; // bigger photos are scaled down to this when they are added, to keep memory in check
 
   // ---------- Pure helpers ----------
@@ -61,22 +62,26 @@
     return { w: size.w, h: size.h };
   }
 
-  /** Label text height in pixels: a share of the canvas's shorter side. */
-  function labelPx(s, W, H) {
-    return (Math.min(W, H) * s.labelSize) / 100;
+  /** Label text height in pixels. ref is the plan's reference length (the shorter side of a fixed canvas). */
+  function labelPx(s, ref) {
+    return (ref * s.labelSize) / 100;
   }
 
-  /**
-   * Works out where each photo goes. Returns [{ x, y, w, h, strip }]: the photo's box, and strip (or null), the
-   * band under it that holds the name when names go under the photos.
-   */
-  function layoutPanels(n, s, W, H) {
-    if (!n) return [];
-    var unit = Math.min(W, H) / 100;
-    var margin = s.margin * unit;
-    var gap = s.gap * unit;
-    var stripH = s.labels === 'below' ? labelPx(s, W, H) * 2 : 0;
-    var cols = s.layout === 'row' ? n : s.layout === 'stack' ? 1 : Math.ceil(Math.sqrt(n));
+  function columnsFor(n, s) {
+    return s.layout === 'row' ? n : s.layout === 'stack' ? 1 : Math.ceil(Math.sqrt(n));
+  }
+
+  function panel(x, y, w, photoH, stripH) {
+    return { x: x, y: y, w: w, h: photoH, strip: stripH ? { x: x, y: y + photoH, w: w, h: stripH } : null };
+  }
+
+  /** A fixed canvas cut into equal boxes; the photos are cropped to fill them. */
+  function planFixed(n, s) {
+    var size = canvasSize(s);
+    var W = size.w, H = size.h, ref = Math.min(W, H);
+    var margin = (s.margin * ref) / 100, gap = (s.gap * ref) / 100;
+    var stripH = s.labels === 'below' ? labelPx(s, ref) * 2 : 0;
+    var cols = columnsFor(n, s);
     var rows = Math.ceil(n / cols);
     var cellH = (H - 2 * margin - gap * (rows - 1)) / rows;
     var panels = [];
@@ -85,13 +90,56 @@
       var inRow = Math.min(cols, n - r * cols);
       var cellW = (W - 2 * margin - gap * (inRow - 1)) / inRow;
       for (var c = 0; c < inRow; c++) {
-        var x = margin + c * (cellW + gap);
-        var y = margin + r * (cellH + gap);
-        var photoH = Math.max(1, cellH - stripH);
-        panels.push({ x: x, y: y, w: cellW, h: photoH, strip: stripH ? { x: x, y: y + photoH, w: cellW, h: stripH } : null });
+        panels.push(panel(margin + c * (cellW + gap), margin + r * (cellH + gap), cellW, Math.max(1, cellH - stripH), stripH));
       }
     }
-    return panels;
+    return { w: W, h: H, ref: ref, panels: panels };
+  }
+
+  /**
+   * A canvas shaped by the photos, so every photo shows whole with no bars. Each row is as wide as the canvas;
+   * the photos in it share one height, and the canvas is as tall as the rows need.
+   */
+  function planAuto(imgs, s, width) {
+    var n = imgs.length;
+    var W = width, ref = W * 0.6;
+    var margin = (s.margin * ref) / 100, gap = (s.gap * ref) / 100;
+    var stripH = s.labels === 'below' ? labelPx(s, ref) * 2 : 0;
+    var cols = columnsFor(n, s);
+    var panels = [];
+    var y = margin;
+    for (var at = 0; at < n; at += cols) {
+      var row = imgs.slice(at, at + cols);
+      var shapes = 0;
+      row.forEach(function (img) { shapes += img.w / img.h; });
+      var rowH = Math.max(1, (W - 2 * margin - gap * (row.length - 1)) / shapes);
+      var x = margin;
+      row.forEach(function (img) {
+        var w = (img.w / img.h) * rowH;
+        panels.push(panel(x, y, w, rowH, stripH));
+        x += w + gap;
+      });
+      y += rowH + stripH + gap;
+    }
+    return { w: W, h: y - gap + margin, ref: ref, panels: panels };
+  }
+
+  /**
+   * Works out the canvas and where each photo goes. imgs: [{ w, h }]. Returns { w, h, ref, panels, auto, capped }.
+   * Each panel is { x, y, w, h, strip }: the photo's box, and strip (or null), the band under it that holds the
+   * name when names go under the photos. capped says the width asked for had to be cut to keep the height in range.
+   */
+  function plan(imgs, s) {
+    if (!imgs.length) return { w: 0, h: 0, ref: 0, panels: [], auto: false, capped: false };
+    if (s.fit !== 'contain') return Object.assign(planFixed(imgs.length, s), { auto: false, capped: false });
+    var asked = clampInt(s.autoW, 200, MAX_OUT, 1600);
+    var p = planAuto(imgs, s, asked);
+    var capped = p.h > MAX_OUT;
+    // Everything scales with the width, so a too-tall canvas is fixed by making it narrower.
+    if (capped) p = planAuto(imgs, s, Math.max(1, Math.floor((asked * MAX_OUT) / p.h)));
+    p.w = Math.round(p.w);
+    p.h = Math.max(1, Math.round(p.h));
+    return Object.assign(p, { auto: true, capped: capped });
   }
 
   /**
@@ -128,10 +176,12 @@
   }
 
   function fileName(s, date, ext) {
-    return ['ah-compare', slug(s.topic), byId(SIZES, s.canvas).platform, isoDate(date)].filter(Boolean).join('-') + '.' + ext;
+    // A canvas shaped by the photos is not made for any one platform.
+    var platform = s.fit === 'contain' ? '' : byId(SIZES, s.canvas).platform;
+    return ['ah-compare', slug(s.topic), platform, isoDate(date)].filter(Boolean).join('-') + '.' + ext;
   }
 
-  window.AHCompare = { SIZES: SIZES, DEFAULTS: DEFAULTS, layoutPanels: layoutPanels, placePhoto: placePhoto, draftLabel: draftLabel, canvasSize: canvasSize, fileName: fileName };
+  window.AHCompare = { SIZES: SIZES, DEFAULTS: DEFAULTS, plan: plan, placePhoto: placePhoto, draftLabel: draftLabel, canvasSize: canvasSize, fileName: fileName };
   if (typeof document === 'undefined' || !document.getElementById('preview')) return;
 
   // ---------- State ----------
@@ -207,10 +257,10 @@
     return 8;
   }
 
-  function drawLabel(ctx, text, panel, s, bg, W, H) {
+  function drawLabel(ctx, text, panel, s, bg, ref, mark) {
     text = text.trim();
     if (!text || s.labels === 'off') return;
-    var px = labelPx(s, W, H);
+    var px = labelPx(s, ref);
     ctx.textBaseline = 'middle';
     if (s.labels === 'below') {
       var strip = panel.strip;
@@ -221,10 +271,15 @@
       return;
     }
     var pad = px * 0.55, inset = px * 0.6;
-    var used = fitFont(ctx, text, px, panel.w - 2 * inset - 2 * pad);
-    var w = ctx.measureText(text).width + 2 * pad, h = used * 1.7;
     var top = s.labelPos.charAt(0) === 't', centre = s.labelPos.charAt(1) === 'c';
-    var x = centre ? panel.x + (panel.w - w) / 2 : panel.x + inset;
+    // Keep a name at the bottom of the last photo clear of the watermark.
+    var room = panel.w;
+    if (mark && !top && mark.x < panel.x + panel.w && mark.x > panel.x && mark.y < panel.y + panel.h && mark.y + mark.h > panel.y + panel.h - inset - px * 1.7) {
+      room = Math.max(px * 3, mark.x - panel.x);
+    }
+    var used = fitFont(ctx, text, px, room - 2 * inset - 2 * pad);
+    var w = ctx.measureText(text).width + 2 * pad, h = used * 1.7;
+    var x = centre ? panel.x + (room - w) / 2 : panel.x + inset;
     var y = top ? panel.y + inset : panel.y + panel.h - inset - h;
     roundedRect(ctx, x, y, w, h, used * 0.28);
     ctx.fillStyle = 'rgba(28, 28, 30, 0.9)';
@@ -235,7 +290,8 @@
   }
 
   function drawAll(canvas, s) {
-    var size = canvasSize(s);
+    var layout = plan(photos, s);
+    var size = { w: layout.w, h: layout.h };
     var bg = byId(BACKGROUNDS, s.bg);
     canvas.width = size.w;
     canvas.height = size.h;
@@ -244,7 +300,15 @@
     ctx.imageSmoothingQuality = 'high';
     ctx.fillStyle = bg.color;
     ctx.fillRect(0, 0, size.w, size.h);
-    var panels = layoutPanels(photos.length, s, size.w, size.h);
+    var panels = layout.panels;
+    var mark = null;
+    if (s.wmOn && icon.naturalWidth) {
+      // The AH icon, bottom right, as the brand kit asks for every image.
+      var markW = Math.min(size.w * 0.06, size.h * 0.14);
+      mark = { w: markW, h: (markW * icon.naturalHeight) / icon.naturalWidth };
+      mark.x = size.w - markW * 0.5 - mark.w;
+      mark.y = size.h - markW * 0.5 - mark.h;
+    }
     var stretched = [];
     panels.forEach(function (panel, i) {
       var photo = photos[i];
@@ -252,16 +316,10 @@
       ctx.drawImage(photo.bitmap, p.sx, p.sy, p.sw, p.sh, p.dx, p.dy, p.dw, p.dh);
       // More than the photo's own pixels (as it was before any scaling down on the way in) can show.
       if (p.scale * (photo.w / photo.origW) > 1.01) stretched.push(i);
-      drawLabel(ctx, photo.label, panel, s, bg, size.w, size.h);
+      drawLabel(ctx, photo.label, panel, s, bg, layout.ref, mark);
     });
-    if (s.wmOn && icon.naturalWidth) {
-      // The AH icon, bottom right, as the brand kit asks for every image.
-      var w = size.w * 0.06;
-      var h = (w * icon.naturalHeight) / icon.naturalWidth;
-      var m = size.w * 0.03;
-      ctx.drawImage(icon, size.w - m - w, size.h - m - h, w, h);
-    }
-    return { panels: panels, stretched: stretched };
+    if (mark) ctx.drawImage(icon, mark.x, mark.y, mark.w, mark.h);
+    return { w: size.w, h: size.h, panels: panels, stretched: stretched, capped: layout.capped };
   }
 
   // ---------- Adding photos ----------
@@ -381,8 +439,12 @@
     $('label-pos-field').hidden = state.labels !== 'on';
     $('label-pos').value = state.labelPos;
     $('label-size').value = state.labelSize; $('label-size-out').textContent = state.labelSize;
+    var auto = state.fit === 'contain';
+    $('fixed-size').hidden = auto;
+    $('auto-size').hidden = !auto;
+    if (document.activeElement !== $('auto-w')) $('auto-w').value = state.autoW;
     $('canvas-size').value = state.canvas;
-    $('custom-size').hidden = state.canvas !== 'custom';
+    $('custom-size').hidden = auto || state.canvas !== 'custom';
     if (document.activeElement !== $('custom-w')) $('custom-w').value = state.customW;
     if (document.activeElement !== $('custom-h')) $('custom-h').value = state.customH;
     $('wm-on').checked = state.wmOn;
@@ -452,17 +514,17 @@
       await assetsReady;
       drawQueued = false;
       var has = photos.length > 0;
-      var size = canvasSize(state);
       $('preview').hidden = !has;
       $('stage-empty').hidden = has;
       $('facts').hidden = !has;
       $('name-row').hidden = !has;
       $('drag-hint').hidden = !has;
-      $('preview-h').textContent = has ? size.w + ' × ' + size.h : 'Add two photos to start';
       $('copy').disabled = !has || busy;
       $('download').disabled = !has || busy;
-      if (!has) { lastPanels = []; $('small-warning').hidden = true; $('summary').textContent = 'Add photos to get started.'; return; }
+      if (!has) { $('preview-h').textContent = 'Add two photos to start'; lastPanels = []; $('small-warning').hidden = true; $('summary').textContent = 'Add photos to get started.'; return; }
       var result = drawAll($('preview'), state);
+      var size = result;
+      $('preview-h').textContent = size.w + ' × ' + size.h;
       lastPanels = result.panels;
       var layoutName = byId(LAYOUTS, state.layout).name;
       var named = photos.filter(function (p) { return p.label.trim(); }).length;
@@ -472,6 +534,7 @@
       $('fact-wm').textContent = state.wmOn ? 'Bottom right' : 'Off';
       var warnings = [];
       if (photos.length === 1) warnings.push('Add a second photo to compare.');
+      if (result.capped) warnings.push('Made narrower than the width you set, to keep the height under ' + MAX_OUT + ' pixels.');
       if (result.stretched.length) {
         warnings.push((result.stretched.length === photos.length ? 'The photos are' : 'Photo ' + result.stretched.map(function (i) { return i + 1; }).join(' and ') + (result.stretched.length === 1 ? ' is' : ' are')) + ' shown larger than full size, so may look soft.');
       }
@@ -637,6 +700,7 @@
     $('label-pos').addEventListener('change', function (e) { change({ labelPos: e.target.value }); });
     $('label-size').addEventListener('input', function (e) { change({ labelSize: Number(e.target.value) }); });
     $('canvas-size').addEventListener('change', function (e) { change({ canvas: e.target.value }); });
+    $('auto-w').addEventListener('input', function (e) { change({ autoW: clampInt(e.target.value, 200, MAX_OUT, state.autoW) }); });
     $('custom-w').addEventListener('input', function (e) { change({ customW: clampInt(e.target.value, 200, 8000, state.customW) }); });
     $('custom-h').addEventListener('input', function (e) { change({ customH: clampInt(e.target.value, 200, 8000, state.customH) }); });
     $('wm-on').addEventListener('change', function (e) { change({ wmOn: e.target.checked }); });

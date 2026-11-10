@@ -11,6 +11,7 @@
 .photo-label { grid-area: label; width: 100%; min-width: 0; font-weight: 500; }
 .photo-meta { grid-area: meta; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .photo-row .move { grid-area: controls; justify-content: flex-end; }
+#auto-size { display: flex; flex-direction: column; gap: 8px; }
 #label-options { display: flex; flex-direction: column; gap: 12px; }
 #preview { cursor: grab; touch-action: none; }
 #preview.is-dragging { cursor: grabbing; }
