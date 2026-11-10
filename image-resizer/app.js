@@ -137,7 +137,7 @@
   // ---------- State ----------
 
   var state = loadSettings();
-  var items = []; // { id, file, name, type, size, w, h, thumb, alt, altSource: 'name' | 'claude' | 'you' }
+  var items = []; // { id, file, name, type, size, w, h, thumb, alt, altSource: 'name' | 'you' }
   var currentId = null;
   var nextId = 1;
   var cache = { id: null, bitmap: null };
@@ -409,18 +409,6 @@
 
     $('alt-on').checked = state.altOn;
     $('alt-body').classList.toggle('is-off', !state.altOn);
-    var canAsk = window.AHAlt.configured();
-    var signedIn = canAsk && window.AHAlt.signedIn();
-    $('alt-unset').hidden = canAsk;
-    $('alt-claude').hidden = !canAsk;
-    $('alt-signin').hidden = signedIn;
-    $('alt-who').hidden = !signedIn;
-    $('alt-email').textContent = signedIn ? 'Signed in as ' + window.AHAlt.email() : '';
-    $('alt-all').textContent = items.length > 1 ? 'Write alt text for all ' + items.length + ' images' : 'Write alt text from the image';
-    $('alt-all').disabled = busy || !items.length || !signedIn || !state.altOn;
-    $('alt-one').hidden = !canAsk;
-    $('alt-one').disabled = busy || !signedIn;
-    $('alt-one').title = signedIn ? '' : 'Sign in with Google under "4 Alt text" first';
   }
 
   function renderList() {
@@ -527,7 +515,7 @@
     }
   }
 
-  var ALT_SOURCES = { name: 'Draft from the topic or file name', claude: 'Written by Claude', you: 'Edited by you' };
+  var ALT_SOURCES = { name: 'Draft from the topic or file name', you: 'Edited by you' };
 
   function renderAlt(item) {
     $('alt-card').hidden = !state.altOn;
@@ -557,14 +545,14 @@
 
   function setBusy(flag) {
     busy = flag;
-    ['dl-one', 'dl-all', 'pick-files', 'pick-folder', 'clear-all', 'alt-one', 'alt-all'].forEach(function (id) { $(id).disabled = flag; });
+    ['dl-one', 'dl-all', 'pick-files', 'pick-folder', 'clear-all'].forEach(function (id) { $(id).disabled = flag; });
     if (!flag) { renderControls(); renderSummary(); }
   }
 
   function change(patch) {
     Object.assign(state, patch);
     if ('topic' in patch) {
-      // Drafts made from words follow the topic; anything Claude or the user wrote is left alone.
+      // Drafts made from words follow the topic; anything the user wrote is left alone.
       items.forEach(function (item) {
         if (item.altSource === 'name') item.alt = window.AHAlt.fromName(item.name, state.topic);
       });
@@ -663,69 +651,6 @@
   /** A spreadsheet-friendly list of file name and alt text (the leading mark makes Excel read accents correctly). */
   function altCsv(rows) {
     return '\uFEFF' + [['File', 'Alt text']].concat(rows).map(function (row) { return row.map(csvCell).join(','); }).join('\r\n') + '\r\n';
-  }
-
-  /** The picture as it will be published, without the watermark, shrunk for Claude. Returns base64 JPEG. */
-  async function pictureForClaude(item) {
-    var bitmap = await decode(item.file);
-    try {
-      var layout = computeLayout(bitmap.width, bitmap.height, state);
-      var k = Math.min(1, window.AHAlt.MAX_SIDE / Math.max(layout.w, layout.h));
-      var canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(layout.w * k));
-      canvas.height = Math.max(1, Math.round(layout.h * k));
-      var ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(bitmap, layout.sx, layout.sy, layout.sw, layout.sh, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
-    } finally {
-      bitmap.close();
-    }
-  }
-
-  function altStatus(text) {
-    $('alt-status').textContent = text;
-    $('alt-status').hidden = !text;
-  }
-
-  async function writeAlt(targets) {
-    if (busy || !targets.length) return;
-    if (!window.AHAlt.signedIn()) { renderControls(); altStatus('Sign in with Google first.'); return; }
-    setBusy(true);
-    var done = 0;
-    var failed = [];
-    var stop = '';
-    var queue = targets.slice();
-    async function worker() {
-      while (queue.length && !stop) {
-        var item = queue.shift();
-        try {
-          var text = await window.AHAlt.describe({
-            fileName: item.name, topic: state.topic, jpegBase64: await pictureForClaude(item)
-          });
-          item.alt = text;
-          item.altSource = 'claude';
-          if (item.id === currentId) renderAlt(item);
-        } catch (e) {
-          failed.push(item.name);
-          var message = e && e.message ? e.message : 'Something went wrong.';
-          // Some problems (signed out, not on the list, no connection) would fail every image, so stop there.
-          if (e && e.stop) stop = message;
-          else altStatus(item.name + ': ' + message);
-        }
-        done++;
-        $('summary').textContent = 'Claude is writing alt text: ' + done + ' of ' + targets.length + '…';
-      }
-    }
-    $('summary').textContent = 'Claude is writing alt text: 0 of ' + targets.length + '…';
-    await Promise.all([worker(), worker(), worker()]);
-    setBusy(false);
-    renderPreview();
-    if (stop) altStatus(stop);
-    else if (failed.length) altStatus('Wrote ' + (targets.length - failed.length) + ' of ' + targets.length + '. Could not do: ' + failed.join(', ') + '.');
-    else altStatus('Claude wrote alt text for ' + plural(targets.length, 'image') + '. Read each one before you publish.');
   }
 
   // ---------- Wiring ----------
@@ -838,18 +763,11 @@
         setTimeout(function () { $('alt-copy').textContent = 'Copy'; }, 1500);
       }, function () { /* clipboard blocked: the text can still be selected by hand */ });
     });
-    $('alt-signout').addEventListener('click', function () { window.AHAlt.signOut(); altStatus(''); });
-    $('alt-one').addEventListener('click', function () { var item = items[currentIndex()]; if (item) writeAlt([item]); });
-    $('alt-all').addEventListener('click', function () { writeAlt(items.slice()); });
-
     $('dl-one').addEventListener('click', downloadOne);
     $('dl-all').addEventListener('click', downloadAll);
   }
 
   build();
   wire();
-  window.AHAlt.setUpSignIn($('alt-signin'), renderControls).catch(function () {
-    altStatus('Google sign-in could not load. Check the internet connection and reload.');
-  });
   renderAll();
 })();

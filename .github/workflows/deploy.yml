@@ -28,17 +28,11 @@ jobs:
           node --check image-resizer/assets.js
           node --check image-resizer/meta.js
           node --check image-resizer/alt-text.js
-          node --check image-resizer/config.js
-      - name: Test the alt text server
-        working-directory: image-resizer/server
-        run: |
-          npm ci
-          npm test
       - name: Assemble the site
         run: |
           mkdir -p _site/image-resizer
           cd image-resizer
-          cp -r index.html styles.css app.js zip.js meta.js alt-text.js config.js assets.js assets ../_site/
+          cp -r index.html styles.css app.js zip.js meta.js alt-text.js assets.js assets ../_site/
           # The tool first lived at /Claude/image-resizer/; send that old link to the new home.
           cp moved.html ../_site/image-resizer/index.html
       - if: github.event_name != 'pull_request'
