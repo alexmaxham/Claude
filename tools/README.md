@@ -1,4 +1,8 @@
-# AH Image Resizer
+# AH tools
+
+Two tools share this folder and its styles: the **Image Resizer** (this folder's `index.html`) and the **Screenshot Framer** (`screenshot-framer/`). Both follow the AH Brand Kit and run entirely in the browser.
+
+# Image Resizer
 
 A small web app for AndroidHeadlines that resizes images, adds the AH watermark and renames them, one at a time or in bulk. It follows the AH Brand Kit (style guide v1 and the social media guide).
 
@@ -33,8 +37,23 @@ The page loads the Archivo and Roboto fonts from Google Fonts, so it looks right
 | `moved.html` | The redirect served at the tool's old address |
 | `assets.js` | The AH icon embedded for the watermark; rebuild with `node make-assets.js` after replacing `assets/ah-icon.png` |
 
+# Screenshot Framer
+
+Puts one or more phone screenshots in a frame, lines them up on an AH background, and saves one image.
+
+- **Frames:** "AH frame" is a plain phone drawn by the tool; "No frame" just rounds the corners. The drawn frame takes the shape of whatever screenshot it is given, so a new phone, foldable or tablet works without adding anything. It is deliberately generic and unnamed: the brand kit rules out drawn pictures of real phones.
+- **Frame options:** black, silver or white; a camera dot at the top centre, top left or none; corner roundness.
+- **Layout:** side by side, staggered or fanned, with phone size and spacing. If the screenshots don't fit in one row at a useful size, they are split over two or three rows.
+- **Canvas:** Ink, Paper or White; Wide, Portrait, Square, Tall or a custom size; the AH icon watermark bottom right.
+- **Saving:** PNG, JPG or WebP, named `ah-screens-topic-platform-date`, or copied straight to the clipboard.
+
+| File | What it is |
+|---|---|
+| `screenshot-framer/index.html`, `framer.css` | The page, and the few styles it adds to `styles.css` |
+| `screenshot-framer/framer.js` | Layout, drawing and saving |
+
 ## Hosting
 
-**Live:** https://alexmaxham.github.io/Claude/
+**Live:** https://alexmaxham.github.io/Claude/ (Image Resizer) and https://alexmaxham.github.io/Claude/screenshot-framer/
 
-The repo's GitHub Pages deploy (`.github/workflows/deploy.yml`) publishes this folder as the whole site on every push to the default branch. The old address, `/Claude/image-resizer/`, redirects to the new one (`moved.html`). The page asks search engines not to index it, but anyone with the link can open it.
+The repo's GitHub Pages deploy (`.github/workflows/deploy.yml`) publishes this folder as the whole site on every push to the default branch. The resizer's first address, `/Claude/image-resizer/`, redirects to the root (`moved.html`). The pages ask search engines not to index them, but anyone with the link can open them.

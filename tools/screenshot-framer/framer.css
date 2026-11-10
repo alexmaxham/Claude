@@ -1,0 +1,51 @@
+/* Extra styles for the Screenshot Framer. Everything else comes from ../styles.css. */
+.choice-grid { display: grid; gap: 8px; }
+.choice-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.choice-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.choice {
+  text-align: left;
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-height: 44px;
+  background: var(--card);
+  color: var(--text);
+  border: 1.5px solid var(--rule);
+  font-family: Archivo, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 13.5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+.choice[aria-pressed="true"] { background: var(--sel-bg); color: var(--sel-fg); border-color: var(--sel-bg); }
+.choice small { font-family: Roboto, Arial, sans-serif; font-weight: 400; font-size: 12px; opacity: 0.85; }
+.choice .dot { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--field-line); display: inline-block; vertical-align: -3px; margin-right: 8px; }
+.choice-row { flex-direction: row; align-items: center; justify-content: flex-start; }
+#frame-options { display: flex; flex-direction: column; gap: 12px; }
+.swatch-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.swatches { display: flex; gap: 6px; }
+.swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  border: 1.5px solid var(--rule);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.swatch[aria-pressed="true"] { border: 2px solid var(--text); }
+.swatch span { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--field-line); }
+.shot-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-areas: "thumb name name" "thumb meta controls";
+  align-items: center;
+  column-gap: 10px;
+  padding: 8px 0 4px 8px;
+}
+.shot-thumb { grid-area: thumb; width: 34px; height: 60px; object-fit: cover; }
+.shot-name { grid-area: name; }
+.shot-row .file-meta { grid-area: meta; white-space: nowrap; }
+.move { grid-area: controls; display: flex; }

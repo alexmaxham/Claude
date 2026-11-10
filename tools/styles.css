@@ -71,6 +71,10 @@ input[type="checkbox"], input[type="radio"], input[type="range"] { accent-color:
 .masthead-logo { height: 44px; width: auto; display: block; }
 .masthead-rule { width: 1px; height: 28px; background: #454549; }
 .masthead-title { font-size: 18px; color: #FFFFFF; }
+.masthead-nav { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13.5px; }
+.masthead-nav a { color: #CBCBD0; text-decoration: none; padding: 12px 0; }
+.masthead-nav a:hover { color: #FFFFFF; text-decoration: underline; }
+.masthead-nav a[aria-current="page"] { color: #FFFFFF; font-weight: 700; }
 .masthead-note { margin-left: auto; font-size: 13px; color: #CBCBD0; }
 
 .layout {
