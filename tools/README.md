@@ -57,7 +57,7 @@ Puts one or more phone screenshots in a frame, lines them up on an AH background
 Puts photos taken on different phones into one image so they can be compared, for example the Xiaomi 18 Pro Max on the left and the Oppo Find X10 Pro Max on the right.
 
 - **Photos:** drop one photo from each phone, two or more. The first is on the left; the arrows change the order.
-- **Phone names:** type each phone's name next to its photo. Names go on the photo (bottom or top, left or centre), under it, or off. A file called `xiaomi-18-pro-max.jpg` fills its name in for you; camera names like `IMG_1234` don't.
+- **Phone names:** type each phone's name next to its photo. Names go on the photo (bottom or top, left or centre), under it, or off. A file name that starts with the phone fills the name in for you (`Samsung-Galaxy-S26-Ultra-AH-20-1154x649.jpg` gives "Samsung Galaxy S26 Ultra"); camera names like `IMG_1234` don't.
 - **Layout:** side by side, stacked or a grid, with space between the photos and around the edge.
 - **Fill the space or show it all:** "Fill the space" uses a set canvas size (Wide 1600 × 900 and the rest) and crops each photo to fill its box. "Show it all" shows every photo whole: you set the width, and the image takes whatever height the photos need, with no bars. Drag a photo in the preview to choose which part shows; double-click to centre it. One zoom slider zooms every photo by the same amount, for close-up comparisons. A warning shows when a photo is enlarged past its real size.
 - **Canvas and saving:** the same sizes, backgrounds, watermark and formats as the Screenshot Framer. Files are named `ah-compare-topic-platform-date`; the platform is left out with "Show it all".

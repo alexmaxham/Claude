@@ -160,11 +160,22 @@
     };
   }
 
-  /** A first guess at the phone's name from the file name. Camera names like IMG_1234 give nothing. */
+  /**
+   * A first guess at the phone's name from the file name. Only the words before the first one that is not part of a
+   * name are kept, so "Samsung-Galaxy-S26-Ultra-AH-20-1154x649.jpg" gives "Samsung Galaxy S26 Ultra". Camera names
+   * like IMG_1234 give nothing.
+   */
   function draftLabel(fileName) {
-    var base = String(fileName || '').replace(/\.[a-z0-9]+$/i, '');
-    if (!base || /^(img|pxl|dsc|dscf|dscn|mvimg|photo|image|screenshot|pasted|signal|whatsapp)\b|^(img|pxl|dsc)[_-]|^\d|\d{6,}/i.test(base)) return '';
-    return base.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b[a-z]/g, function (ch) { return ch.toUpperCase(); }).slice(0, 40);
+    var words = String(fileName || '').replace(/\.[a-z0-9]+$/i, '').split(/[\s_-]+/).filter(Boolean);
+    var kept = [];
+    for (var i = 0; i < words.length; i++) {
+      var word = words[i];
+      // Stop at AH's own tag, filler words, sizes like 1154x649, and long numbers (dates, upload ids).
+      if (/^(ah|androidheadlines|img|pxl|dsc|dscf|dscn|mvimg|photo|image|view|screenshot|pasted|signal|whatsapp|camera|sample|samples|review|copy|edited|final|scaled)$/i.test(word)) break;
+      if (/^\d+x\d+$/i.test(word) || /^\d{4,}$/.test(word) || /^\(\d+\)$/.test(word)) break;
+      kept.push(/[a-z]/.test(word) && word === word.toLowerCase() ? word.charAt(0).toUpperCase() + word.slice(1) : word);
+    }
+    return kept.length < 2 ? '' : kept.join(' ').slice(0, 40);
   }
 
   function slug(text) {
