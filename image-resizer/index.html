@@ -179,13 +179,14 @@
         <p class="quiet small">Every image gets alt text. It starts as a draft from the topic or file name, and you can edit it under the preview. It is saved inside each JPG and PNG, and listed in <strong>alt-text.csv</strong> in the ZIP.</p>
         <div class="note-box">
           <div class="label">Write it from the picture with Claude</div>
-          <p class="quiet small">This sends a small copy of each image to Anthropic, using your own API key. Use of the key is billed to its owner.</p>
-          <label class="field">Anthropic API key
-            <input type="password" id="alt-key" autocomplete="off" spellcheck="false" placeholder="sk-ant-...">
-          </label>
-          <label class="radio"><input type="checkbox" id="alt-remember"> Remember the key in this browser</label>
-          <button type="button" class="btn btn-solid btn-small" id="alt-all" disabled>Write alt text for all images</button>
-          <p class="quiet small" id="alt-status" role="status" hidden></p>
+          <p class="quiet small" id="alt-unset" hidden>This isn't switched on yet. It needs the AH alt text server to be set up.</p>
+          <div id="alt-claude" hidden>
+            <p class="quiet small">This sends a small copy of each image to AH's alt text server, which passes it to Anthropic's Claude to be described. Only approved AH Google accounts can use it.</p>
+            <div id="alt-signin"></div>
+            <p class="small" id="alt-who" hidden><span id="alt-email"></span> · <button type="button" class="link-btn link-inline" id="alt-signout">Sign out</button></p>
+            <button type="button" class="btn btn-solid btn-small" id="alt-all" disabled>Write alt text for all images</button>
+            <p class="quiet small" id="alt-status" role="status" hidden></p>
+          </div>
         </div>
       </div>
     </div>
@@ -208,6 +209,7 @@
   <button type="button" class="btn btn-solid" id="dl-all" disabled>Download all (ZIP)</button>
 </footer>
 
+<script src="config.js"></script>
 <script src="assets.js"></script>
 <script src="zip.js"></script>
 <script src="meta.js"></script>

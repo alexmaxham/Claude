@@ -1,31 +1,17 @@
-/* Alt text for the AH Image Resizer: a quick draft from the file name, or a description of the picture written by Claude. */
+/* Alt text for the AH Image Resizer: a quick draft from the file name, or a description of the picture written by
+   Claude. Claude is reached through AH's own alt text server (see server/), which holds the shared Anthropic key and
+   only answers people signed in with an approved Google account. */
 (function () {
   'use strict';
 
-  var MODEL = 'claude-opus-5-5';
-  var MAX_SIDE = 1024; // the copy sent to Claude is shrunk to this; plenty for a one-line description
-  var SYSTEM = [
-    'You write alt text for images published by AndroidHeadlines, a technology news site.',
-    'Alt text is read aloud by screen readers to people who cannot see the image.',
-    'Write one plain sentence, at most 125 characters, that says what is actually visible in the image.',
-    'The file name and topic the editor gives you are hints about which product or story this is: use them to name the product when the image is consistent with them, and ignore them when they are generic (camera names like IMG_4821) or clearly do not match the picture.',
-    'Do not start with "Image of" or "Picture of". Do not mention watermarks or logos added by the publisher. Do not guess at things you cannot see, and do not name real people.',
-    'Reply with the alt text only: no quotes, no label, no explanation.'
-  ].join(' ');
+  var MAX_SIDE = 1024; // the copy sent for describing is shrunk to this; plenty for a one-line description
+  var config = window.AH_CONFIG || {};
+  var session = { token: '', email: '', expires: 0 };
+  var onChange = function () {};
+  var gsiLoading = null;
 
-  var sdkLoading = null;
-  function loadSdk() {
-    if (window.AnthropicSDK) return Promise.resolve(window.AnthropicSDK);
-    if (!sdkLoading) {
-      sdkLoading = new Promise(function (resolve, reject) {
-        var script = document.createElement('script');
-        script.src = 'vendor/anthropic-sdk.js';
-        script.onload = function () { resolve(window.AnthropicSDK); };
-        script.onerror = function () { sdkLoading = null; reject(new Error('Could not load the Claude library.')); };
-        document.head.appendChild(script);
-      });
-    }
-    return sdkLoading;
+  function configured() {
+    return Boolean(config.altServer && config.googleClientId);
   }
 
   function humanise(text) {
@@ -42,50 +28,109 @@
     return humanise(base);
   }
 
-  function tidy(text) {
-    return String(text).replace(/\s+/g, ' ').trim().replace(/^["'“”]+|["'“”]+$/g, '').replace(/^alt text:\s*/i, '');
+  // ---------- Google sign-in ----------
+
+  function readClaims(token) {
+    try {
+      var part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(decodeURIComponent(escape(atob(part))));
+    } catch (e) {
+      return {};
+    }
   }
+
+  function signedIn() {
+    return Boolean(session.token) && session.expires - 30000 > Date.now();
+  }
+
+  function clearSession() {
+    session = { token: '', email: session.email, expires: 0 };
+  }
+
+  function loadGoogle() {
+    if (window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve();
+    if (!gsiLoading) {
+      gsiLoading = new Promise(function (resolve, reject) {
+        var script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.onload = function () { resolve(); };
+        script.onerror = function () { gsiLoading = null; reject(new Error('Could not load Google sign-in.')); };
+        document.head.appendChild(script);
+      });
+    }
+    return gsiLoading;
+  }
+
+  /** Draws Google's sign-in button into the element and calls changed() whenever someone signs in or out. */
+  function setUpSignIn(buttonElement, changed) {
+    onChange = changed || onChange;
+    if (!configured()) return Promise.resolve(false);
+    return loadGoogle().then(function () {
+      window.google.accounts.id.initialize({
+        client_id: config.googleClientId,
+        auto_select: true,
+        callback: function (reply) {
+          var claims = readClaims(reply.credential || '');
+          session = { token: reply.credential || '', email: claims.email || '', expires: (claims.exp || 0) * 1000 };
+          onChange();
+        }
+      });
+      window.google.accounts.id.renderButton(buttonElement, { theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular' });
+      return true;
+    });
+  }
+
+  function signOut() {
+    if (window.google && window.google.accounts && window.google.accounts.id) window.google.accounts.id.disableAutoSelect();
+    session = { token: '', email: '', expires: 0 };
+    onChange();
+  }
+
+  // ---------- Asking for alt text ----------
 
   /**
-   * Asks Claude to describe one image. jpegBase64 is the picture as it will be published (no watermark), shrunk.
-   * Throws an Error with a plain-English message when it can't.
+   * Asks the alt text server to describe one image. jpegBase64 is the picture as it will be published (no
+   * watermark), shrunk. Throws an Error with a plain-English message; err.stop is true when retrying other
+   * images would fail the same way.
    */
   async function describe(opts) {
-    var Anthropic = await loadSdk();
-    // The key is typed in by the person using the page and sent straight from their browser to Anthropic.
-    var client = new Anthropic({ apiKey: opts.apiKey, dangerouslyAllowBrowser: true, maxRetries: 3 });
-    var hint = 'Original file name: ' + opts.fileName + '\n' + (opts.topic ? 'Topic: ' + opts.topic + '\n' : '') + 'Write the alt text for this image.';
+    function fail(message, stop) {
+      var err = new Error(message);
+      err.stop = Boolean(stop);
+      return err;
+    }
+    if (!signedIn()) {
+      clearSession();
+      onChange();
+      throw fail('Your sign-in has expired. Sign in with Google again.', true);
+    }
     var response;
     try {
-      response = await client.beta.messages.create({
-        model: MODEL,
-        max_tokens: 4000,
-        betas: ['server-side-fallback-2026-07-01'],
-        fallbacks: 'default',
-        output_config: { effort: 'low' },
-        system: SYSTEM,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: opts.jpegBase64 } },
-            { type: 'text', text: hint }
-          ]
-        }]
+      response = await fetch(config.altServer.replace(/\/+$/, '') + '/alt', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + session.token },
+        body: JSON.stringify({ image: opts.jpegBase64, fileName: opts.fileName, topic: opts.topic || '' })
       });
-    } catch (err) {
-      if (err instanceof Anthropic.AuthenticationError) throw new Error('That API key was not accepted. Check it and try again.');
-      if (err instanceof Anthropic.PermissionDeniedError) throw new Error('That API key is not allowed to do this.');
-      if (err instanceof Anthropic.RateLimitError) throw new Error('Claude is busy or the key has hit its limit. Wait a minute and try again.');
-      if (err instanceof Anthropic.APIConnectionError) throw new Error('Could not reach Claude. Check the internet connection.');
-      if (err instanceof Anthropic.APIError) throw new Error('Claude returned an error (' + (err.status || 'unknown') + ').');
-      throw err;
+    } catch (e) {
+      throw fail('Could not reach the alt text server. Check the internet connection.', true);
     }
-    if (response.stop_reason === 'refusal') throw new Error('Claude declined to describe this image.');
-    var text = response.content.filter(function (block) { return block.type === 'text'; }).map(function (block) { return block.text; }).join(' ');
-    text = tidy(text);
-    if (!text) throw new Error('Claude sent back no text for this image.');
-    return text;
+    var data = {};
+    try { data = await response.json(); } catch (e) { /* handled below */ }
+    if (response.ok && data.alt) return String(data.alt);
+    if (response.status === 401) {
+      clearSession();
+      onChange();
+      throw fail(data.error || 'Sign in with Google again.', true);
+    }
+    // 403 (not on the list), 503 (not set up) and a broken server key will not get better by trying the next image.
+    var stop = response.status === 403 || response.status === 503 || data.code === 'server_key_problem';
+    throw fail(data.error || 'The alt text server returned an error (' + response.status + ').', stop);
   }
 
-  window.AHAlt = { MODEL: MODEL, MAX_SIDE: MAX_SIDE, fromName: fromName, describe: describe, humanise: humanise };
+  window.AHAlt = {
+    MAX_SIDE: MAX_SIDE, configured: configured, fromName: fromName, humanise: humanise,
+    setUpSignIn: setUpSignIn, signedIn: signedIn, signOut: signOut, email: function () { return session.email; },
+    describe: describe
+  };
 })();

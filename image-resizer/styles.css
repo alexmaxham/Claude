@@ -281,16 +281,8 @@ textarea {
   min-height: 64px;
   resize: vertical;
 }
-input[type="password"] {
-  min-height: 44px;
-  border: 1px solid var(--field-line);
-  border-radius: 6px;
-  padding: 8px 10px;
-  background: var(--card);
-  color: var(--text);
-  font-weight: 400;
-  max-width: 100%;
-}
+#alt-claude { display: flex; flex-direction: column; gap: 10px; }
+.link-inline { min-height: 0; padding: 0; font-size: inherit; }
 .alt-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .alt-foot span { flex: 1 1 120px; }
 

@@ -17,7 +17,6 @@
   var FIT_LABELS = { cover: 'Crop to fill, centred', contain: 'Fit inside, no crop', width: 'Width only' };
   var AH_PATTERN = 'ah-social-{topic}-{platform}-{date}-{number}';
   var STORE_KEY = 'ah-image-resizer-v1';
-  var KEY_STORE = 'ah-image-resizer-key';
   var ALT_GOOD_LENGTH = 125;
   var WORDS = 'androidheadlines.com';
   var ICON_SIZE_DEFAULT = 8; // % of width, icon alone
@@ -27,7 +26,7 @@
     preset: 'wide', customW: 1600, customH: 900, fit: 'cover',
     wmOn: true, pos: 8, mark: 'icon', words: 'white', wmSize: ICON_SIZE_DEFAULT, wmOpacity: 100, wmMargin: 4,
     rnOn: true, topic: '', pattern: AH_PATTERN, format: 'jpg',
-    altOn: true, rememberKey: false
+    altOn: true
   };
 
   // ---------- Pure helpers (also used by the tests) ----------
@@ -139,7 +138,6 @@
 
   var state = loadSettings();
   var items = []; // { id, file, name, type, size, w, h, thumb, alt, altSource: 'name' | 'claude' | 'you' }
-  var apiKey = '';
   var currentId = null;
   var nextId = 1;
   var cache = { id: null, bitmap: null };
@@ -411,12 +409,18 @@
 
     $('alt-on').checked = state.altOn;
     $('alt-body').classList.toggle('is-off', !state.altOn);
-    $('alt-remember').checked = state.rememberKey;
-    if (document.activeElement !== $('alt-key')) $('alt-key').value = apiKey;
+    var canAsk = window.AHAlt.configured();
+    var signedIn = canAsk && window.AHAlt.signedIn();
+    $('alt-unset').hidden = canAsk;
+    $('alt-claude').hidden = !canAsk;
+    $('alt-signin').hidden = signedIn;
+    $('alt-who').hidden = !signedIn;
+    $('alt-email').textContent = signedIn ? 'Signed in as ' + window.AHAlt.email() : '';
     $('alt-all').textContent = items.length > 1 ? 'Write alt text for all ' + items.length + ' images' : 'Write alt text from the image';
-    $('alt-all').disabled = busy || !items.length || !apiKey || !state.altOn;
-    $('alt-one').disabled = busy || !apiKey;
-    $('alt-one').title = apiKey ? '' : 'Add an Anthropic API key under "4 Alt text" first';
+    $('alt-all').disabled = busy || !items.length || !signedIn || !state.altOn;
+    $('alt-one').hidden = !canAsk;
+    $('alt-one').disabled = busy || !signedIn;
+    $('alt-one').title = signedIn ? '' : 'Sign in with Google under "4 Alt text" first';
   }
 
   function renderList() {
@@ -688,7 +692,7 @@
 
   async function writeAlt(targets) {
     if (busy || !targets.length) return;
-    if (!apiKey) { altStatus('Add an Anthropic API key first.'); return; }
+    if (!window.AHAlt.signedIn()) { renderControls(); altStatus('Sign in with Google first.'); return; }
     setBusy(true);
     var done = 0;
     var failed = [];
@@ -699,7 +703,7 @@
         var item = queue.shift();
         try {
           var text = await window.AHAlt.describe({
-            apiKey: apiKey, fileName: item.name, topic: state.topic, jpegBase64: await pictureForClaude(item)
+            fileName: item.name, topic: state.topic, jpegBase64: await pictureForClaude(item)
           });
           item.alt = text;
           item.altSource = 'claude';
@@ -707,8 +711,8 @@
         } catch (e) {
           failed.push(item.name);
           var message = e && e.message ? e.message : 'Something went wrong.';
-          // A bad key or no connection will fail every image, so stop instead of repeating the error.
-          if (/key|reach Claude|library/i.test(message)) stop = message;
+          // Some problems (signed out, not on the list, no connection) would fail every image, so stop there.
+          if (e && e.stop) stop = message;
           else altStatus(item.name + ': ' + message);
         }
         done++;
@@ -722,18 +726,6 @@
     if (stop) altStatus(stop);
     else if (failed.length) altStatus('Wrote ' + (targets.length - failed.length) + ' of ' + targets.length + '. Could not do: ' + failed.join(', ') + '.');
     else altStatus('Claude wrote alt text for ' + plural(targets.length, 'image') + '. Read each one before you publish.');
-  }
-
-  function loadKey() {
-    if (!state.rememberKey) return;
-    try { apiKey = localStorage.getItem(KEY_STORE) || ''; } catch (e) { /* ignore */ }
-  }
-
-  function storeKey() {
-    try {
-      if (state.rememberKey && apiKey) localStorage.setItem(KEY_STORE, apiKey);
-      else localStorage.removeItem(KEY_STORE);
-    } catch (e) { /* ignore */ }
   }
 
   // ---------- Wiring ----------
@@ -846,8 +838,7 @@
         setTimeout(function () { $('alt-copy').textContent = 'Copy'; }, 1500);
       }, function () { /* clipboard blocked: the text can still be selected by hand */ });
     });
-    $('alt-key').addEventListener('input', function (e) { apiKey = e.target.value.trim(); storeKey(); renderControls(); });
-    $('alt-remember').addEventListener('change', function (e) { change({ rememberKey: e.target.checked }); storeKey(); });
+    $('alt-signout').addEventListener('click', function () { window.AHAlt.signOut(); altStatus(''); });
     $('alt-one').addEventListener('click', function () { var item = items[currentIndex()]; if (item) writeAlt([item]); });
     $('alt-all').addEventListener('click', function () { writeAlt(items.slice()); });
 
@@ -855,8 +846,10 @@
     $('dl-all').addEventListener('click', downloadAll);
   }
 
-  loadKey();
   build();
   wire();
+  window.AHAlt.setUpSignIn($('alt-signin'), renderControls).catch(function () {
+    altStatus('Google sign-in could not load. Check the internet connection and reload.');
+  });
   renderAll();
 })();
