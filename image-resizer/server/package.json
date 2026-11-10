@@ -1,0 +1,17 @@
+{
+  "name": "ah-alt-text-server",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker that writes alt text for the AH Image Resizer with a shared Anthropic key.",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "check": "wrangler deploy --dry-run --outdir .wrangler-check",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.7.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

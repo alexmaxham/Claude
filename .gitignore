@@ -1,5 +1,7 @@
 node_modules
 _site
+.wrangler
+.wrangler-check
 *.local
 .DS_Store
 *-debug.log

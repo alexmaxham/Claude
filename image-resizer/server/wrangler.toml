@@ -1,0 +1,15 @@
+# Settings for the AH alt text server. Deploy with: npx wrangler deploy
+name = "ah-alt-text"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+# The web address the resizer is served from. Requests from anywhere else are refused.
+ALLOWED_ORIGIN = "https://alexmaxham.github.io"
+# The Google sign-in client ID (public; the same value goes in ../config.js).
+GOOGLE_CLIENT_ID = ""
+
+# Two secrets are set separately and never written here:
+#   ANTHROPIC_API_KEY   AH's Anthropic API key
+#   ALLOWED_EMAILS      comma-separated emails and/or "@domain.com" entries
