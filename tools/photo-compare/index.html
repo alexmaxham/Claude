@@ -152,10 +152,15 @@
 
     <div class="card">
       <h2><span class="num">4</span> File name</h2>
-      <label class="field">Topic
+      <div class="choice-grid choice-2" id="name-modes"></div>
+      <label class="field" id="topic-field">Topic
         <input type="text" id="topic" placeholder="xiaomi-18-pro-max-vs-find-x10-pro-max" autocomplete="off">
       </label>
-      <p class="quiet small">Saved as ah-compare-topic-platform-date, with the set number on the end when there are several. The platform comes from the size you pick, and is left out with "Show it all".</p>
+      <label class="field" id="own-field" hidden>File name
+        <input type="text" id="own-name" placeholder="pixel-10-pro-vs-iphone-17-pro-night" autocomplete="off" spellcheck="false">
+      </label>
+      <p class="quiet small" id="auto-name-note">Saved as ah-compare-topic-platform-date, with the set number on the end when there are several. The platform comes from the size you pick, and is left out with "Show it all".</p>
+      <p class="quiet small" id="own-name-note" hidden>Saved exactly as you type it, with .jpg (or the format you pick) added. With several sets, each gets its number on the end: name-01, name-02 and so on. Left empty, the name is made for you.</p>
     </div>
 
   </section>

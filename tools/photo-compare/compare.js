@@ -20,6 +20,10 @@
     { id: 'cover', name: 'Fill the space', note: 'Crops the edges' },
     { id: 'contain', name: 'Show it all', note: 'No cropping, any shape' }
   ];
+  var NAME_MODES = [
+    { id: 'auto', name: 'Made for me', note: 'From the topic' },
+    { id: 'own', name: 'Write my own', note: 'The whole name' }
+  ];
   var LABELS = [
     { id: 'on', name: 'On the photo' },
     { id: 'below', name: 'Under it' },
@@ -36,7 +40,7 @@
     layout: 'row', fit: 'cover', zoom: 100, gap: 1, margin: 0,
     labels: 'on', labelPos: 'bl', labelSize: 4,
     bg: 'ink', canvas: 'wide', customW: 1600, customH: 900, autoW: 1600, wmOn: true,
-    topic: '', format: 'jpg'
+    topic: '', nameMode: 'auto', ownName: '', format: 'jpg'
   };
   var MAX_OUT = 8000; // the longest side of a saved image
   var MAX_SIDE = 8192; // bigger photos are scaled down to this when they are added, to keep memory in check
@@ -286,17 +290,42 @@
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
-  /** number and total (both optional) add "-02" and so on when there are several sets. */
-  function fileName(s, date, ext, number, total) {
+  /**
+   * A name typed in full, made safe to save: characters files can't hold are dropped, and a typed extension such as
+   * ".jpg" is taken off (the right one goes back on). '' when nothing usable is left.
+   */
+  function ownName(text) {
+    return String(text || '')
+      .replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '')
+      .replace(/\.(jpe?g|png|webp|zip)$/i, '')
+      .replace(/\s+/g, ' ')
+      .replace(/^[\s.]+|[\s.]+$/g, '')
+      .slice(0, 150);
+  }
+
+  /** The name without its extension. number and total (both optional) add "-02" and so on when there are several sets. */
+  function baseName(s, date, number, total) {
+    var count = total > 1 && number ? String(number).padStart(Math.max(2, String(total).length), '0') : '';
+    var own = s.nameMode === 'own' ? ownName(s.ownName) : '';
+    if (own) return [own, count].filter(Boolean).join('-');
     // A canvas shaped by the photos is not made for any one platform.
     var platform = s.fit === 'contain' ? '' : byId(SIZES, s.canvas).platform;
-    var count = total > 1 ? String(number).padStart(String(total).length < 2 ? 2 : String(total).length, '0') : '';
-    return ['ah-compare', slug(s.topic), platform, isoDate(date), count].filter(Boolean).join('-') + '.' + ext;
+    return ['ah-compare', slug(s.topic), platform, isoDate(date), count].filter(Boolean).join('-');
+  }
+
+  function fileName(s, date, ext, number, total) {
+    return baseName(s, date, number, total) + '.' + ext;
+  }
+
+  /** The ZIP that holds every set. */
+  function zipName(s, date) {
+    var own = s.nameMode === 'own' ? ownName(s.ownName) : '';
+    return (own || ['ah-compare', slug(s.topic), isoDate(date)].filter(Boolean).join('-')) + '.zip';
   }
 
   window.AHCompare = {
     SIZES: SIZES, DEFAULTS: DEFAULTS, plan: plan, placePhoto: placePhoto, draftLabel: draftLabel, canvasSize: canvasSize,
-    fileName: fileName, readExif: readExif, timeFromName: timeFromName, phoneGuess: phoneGuess, buildSets: buildSets
+    fileName: fileName, zipName: zipName, ownName: ownName, readExif: readExif, timeFromName: timeFromName, phoneGuess: phoneGuess, buildSets: buildSets
   };
   if (typeof document === 'undefined' || !document.getElementById('preview')) return;
 
@@ -343,6 +372,8 @@
     s.layout = byId(LAYOUTS, s.layout).id;
     s.fit = byId(FITS, s.fit).id;
     s.labels = byId(LABELS, s.labels).id;
+    s.nameMode = byId(NAME_MODES, s.nameMode).id;
+    s.ownName = '';
     s.bg = byId(BACKGROUNDS, s.bg).id;
     s.canvas = byId(SIZES, s.canvas).id;
     s.topic = '';
@@ -644,6 +675,7 @@
     choiceButtons($('layouts'), LAYOUTS, 'layout');
     choiceButtons($('fits'), FITS, 'fit');
     choiceButtons($('label-modes'), LABELS, 'labels');
+    choiceButtons($('name-modes'), NAME_MODES, 'nameMode');
     choiceButtons($('backgrounds'), BACKGROUNDS, 'bg', true);
     SIZES.forEach(function (size) {
       var option = document.createElement('option');
@@ -663,6 +695,12 @@
     press($('layouts'), state.layout);
     press($('fits'), state.fit);
     press($('label-modes'), state.labels);
+    press($('name-modes'), state.nameMode);
+    $('topic-field').hidden = state.nameMode === 'own';
+    $('own-field').hidden = state.nameMode !== 'own';
+    $('auto-name-note').hidden = state.nameMode === 'own';
+    $('own-name-note').hidden = state.nameMode !== 'own';
+    if (document.activeElement !== $('own-name')) $('own-name').value = state.ownName;
     press($('backgrounds'), state.bg);
     $('zoom').value = state.zoom; $('zoom-out').textContent = state.zoom;
     $('gap').value = state.gap; $('gap-out').textContent = state.gap;
@@ -1001,8 +1039,7 @@
         var blob = await toBlob(state.format, all[i]);
         files.push({ name: fileName(state, today, extOf(blob, state.format), i + 1, all.length), bytes: new Uint8Array(await blob.arrayBuffer()) });
       }
-      var zipName = ['ah-compare', slug(state.topic), isoDate(today)].filter(Boolean).join('-') + '.zip';
-      saveBlob(window.AHZip.makeZip(files), zipName);
+      saveBlob(window.AHZip.makeZip(files), zipName(state, today));
       busy = false;
       renderPreview();
     } catch (e) {
@@ -1070,6 +1107,7 @@
     $('custom-h').addEventListener('input', function (e) { change({ customH: clampInt(e.target.value, 200, 8000, state.customH) }); });
     $('wm-on').addEventListener('change', function (e) { change({ wmOn: e.target.checked }); });
     $('topic').addEventListener('input', function (e) { change({ topic: e.target.value }); });
+    $('own-name').addEventListener('input', function (e) { change({ ownName: e.target.value }); });
     $('format').addEventListener('change', function (e) { change({ format: e.target.value }); });
     $('download').addEventListener('click', download);
     $('download-all').addEventListener('click', downloadAll);
