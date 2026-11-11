@@ -256,6 +256,12 @@
     return { key: key, label: label, camera: (make && model.toLowerCase().indexOf(make.toLowerCase()) < 0 ? make + ' ' : '') + model };
   }
 
+  /** "2026:11:10 14:35:23" from a camera file name such as IMG_20261110_143523.jpg or PXL_20261110_143523123.jpg. */
+  function timeFromName(name) {
+    var m = /(20\d{2})(\d{2})(\d{2})[_-]?(\d{2})(\d{2})(\d{2})/.exec(String(name || ''));
+    return m ? m[1] + ':' + m[2] + ':' + m[3] + ' ' + m[4] + ':' + m[5] + ':' + m[6] : '';
+  }
+
   /**
    * Pairs the photos into comparisons. phones: [{ photos: [...] }], in order from left to right. The first photo from
    * each phone goes in the first set, the second in the second, and so on. With only one phone, its photos make one set.
@@ -290,7 +296,7 @@
 
   window.AHCompare = {
     SIZES: SIZES, DEFAULTS: DEFAULTS, plan: plan, placePhoto: placePhoto, draftLabel: draftLabel, canvasSize: canvasSize,
-    fileName: fileName, readExif: readExif, phoneGuess: phoneGuess, buildSets: buildSets
+    fileName: fileName, readExif: readExif, timeFromName: timeFromName, phoneGuess: phoneGuess, buildSets: buildSets
   };
   if (typeof document === 'undefined' || !document.getElementById('preview')) return;
 
@@ -475,7 +481,7 @@
       bitmap = smaller;
     }
     return {
-      id: nextId++, name: file.name || 'Pasted photo', key: guess.key, guess: guess.label, camera: guess.camera, taken: exif.taken,
+      id: nextId++, name: file.name || 'Pasted photo', key: guess.key, guess: guess.label, camera: guess.camera, taken: exif.taken || timeFromName(file.name),
       w: bitmap.width, h: bitmap.height, origW: origW, origH: origH, fx: 0.5, fy: 0.5,
       bitmap: bitmap, thumb: makeThumb(bitmap)
     };
@@ -508,6 +514,12 @@
     placePhotos(opened);
     busy = false;
     var notes = [];
+    // Nothing told the phones apart (both name files IMG_..., say, and the camera details are gone). The usual way a
+    // batch is dropped is every photo from one phone, then every photo from the other, so pair the halves.
+    if (opened.length && cannotTell()) {
+      splitPhones();
+      notes.push('These photos don\'t say which phone took them, so the first half are paired with the second half. If a pair is wrong, use the photo\'s menu or arrows to fix it.');
+    }
     if (failed.length) notes.push('This browser could not open ' + plural(failed.length, 'file') + ': ' + failed.slice(0, 3).join(', ') + '. HEIC photos need converting to JPG first.');
     if (other) notes.push('Skipped ' + plural(other, 'file') + ' that ' + (other === 1 ? 'is not an image.' : 'are not images.'));
     showNotice(notes.join(' '));
@@ -570,7 +582,20 @@
   }
 
   /** Puts the first half of the photos (in the order shown) on one phone and the second half on another. */
+  /** True when the photos could be paired in halves but nothing tells their phones apart. */
+  function cannotTell() {
+    var count = allPhotos().length;
+    var lonely = phones.every(function (phone) { return phone.photos.length === 1; });
+    return count >= 4 && count % 2 === 0 && (phones.length === 1 || lonely);
+  }
+
   function splitInHalf() {
+    splitPhones();
+    showNotice('');
+    renderAll();
+  }
+
+  function splitPhones() {
     var all = allPhotos();
     var half = Math.ceil(all.length / 2);
     var first = newPhone(''), second = newPhone('');
@@ -584,7 +609,6 @@
       if (!phone.camera && photo.camera) phone.camera = photo.camera;
     });
     current = 0;
-    renderAll();
   }
 
   // ---------- Rendering the page ----------
@@ -777,8 +801,7 @@
     $('count-label').textContent = count ? plural(count, 'photo') + (paired ? ' from ' + phones.length + ' phones' : '') : 'No photos yet';
     $('clear-all').hidden = !count;
     // Nothing told the photos apart (or they all came from one camera): offer the usual way people shoot a batch.
-    var lonely = phones.every(function (phone) { return phone.photos.length === 1; });
-    $('split').hidden = !(count >= 4 && count % 2 === 0 && (phones.length === 1 || lonely));
+    $('split').hidden = !cannotTell();
     var counts = phones.map(function (phone) { return phone.photos.length; });
     var uneven = paired && Math.min.apply(null, counts) !== Math.max.apply(null, counts);
     $('pair-notice').hidden = !uneven;
