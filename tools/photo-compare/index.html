@@ -39,15 +39,17 @@
     </div>
     <div class="drop" id="drop">
       <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>
-      <strong>Drop one photo from each phone</strong>
-      <span class="quiet">or paste one. JPG, PNG or WebP.</span>
+      <strong>Drop photos from each phone</strong>
+      <span class="quiet">One from each, or a whole batch at once. JPG, PNG or WebP.</span>
       <div class="drop-actions">
         <button type="button" class="btn btn-outline btn-small" id="pick-files">Choose photos</button>
       </div>
       <input type="file" id="file-input" accept="image/*" multiple hidden>
     </div>
     <p class="notice" id="add-notice" role="status" hidden></p>
-    <p class="quiet small">Type each phone's name next to its photo. The first photo goes on the left.</p>
+    <p class="quiet small">Drop a batch, say five photos from each phone, and they are sorted by phone and paired in the order they were taken, one image per pair. Type each phone's name once. Phone 1 goes on the left.</p>
+    <button type="button" class="link-btn" id="split" hidden>The first half came from one phone and the second half from the other</button>
+    <p class="notice" id="pair-notice" role="status" hidden></p>
     <ul class="file-list" id="file-list"></ul>
   </section>
 
@@ -57,6 +59,15 @@
         <div>
           <div class="eyebrow">Preview</div>
           <h2 id="preview-h">Add two photos to start</h2>
+        </div>
+        <div class="pager" id="pager" hidden>
+          <button type="button" class="icon-btn" id="prev" aria-label="Previous set">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+          </button>
+          <span class="quiet" id="pager-label"></span>
+          <button type="button" class="icon-btn" id="next" aria-label="Next set">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
         </div>
       </div>
       <div class="stage">
@@ -144,7 +155,7 @@
       <label class="field">Topic
         <input type="text" id="topic" placeholder="xiaomi-18-pro-max-vs-find-x10-pro-max" autocomplete="off">
       </label>
-      <p class="quiet small">Saved as ah-compare-topic-platform-date. The platform comes from the size you pick, and is left out with "Show it all".</p>
+      <p class="quiet small">Saved as ah-compare-topic-platform-date, with the set number on the end when there are several. The platform comes from the size you pick, and is left out with "Show it all".</p>
     </div>
 
   </section>
@@ -161,10 +172,12 @@
     </select>
   </label>
   <button type="button" class="btn btn-outline" id="copy" disabled>Copy image</button>
-  <button type="button" class="btn btn-solid" id="download" disabled>Download</button>
+  <button type="button" class="btn btn-outline" id="download" disabled>Download</button>
+  <button type="button" class="btn btn-solid" id="download-all" hidden>Download all (ZIP)</button>
 </footer>
 
 <script src="../assets.js"></script>
+<script src="../zip.js"></script>
 <script src="compare.js"></script>
 </body>
 </html>
