@@ -178,6 +178,100 @@
     return kept.length < 2 ? '' : kept.join(' ').slice(0, 40);
   }
 
+  /**
+   * Reads the camera's make and model and the time the photo was taken from a JPEG's EXIF block.
+   * buffer: an ArrayBuffer with the start of the file. Returns { make, model, taken } with '' for anything missing;
+   * taken looks like "2026:11:11 14:03:22", so it sorts as text.
+   */
+  function readExif(buffer) {
+    var out = { make: '', model: '', taken: '' };
+    var view = new DataView(buffer);
+    try {
+      if (view.getUint16(0) !== 0xFFD8) return out;
+      var pos = 2;
+      while (pos + 4 <= view.byteLength) {
+        var marker = view.getUint16(pos);
+        if ((marker & 0xFF00) !== 0xFF00 || marker === 0xFFDA || marker === 0xFFD9) break;
+        var len = view.getUint16(pos + 2);
+        // APP1 starting "Exif\0\0".
+        if (marker === 0xFFE1 && view.getUint32(pos + 4) === 0x45786966 && view.getUint16(pos + 8) === 0) {
+          readTiff(view, pos + 10, out);
+          return out;
+        }
+        pos += 2 + len;
+      }
+    } catch (e) { /* a cut-off or broken block: keep what was read */ }
+    return out;
+  }
+
+  function readTiff(view, start, out) {
+    var little = view.getUint16(start) === 0x4949;
+    function u16(at) { return view.getUint16(start + at, little); }
+    function u32(at) { return view.getUint32(start + at, little); }
+    if (u16(2) !== 42) return;
+    function text(entry) {
+      var count = u32(entry + 4);
+      var at = count <= 4 ? entry + 8 : u32(entry + 8);
+      var s = '';
+      for (var i = 0; i < Math.min(count, 64); i++) {
+        var c = view.getUint8(start + at + i);
+        if (!c) break;
+        s += String.fromCharCode(c);
+      }
+      return s.trim();
+    }
+    function eachTag(offset, fn) {
+      var n = u16(offset);
+      for (var i = 0; i < n; i++) fn(u16(offset + 2 + i * 12), offset + 2 + i * 12);
+    }
+    var exifAt = 0, changed = '';
+    eachTag(u32(4), function (tag, entry) {
+      if (tag === 0x010F) out.make = text(entry);
+      else if (tag === 0x0110) out.model = text(entry);
+      else if (tag === 0x0132) changed = text(entry);
+      else if (tag === 0x8769) exifAt = u32(entry + 8);
+    });
+    if (exifAt) eachTag(exifAt, function (tag, entry) { if (tag === 0x9003) out.taken = text(entry); });
+    if (!out.taken) out.taken = changed;
+  }
+
+  /**
+   * Which phone took a photo, as best the browser can tell. key groups photos from the same phone: the camera model
+   * from EXIF, else the phone name in the file name, else the camera's file name prefix (PXL_, IMG_), else ''.
+   * label is a first guess at the phone's name: from the file name, else the camera model when it reads like a name
+   * ("Pixel 9 Pro", not "SM-S938B").
+   */
+  function phoneGuess(fileName, exif) {
+    var fromName = draftLabel(fileName);
+    var model = (exif && exif.model) || '';
+    var make = (exif && exif.make) || '';
+    var key = '';
+    if (model) key = 'camera:' + (make + ' ' + model).toLowerCase().trim();
+    else if (fromName) key = 'name:' + fromName.toLowerCase();
+    else {
+      var prefix = /^([A-Za-z]{2,})[_-]?\d/.exec(String(fileName || ''));
+      if (prefix) key = 'file:' + prefix[1].toUpperCase();
+    }
+    var label = fromName || (/[a-z]{2,}/.test(model) ? model.slice(0, 40) : '');
+    return { key: key, label: label, camera: (make && model.toLowerCase().indexOf(make.toLowerCase()) < 0 ? make + ' ' : '') + model };
+  }
+
+  /**
+   * Pairs the photos into comparisons. phones: [{ photos: [...] }], in order from left to right. The first photo from
+   * each phone goes in the first set, the second in the second, and so on. With only one phone, its photos make one set.
+   */
+  function buildSets(phones) {
+    if (!phones.length) return [];
+    if (phones.length === 1) return phones[0].photos.length ? [phones[0].photos.slice()] : [];
+    var most = 0;
+    phones.forEach(function (phone) { most = Math.max(most, phone.photos.length); });
+    var sets = [];
+    for (var i = 0; i < most; i++) {
+      sets.push(phones.map(function (phone) { return phone.photos[i]; }).filter(Boolean));
+    }
+    return sets;
+  }
+
   function slug(text) {
     return String(text).toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/-{2,}/g, '-').replace(/^[-.]+|[-.]+$/g, '');
   }
@@ -186,19 +280,26 @@
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
-  function fileName(s, date, ext) {
+  /** number and total (both optional) add "-02" and so on when there are several sets. */
+  function fileName(s, date, ext, number, total) {
     // A canvas shaped by the photos is not made for any one platform.
     var platform = s.fit === 'contain' ? '' : byId(SIZES, s.canvas).platform;
-    return ['ah-compare', slug(s.topic), platform, isoDate(date)].filter(Boolean).join('-') + '.' + ext;
+    var count = total > 1 ? String(number).padStart(String(total).length < 2 ? 2 : String(total).length, '0') : '';
+    return ['ah-compare', slug(s.topic), platform, isoDate(date), count].filter(Boolean).join('-') + '.' + ext;
   }
 
-  window.AHCompare = { SIZES: SIZES, DEFAULTS: DEFAULTS, plan: plan, placePhoto: placePhoto, draftLabel: draftLabel, canvasSize: canvasSize, fileName: fileName };
+  window.AHCompare = {
+    SIZES: SIZES, DEFAULTS: DEFAULTS, plan: plan, placePhoto: placePhoto, draftLabel: draftLabel, canvasSize: canvasSize,
+    fileName: fileName, readExif: readExif, phoneGuess: phoneGuess, buildSets: buildSets
+  };
   if (typeof document === 'undefined' || !document.getElementById('preview')) return;
 
   // ---------- State ----------
 
   var state = loadSettings();
-  var photos = []; // { id, name, label, w, h, origW, origH, fx, fy, bitmap, thumb }
+  // Photos are kept by the phone that took them. Phones go left to right; a phone's photos are in the order they pair up.
+  var phones = []; // { id, key, label, camera, photos: [{ id, name, key, guess, taken, w, h, origW, origH, fx, fy, bitmap, thumb, phone }] }
+  var current = 0; // the set showing in the preview
   var nextId = 1;
   var busy = false;
   var today = new Date();
@@ -300,7 +401,23 @@
     ctx.fillText(text, x + pad, y + h / 2 + used * 0.04);
   }
 
-  function drawAll(canvas, s) {
+  function allPhotos() {
+    return phones.reduce(function (all, phone) { return all.concat(phone.photos); }, []);
+  }
+
+  function sets() { return buildSets(phones); }
+
+  function currentSet() {
+    var all = sets();
+    current = Math.max(0, Math.min(current, all.length - 1));
+    return all[current] || [];
+  }
+
+  function phoneName(phone) {
+    return phone.label.trim() || 'Phone ' + (phones.indexOf(phone) + 1);
+  }
+
+  function drawAll(canvas, s, photos) {
     var layout = plan(photos, s);
     var size = { w: layout.w, h: layout.h };
     var bg = byId(BACKGROUNDS, s.bg);
@@ -327,7 +444,7 @@
       ctx.drawImage(photo.bitmap, p.sx, p.sy, p.sw, p.sh, p.dx, p.dy, p.dw, p.dh);
       // More than the photo's own pixels (as it was before any scaling down on the way in) can show.
       if (p.scale * (photo.w / photo.origW) > 1.01) stretched.push(i);
-      drawLabel(ctx, photo.label, panel, s, bg, layout.ref, mark);
+      drawLabel(ctx, photo.phone.label, panel, s, bg, layout.ref, mark);
     });
     if (mark) ctx.drawImage(icon, mark.x, mark.y, mark.w, mark.h);
     return { w: size.w, h: size.h, panels: panels, stretched: stretched, capped: layout.capped };
@@ -345,6 +462,9 @@
   }
 
   async function openPhoto(file) {
+    var exif = { make: '', model: '', taken: '' };
+    try { exif = readExif(await file.slice(0, 262144).arrayBuffer()); } catch (e) { /* no camera details */ }
+    var guess = phoneGuess(file.name, exif);
     var bitmap = await createImageBitmap(file);
     var origW = bitmap.width, origH = bitmap.height;
     var longest = Math.max(origW, origH);
@@ -355,7 +475,7 @@
       bitmap = smaller;
     }
     return {
-      id: nextId++, name: file.name || 'Pasted photo', label: draftLabel(file.name),
+      id: nextId++, name: file.name || 'Pasted photo', key: guess.key, guess: guess.label, camera: guess.camera, taken: exif.taken,
       w: bitmap.width, h: bitmap.height, origW: origW, origH: origH, fx: 0.5, fy: 0.5,
       bitmap: bitmap, thumb: makeThumb(bitmap)
     };
@@ -374,19 +494,96 @@
     var other = fileList.length - files.length;
     files.sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { numeric: true }); });
     busy = true;
+    renderPreview();
     var failed = [];
+    var opened = [];
     for (var i = 0; i < files.length; i++) {
+      $('summary').textContent = 'Opening ' + (i + 1) + ' of ' + files.length + '…';
       try {
-        photos.push(await openPhoto(files[i]));
+        opened.push(await openPhoto(files[i]));
       } catch (e) {
         failed.push(files[i].name);
       }
     }
+    placePhotos(opened);
     busy = false;
     var notes = [];
     if (failed.length) notes.push('This browser could not open ' + plural(failed.length, 'file') + ': ' + failed.slice(0, 3).join(', ') + '. HEIC photos need converting to JPG first.');
     if (other) notes.push('Skipped ' + plural(other, 'file') + ' that ' + (other === 1 ? 'is not an image.' : 'are not images.'));
     showNotice(notes.join(' '));
+    renderAll();
+  }
+
+  /**
+   * Sorts new photos onto their phones: a photo joins the phone whose other photos came from the same camera, or
+   * starts a new one. A phone's new photos go in the order they were taken (or by file name), so the first photo
+   * from each phone pairs with the first from the others. Photos with nothing to go on get a phone each.
+   */
+  function placePhotos(opened) {
+    var buckets = [];
+    opened.forEach(function (photo) {
+      var bucket = photo.key ? buckets.filter(function (b) { return b.key === photo.key; })[0] : null;
+      if (!bucket) { bucket = { key: photo.key, photos: [] }; buckets.push(bucket); }
+      bucket.photos.push(photo);
+    });
+    buckets.forEach(function (bucket) {
+      var timed = bucket.photos.every(function (p) { return p.taken; });
+      bucket.photos.sort(function (a, b) {
+        if (timed && a.taken !== b.taken) return a.taken < b.taken ? -1 : 1;
+        return a.name.localeCompare(b.name, undefined, { numeric: true });
+      });
+      var phone = bucket.key ? phones.filter(function (p) { return p.key === bucket.key; })[0] : null;
+      if (!phone) { phone = newPhone(bucket.key); phones.push(phone); }
+      bucket.photos.forEach(function (photo) { addToPhone(photo, phone); });
+    });
+  }
+
+  function newPhone(key) {
+    return { id: nextId++, key: key || '', label: '', camera: '', photos: [] };
+  }
+
+  function addToPhone(photo, phone, at, unnamed) {
+    photo.phone = phone;
+    if (at === undefined) phone.photos.push(photo); else phone.photos.splice(at, 0, photo);
+    if (!phone.label && photo.guess && !unnamed) phone.label = photo.guess;
+    if (!phone.camera && photo.camera) phone.camera = photo.camera;
+  }
+
+  function takeOut(photo) {
+    var phone = photo.phone;
+    phone.photos.splice(phone.photos.indexOf(photo), 1);
+    if (!phone.photos.length) phones.splice(phones.indexOf(phone), 1);
+  }
+
+  function moveToPhone(photo, phoneId) {
+    var from = photo.phone;
+    var at = from.photos.indexOf(photo);
+    takeOut(photo);
+    var target = phones.filter(function (p) { return String(p.id) === String(phoneId); })[0];
+    if (!target) {
+      target = newPhone('');
+      var after = phones.indexOf(from);
+      phones.splice(after < 0 ? phones.length : after + 1, 0, target);
+    }
+    // Keep its place in the pairing where it can, so set 3 stays set 3.
+    addToPhone(photo, target, Math.min(at, target.photos.length), target.photos.length === 0);
+  }
+
+  /** Puts the first half of the photos (in the order shown) on one phone and the second half on another. */
+  function splitInHalf() {
+    var all = allPhotos();
+    var half = Math.ceil(all.length / 2);
+    var first = newPhone(''), second = newPhone('');
+    first.label = all[0].phone.label;
+    second.label = all[half].phone.label !== first.label ? all[half].phone.label : '';
+    phones = [first, second];
+    all.forEach(function (photo, i) {
+      var phone = i < half ? first : second;
+      phone.photos.push(photo);
+      photo.phone = phone;
+      if (!phone.camera && photo.camera) phone.camera = photo.camera;
+    });
+    current = 0;
     renderAll();
   }
 
@@ -475,46 +672,132 @@
     return btn;
   }
 
+  var UP = 'M18 15l-6-6-6 6', DOWN = 'M6 9l6 6 6-6', LEFT = 'M15 6l-6 6 6 6', RIGHT = 'M9 6l6 6-6 6', CROSS = 'M6 6l12 12M18 6L6 18';
+
+  /** "14:03:22" from EXIF's "2026:11:11 14:03:22". */
+  function clock(taken) {
+    var m = /\d{2}:\d{2}:\d{2}$/.exec(taken || '');
+    return m ? m[0] : '';
+  }
+
   function renderList() {
     var list = $('file-list');
     list.textContent = '';
-    photos.forEach(function (photo, i) {
-      var li = document.createElement('li');
-      li.className = 'file-row photo-row';
-      var img = document.createElement('img');
-      img.className = 'file-thumb photo-thumb'; img.alt = ''; img.src = photo.thumb;
+    var paired = phones.length > 1;
+    var setCount = sets().length;
+    phones.forEach(function (phone, p) {
+      var group = document.createElement('li');
+      group.className = 'phone-group';
+      var head = document.createElement('div');
+      head.className = 'phone-head';
+      var title = document.createElement('span');
+      title.className = 'phone-title';
+      var where = paired ? (p === 0 ? 'Left · ' : p === phones.length - 1 && phones.length === 2 ? 'Right · ' : '') : '';
+      title.textContent = 'Phone ' + (p + 1) + ' · ' + where + plural(phone.photos.length, 'photo');
+      if (phone.camera) title.title = 'The camera details say ' + phone.camera;
       var input = document.createElement('input');
       input.type = 'text';
       input.className = 'photo-label';
-      input.value = photo.label;
+      input.value = phone.label;
       input.maxLength = 40;
-      input.placeholder = 'Phone name';
+      input.placeholder = phone.camera ? 'Phone name (camera: ' + phone.camera + ')' : 'Phone name';
       input.autocomplete = 'off';
-      input.setAttribute('aria-label', 'Phone name for photo ' + (i + 1) + ' (' + photo.name + ')');
-      input.addEventListener('input', function () { photo.label = input.value; renderPreview(); });
-      var meta = document.createElement('span');
-      meta.className = 'file-meta photo-meta';
-      meta.textContent = photo.name + ' · ' + photo.origW + ' × ' + photo.origH;
-      meta.title = photo.name;
-      var controls = document.createElement('span');
-      controls.className = 'move';
-      controls.appendChild(iconButton('Move photo ' + (i + 1) + ' earlier', 'M18 15l-6-6-6 6', function () { swap(i, i - 1); }, i === 0));
-      controls.appendChild(iconButton('Move photo ' + (i + 1) + ' later', 'M6 9l6 6 6-6', function () { swap(i, i + 1); }, i === photos.length - 1));
-      controls.appendChild(iconButton('Remove photo ' + (i + 1), 'M6 6l12 12M18 6L6 18', function () {
-        photo.bitmap.close();
-        photos.splice(i, 1);
-        renderAll();
-      }));
-      li.appendChild(img); li.appendChild(input); li.appendChild(meta); li.appendChild(controls);
-      list.appendChild(li);
+      input.setAttribute('aria-label', 'Name of phone ' + (p + 1));
+      input.addEventListener('input', function () { phone.label = input.value; renderPreview(); });
+      input.addEventListener('change', function () { renderList(); });
+      var moves = document.createElement('span');
+      moves.className = 'move';
+      if (paired) {
+        moves.appendChild(iconButton('Move phone ' + (p + 1) + ' to the left', LEFT, function () { swapPhones(p, p - 1); }, p === 0));
+        moves.appendChild(iconButton('Move phone ' + (p + 1) + ' to the right', RIGHT, function () { swapPhones(p, p + 1); }, p === phones.length - 1));
+      }
+      head.appendChild(title); head.appendChild(input); head.appendChild(moves);
+      group.appendChild(head);
+
+      var rows = document.createElement('ul');
+      rows.className = 'phone-photos';
+      phone.photos.forEach(function (photo, i) {
+        var batch = paired && setCount > 1;
+        var n = (batch ? 'set ' + (i + 1) : 'photo ' + (i + 1)) + ' (' + photo.name + ')';
+        var li = document.createElement('li');
+        li.className = 'file-row photo-row' + (batch && i === current ? ' is-current' : '');
+        var pick = document.createElement('button');
+        pick.type = 'button';
+        pick.className = 'photo-pick';
+        pick.setAttribute('aria-label', 'Show ' + n + ' in the preview');
+        var img = document.createElement('img');
+        img.className = 'file-thumb'; img.alt = ''; img.src = photo.thumb;
+        pick.appendChild(img);
+        pick.addEventListener('click', function () { if (batch) { current = i; renderAll(); } });
+        var meta = document.createElement('span');
+        meta.className = 'photo-meta';
+        var time = clock(photo.taken);
+        var first = document.createElement('span');
+        first.className = 'photo-set';
+        first.textContent = [batch ? 'Set ' + (i + 1) : '', time ? 'taken ' + time : ''].filter(Boolean).join(' · ') || photo.origW + ' × ' + photo.origH;
+        var second = document.createElement('span');
+        second.className = 'file-meta';
+        second.textContent = photo.name + (batch || time ? ' · ' + photo.origW + ' × ' + photo.origH : '');
+        meta.title = photo.name + ' · ' + photo.origW + ' × ' + photo.origH + (photo.taken ? ' · taken ' + photo.taken : '');
+        meta.appendChild(first); meta.appendChild(second);
+        var select = document.createElement('select');
+        select.className = 'photo-phone';
+        select.setAttribute('aria-label', 'Which phone took ' + n);
+        phones.forEach(function (other, o) {
+          var option = document.createElement('option');
+          option.value = other.id;
+          option.textContent = 'Phone ' + (o + 1) + (other.label.trim() ? ': ' + other.label.trim() : '');
+          option.selected = other === phone;
+          select.appendChild(option);
+        });
+        var fresh = document.createElement('option');
+        fresh.value = 'new';
+        fresh.textContent = 'A new phone';
+        select.appendChild(fresh);
+        select.addEventListener('change', function () { moveToPhone(photo, select.value); renderAll(); });
+        var controls = document.createElement('span');
+        controls.className = 'move';
+        controls.appendChild(iconButton('Move ' + n + ' earlier', UP, function () { swapPhotos(phone, i, i - 1); }, i === 0));
+        controls.appendChild(iconButton('Move ' + n + ' later', DOWN, function () { swapPhotos(phone, i, i + 1); }, i === phone.photos.length - 1));
+        controls.appendChild(iconButton('Remove ' + n, CROSS, function () {
+          photo.bitmap.close();
+          takeOut(photo);
+          renderAll();
+        }));
+        var tools = document.createElement('span');
+        tools.className = 'photo-tools';
+        tools.appendChild(select); tools.appendChild(controls);
+        li.appendChild(pick); li.appendChild(meta); li.appendChild(tools);
+        rows.appendChild(li);
+      });
+      group.appendChild(rows);
+      list.appendChild(group);
     });
-    $('count-label').textContent = photos.length ? plural(photos.length, 'photo') : 'No photos yet';
-    $('clear-all').hidden = !photos.length;
+    var count = allPhotos().length;
+    $('count-label').textContent = count ? plural(count, 'photo') + (paired ? ' from ' + phones.length + ' phones' : '') : 'No photos yet';
+    $('clear-all').hidden = !count;
+    // Nothing told the photos apart (or they all came from one camera): offer the usual way people shoot a batch.
+    var lonely = phones.every(function (phone) { return phone.photos.length === 1; });
+    $('split').hidden = !(count >= 4 && count % 2 === 0 && (phones.length === 1 || lonely));
+    var counts = phones.map(function (phone) { return phone.photos.length; });
+    var uneven = paired && Math.min.apply(null, counts) !== Math.max.apply(null, counts);
+    $('pair-notice').hidden = !uneven;
+    if (uneven) {
+      $('pair-notice').textContent = phones.map(function (phone) { return phoneName(phone) + ' has ' + plural(phone.photos.length, 'photo'); }).join(', ') +
+        ', so some sets are missing a photo. Remove the extras, or use each photo\'s menu to move it to the right phone.';
+    }
   }
 
-  function swap(a, b) {
-    if (b < 0 || b >= photos.length) return;
-    var held = photos[a]; photos[a] = photos[b]; photos[b] = held;
+  function swapPhotos(phone, a, b) {
+    if (b < 0 || b >= phone.photos.length) return;
+    var held = phone.photos[a]; phone.photos[a] = phone.photos[b]; phone.photos[b] = held;
+    if (phones.length > 1 && current === a) current = b;
+    renderAll();
+  }
+
+  function swapPhones(a, b) {
+    if (b < 0 || b >= phones.length) return;
+    var held = phones[a]; phones[a] = phones[b]; phones[b] = held;
     renderAll();
   }
 
@@ -524,7 +807,20 @@
     requestAnimationFrame(async function () {
       await assetsReady;
       drawQueued = false;
+      var photos = currentSet();
+      var total = sets().length;
       var has = photos.length > 0;
+      $('pager').hidden = total < 2;
+      $('prev').disabled = current <= 0;
+      $('next').disabled = current >= total - 1;
+      $('pager-label').textContent = 'Set ' + (current + 1) + ' of ' + total;
+      $('download-all').hidden = total < 2;
+      $('download-all').disabled = busy;
+      $('download-all').textContent = 'Download all ' + total + ' (ZIP)';
+      $('download').textContent = total > 1 ? 'Download this set' : 'Download';
+      // The main button is the one that saves everything.
+      $('download').classList.toggle('btn-solid', total < 2);
+      $('download').classList.toggle('btn-outline', total > 1);
       $('preview').hidden = !has;
       $('stage-empty').hidden = has;
       $('facts').hidden = !has;
@@ -533,28 +829,28 @@
       $('copy').disabled = !has || busy;
       $('download').disabled = !has || busy;
       if (!has) { $('preview-h').textContent = 'Add two photos to start'; lastPanels = []; $('small-warning').hidden = true; $('summary').textContent = 'Add photos to get started.'; return; }
-      var result = drawAll($('preview'), state);
+      var result = drawAll($('preview'), state, photos);
       var size = result;
       $('preview-h').textContent = size.w + ' × ' + size.h;
       lastPanels = result.panels;
       var layoutName = byId(LAYOUTS, state.layout).name;
-      var named = photos.filter(function (p) { return p.label.trim(); }).length;
+      var named = photos.filter(function (p) { return p.phone.label.trim(); }).length;
       $('fact-layout').textContent = layoutName;
       $('fact-fit').textContent = byId(FITS, state.fit).name + (state.zoom > 100 ? ', zoomed ' + state.zoom + '%' : '');
       $('fact-labels').textContent = state.labels === 'off' ? 'Off' : named + ' of ' + photos.length + ' named';
       $('fact-wm').textContent = state.wmOn ? 'Bottom right' : 'Off';
       var warnings = [];
-      if (photos.length === 1) warnings.push('Add a second photo to compare.');
+      if (photos.length === 1) warnings.push(total > 1 ? 'This set has only one photo.' : 'Add a second photo to compare.');
       if (result.capped) warnings.push('Made narrower than the width you set, to keep the height under ' + MAX_OUT + ' pixels.');
       if (result.stretched.length) {
         warnings.push((result.stretched.length === photos.length ? 'The photos are' : 'Photo ' + result.stretched.map(function (i) { return i + 1; }).join(' and ') + (result.stretched.length === 1 ? ' is' : ' are')) + ' shown larger than full size, so may look soft.');
       }
       $('small-warning').hidden = !warnings.length;
       $('small-warning').textContent = warnings.join(' ');
-      $('name-to').textContent = fileName(state, today, state.format);
+      $('name-to').textContent = fileName(state, today, state.format, current + 1, total);
       $('summary').textContent = '';
       var strong = document.createElement('strong');
-      strong.textContent = plural(photos.length, 'photo');
+      strong.textContent = (total > 1 ? 'Set ' + (current + 1) + ' of ' + total + ' · ' : '') + plural(photos.length, 'photo');
       $('summary').appendChild(strong);
       $('summary').appendChild(document.createTextNode(' · ' + size.w + ' × ' + size.h + ' · ' + layoutName.toLowerCase()));
     });
@@ -595,6 +891,7 @@
     canvas.addEventListener('pointerdown', function (e) {
       var pt = toCanvas(e);
       var i = panelAt(pt);
+      var photos = currentSet();
       if (i < 0 || !photos[i]) return;
       drag = { photo: photos[i], panel: lastPanels[i], x: e.clientX, y: e.clientY, fx: photos[i].fx, fy: photos[i].fy, k: pt.k };
       canvas.setPointerCapture(e.pointerId);
@@ -618,6 +915,7 @@
     canvas.addEventListener('pointercancel', end);
     canvas.addEventListener('dblclick', function (e) {
       var i = panelAt(toCanvas(e));
+      var photos = currentSet();
       if (i < 0 || !photos[i]) return;
       photos[i].fx = 0.5; photos[i].fy = 0.5;
       renderPreview();
@@ -626,9 +924,9 @@
 
   // ---------- Saving ----------
 
-  function toBlob(format) {
+  function toBlob(format, photos) {
     var canvas = document.createElement('canvas');
-    drawAll(canvas, state);
+    drawAll(canvas, state, photos || currentSet());
     var type = format === 'jpg' ? 'image/jpeg' : format === 'webp' ? 'image/webp' : 'image/png';
     return new Promise(function (resolve, reject) {
       canvas.toBlob(function (blob) { if (blob) resolve(blob); else reject(new Error('The browser could not save this image.')); }, type, 0.92);
@@ -642,31 +940,63 @@
     return wanted;
   }
 
+  function saveBlob(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+  }
+
   async function download() {
+    var photos = currentSet();
     if (!photos.length) return;
     try {
       await assetsReady;
-      var blob = await toBlob(state.format);
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = fileName(state, today, extOf(blob, state.format));
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+      var blob = await toBlob(state.format, photos);
+      saveBlob(blob, fileName(state, today, extOf(blob, state.format), current + 1, sets().length));
     } catch (e) {
       $('summary').textContent = 'Could not save the image. ' + (e && e.message ? e.message : '');
     }
   }
 
+  /** Every set as its own image, in one ZIP. */
+  async function downloadAll() {
+    var all = sets();
+    if (all.length < 2 || busy) return;
+    busy = true;
+    $('download').disabled = true;
+    $('download-all').disabled = true;
+    var files = [];
+    try {
+      await assetsReady;
+      for (var i = 0; i < all.length; i++) {
+        $('summary').textContent = 'Saving ' + (i + 1) + ' of ' + all.length + '…';
+        var blob = await toBlob(state.format, all[i]);
+        files.push({ name: fileName(state, today, extOf(blob, state.format), i + 1, all.length), bytes: new Uint8Array(await blob.arrayBuffer()) });
+      }
+      var zipName = ['ah-compare', slug(state.topic), isoDate(today)].filter(Boolean).join('-') + '.zip';
+      saveBlob(window.AHZip.makeZip(files), zipName);
+      busy = false;
+      renderPreview();
+    } catch (e) {
+      busy = false;
+      renderPreview();
+      $('summary').textContent = 'Could not save the images. ' + (e && e.message ? e.message : '');
+    }
+  }
+
   async function copyImage() {
+    var photos = currentSet();
     if (!photos.length) return;
     var button = $('copy');
     try {
       await assetsReady;
       // Clipboards take PNG.
-      await navigator.clipboard.write([new ClipboardItem({ 'image/png': toBlob('png') })]);
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': toBlob('png', photos) })]);
       button.textContent = 'Copied';
     } catch (e) {
       button.textContent = "Couldn't copy";
@@ -699,8 +1029,9 @@
       if (files && files.length) addFiles(Array.prototype.slice.call(files));
     });
     $('clear-all').addEventListener('click', function () {
-      photos.forEach(function (photo) { photo.bitmap.close(); });
-      photos = [];
+      allPhotos().forEach(function (photo) { photo.bitmap.close(); });
+      phones = [];
+      current = 0;
       showNotice('');
       renderAll();
     });
@@ -718,6 +1049,17 @@
     $('topic').addEventListener('input', function (e) { change({ topic: e.target.value }); });
     $('format').addEventListener('change', function (e) { change({ format: e.target.value }); });
     $('download').addEventListener('click', download);
+    $('download-all').addEventListener('click', downloadAll);
+    $('split').addEventListener('click', splitInHalf);
+    $('prev').addEventListener('click', function () { if (current > 0) { current--; renderAll(); } });
+    $('next').addEventListener('click', function () { if (current < sets().length - 1) { current++; renderAll(); } });
+    document.addEventListener('keydown', function (e) {
+      // Left and right arrows step through the sets, unless someone is typing.
+      if (e.target.closest && e.target.closest('input, select, textarea')) return;
+      if (sets().length < 2 || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.key === 'ArrowLeft' && current > 0) { current--; renderAll(); }
+      if (e.key === 'ArrowRight' && current < sets().length - 1) { current++; renderAll(); }
+    });
     $('copy').addEventListener('click', copyImage);
     if (!navigator.clipboard || typeof ClipboardItem === 'undefined') $('copy').hidden = true;
     wireDrag();

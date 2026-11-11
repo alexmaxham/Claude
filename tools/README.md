@@ -56,17 +56,19 @@ Puts one or more phone screenshots in a frame, lines them up on an AH background
 
 Puts photos taken on different phones into one image so they can be compared, for example the Xiaomi 18 Pro Max on the left and the Oppo Find X10 Pro Max on the right.
 
-- **Photos:** drop one photo from each phone, two or more. The first is on the left; the arrows change the order.
-- **Phone names:** type each phone's name next to its photo. Names go on the photo (bottom or top, left or centre), under it, or off. A file name that starts with the phone fills the name in for you (`Samsung-Galaxy-S26-Ultra-AH-20-1154x649.jpg` gives "Samsung Galaxy S26 Ultra"); camera names like `IMG_1234` don't.
+- **Photos:** drop one photo from each phone, or a whole batch at once (say five from one phone and five from the other). Photos are sorted by the phone that took them, using the camera model saved in the photo (EXIF), else the phone name in the file name, else the camera's file name prefix (`PXL_`, `IMG_`). Each phone's photos are put in the order they were taken (else by file name) and paired up: every phone's first photo makes set 1, its second set 2, and so on. Each set is its own image.
+- **Fixing the pairing:** each photo has a menu to move it to another phone (or a new one) and arrows to move it to an earlier or later set. Phone 1 is on the left; the arrows by a phone's name change the order. When nothing tells the photos apart (EXIF stripped, plain names), "The first half came from one phone…" splits them in two. A note shows when the phones have different numbers of photos.
+- **Sets:** step through them with the arrows above the preview (or the left and right arrow keys), or click a photo in the list. "Download all (ZIP)" saves every set; "Download this set" and "Copy image" save the one showing.
+- **Phone names:** type each phone's name once and it goes on all its photos. Names go on the photo (bottom or top, left or centre), under it, or off. The name is filled in from a file name that starts with the phone (`Samsung-Galaxy-S26-Ultra-AH-20-1154x649.jpg` gives "Samsung Galaxy S26 Ultra"), or from the camera model when it reads like a name ("Pixel 10 Pro", not "SM-S938B"); camera names like `IMG_1234` don't.
 - **Layout:** side by side, stacked or a grid, with space between the photos and around the edge.
 - **Fill the space or show it all:** "Fill the space" uses a set canvas size (Wide 1600 × 900 and the rest) and crops each photo to fill its box. "Show it all" shows every photo whole: you set the width, and the image takes whatever height the photos need, with no bars. Drag a photo in the preview to choose which part shows; double-click to centre it. One zoom slider zooms every photo by the same amount, for close-up comparisons. A warning shows when a photo is enlarged past its real size.
-- **Canvas and saving:** the same sizes, backgrounds, watermark and formats as the Screenshot Framer. Files are named `ah-compare-topic-platform-date`; the platform is left out with "Show it all".
+- **Canvas and saving:** the same sizes, backgrounds, watermark and formats as the Screenshot Framer. Files are named `ah-compare-topic-platform-date`, with `-01`, `-02` and so on when there are several sets; the platform is left out with "Show it all".
 - Photos longer than 8192 pixels on a side are scaled down to that when added. HEIC photos have to be converted to JPG first.
 
 | File | What it is |
 |---|---|
 | `photo-compare/index.html`, `compare.css` | The page, and the few styles it adds to `styles.css` and the framer's `framer.css` |
-| `photo-compare/compare.js` | Layout, drawing, dragging and saving |
+| `photo-compare/compare.js` | Reading the camera details, pairing photos into sets, layout, drawing, dragging and saving (the ZIP comes from `zip.js`) |
 
 ## Hosting
 

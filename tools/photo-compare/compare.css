@@ -1,16 +1,35 @@
 /* Extra styles for Photo Compare. The rest comes from ../styles.css and ../screenshot-framer/framer.css. */
+.phone-group { border-top: 1px solid var(--rule); padding: 10px 0 6px; }
+.phone-group:first-child { border-top: none; }
+.phone-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title moves" "label label";
+  align-items: center;
+  gap: 2px 8px;
+}
+.phone-title { grid-area: title; font-size: 12.5px; font-weight: 700; color: var(--text-2); }
+.phone-head .photo-label { grid-area: label; }
+.phone-head .move { grid-area: moves; }
+.phone-photos { list-style: none; margin: 6px 0 0; padding: 0; }
 .photo-row {
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr);
-  grid-template-areas: "thumb label" "meta meta" "controls controls";
+  grid-template-areas: "thumb meta" "tools tools";
   align-items: center;
   gap: 4px 10px;
-  padding: 10px 0 2px 8px;
+  padding: 8px 0 2px 8px;
 }
-.photo-thumb { grid-area: thumb; }
-.photo-label { grid-area: label; width: 100%; min-width: 0; font-weight: 500; }
-.photo-meta { grid-area: meta; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.photo-row .move { grid-area: controls; justify-content: flex-end; }
+.photo-pick { grid-area: thumb; padding: 0; border: none; background: none; border-radius: 6px; }
+.photo-pick .file-thumb { display: block; }
+.photo-label { width: 100%; min-width: 0; font-weight: 500; }
+.photo-meta { grid-area: meta; min-width: 0; }
+.photo-meta > span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.photo-set { font-size: 13px; font-weight: 700; }
+/* The phone menu and the arrows share a line when there is room. */
+.photo-tools { grid-area: tools; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0 4px; }
+.photo-phone { flex: 1 1 120px; min-width: 0; }
+.photo-row.is-current { box-shadow: inset 3px 0 0 var(--red-text); }
 #auto-size { display: flex; flex-direction: column; gap: 8px; }
 #label-options { display: flex; flex-direction: column; gap: 12px; }
 #preview { cursor: grab; touch-action: none; }
